@@ -41,7 +41,9 @@ library(dplyr)
 #               => CH  4<=x<=10
 #               => AP  6<=x<=10
 
-
+#Changed location of saved file on 4/19/17
+# Created a new GitHub repository for just my scripts in the Seatrout project
+# New repository is called Seatrout_Scripts
 setwd("~/Desktop/PhD project/Projects/Seatrout/FWRI SCRATCH FOLDER/Elizabeth Herdter/SAS data sets/FIMData/NEWNov7")
 
 ap = subset(read_sas("ap_yoy_cn_c.sas7bdat"), month %in% c(6,7,8,9,10,11))
