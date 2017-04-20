@@ -1,13 +1,14 @@
 ####################
 # 10/26/2016
 # Purpose: To produce adjusted nominal catch indices using the Delta Method
-# 1. Use Delta Method to produce YOY indices
-# 2. Use Delta Method to produce adult indices
+# 1. Use Delta Method to produce YOY indices using predicted positive and proportion positive data sets
+# 2. Use Delta Method to produce adult indices using predicted positive and proportion positive data sets
 # 3. Fit SR relationships to yoy and adult indices to produce the residuals of Beverton Holt and Ricker
 
 #Delta Method
 # This method uses the Delta method for determining the nominal catch rate of Spotted Seatrout in the FIM catch
 # Uses methods described in Chyan-huei et al 1992
+# Essentially, you can break up the data set into positive hauls and zero hauls where
 
 # positive haul= hauls with Seatrout
 # zero haul= hauls without any Seatrout 
@@ -16,6 +17,19 @@
 # Proportion Positive = total number of positive hauls / total numbers of all hauls (positive and zero) 
 
 # Adjusted Index = Positive Data * Proportion Positive
+
+#4/19/17
+# Meeting at FWRI suggested that I need to control at least for habitat variables in my estimates of positive and proportion positive
+#The FWRI R script DeltaLogNormal_SST_yoy_FIM.R does this for a portion so it is a good guide to use. 
+
+# I will use the Positive Data as input data to a general linear model and habitat grouping variables
+# For example     log(positive numbers)= B + B*bottom_type + B*bottom_veg + B*shore_type + B*zone
+# This will produce a predicted number of positive hauls.
+
+# Then I will use the Binomial Data set (used to produce the proportion positive) as input data to a general linear model.
+# This will produce the predicted number of binary data, from which I can produce the predicted proportion postive. 
+
+# Then I can create the Adjusted Predicted Index = Predicted Positive Data * Predicted Proportion Positive Data
 
 ###########################
 # Set packages
@@ -44,6 +58,7 @@ library(dplyr)
 #Changed location of saved file on 4/19/17
 # Created a new GitHub repository for just my scripts in the Seatrout project
 # New repository is called Seatrout_Scripts
+
 setwd("~/Desktop/PhD project/Projects/Seatrout/FWRI SCRATCH FOLDER/Elizabeth Herdter/SAS data sets/FIMData/NEWNov7")
 
 ap = subset(read_sas("ap_yoy_cn_c.sas7bdat"), month %in% c(6,7,8,9,10,11))
@@ -78,6 +93,31 @@ jxl = read_sas("jx_yoy_cn_l.sas7bdat")
 #               => AP BAY(A-B), RIVERINE (C)
 #               => Jax RIVERINE (A-F)
 #               => CK BAY(B-C), RIVERINE (F)
+
+################################################
+# SELECT CATEGORICAL HABITAT VALUES
+# to be used in the model to predict positive numbers
+################################################
+
+#based on FWRI code the three variables were bottom type (bStr, bsan, bmud), bottom vegetation (bveg), and shoreline (Shore)
+ap <-  select(ap, c(number,year, month, bio_reference, bStr, bSan, bMud, bveg, Shore)) 
+ck <-  select(ck, c(number,year, month, bio_reference, bStr, bSan, bMud, bveg, Shore)) 
+tb <-  select(tb, c(number,year, month, bio_reference, bStr, bSan, bMud, bveg, Shore)) 
+ch <-  select(ch, c(number,year, month, bio_reference, bStr, bSan, bMud, bveg, Shore)) 
+jx <-  select(jx, c(number,year, month, bio_reference, bStr, bSan, bMud, bveg, Shore))
+ir <-  select(ir, c(number,year, month, bio_reference, bStr, bSan, bMud, bveg, Shore)) 
+
+#There are three different bottom type variables each of them coded in a binary form.
+#I want to take bStr, bsan, and bmud and put them into 1 variable so I will make a new variable entirely.
+#I also want to turn bveg into a new variable based on the entries.
+#Same thing for the shore variable. Decided to have only emergent, structure, terrestrial, and mangrove. 
+# Removed rows when there was no shoreline variable. 
+
+ap$bottom <- ifelse(ap$bStr ==1, "structure", ifelse(ap$bSan>0 | ap$bMud>0, "mudsand", "unknown"))
+ap$veg <- ifelse(ap$bveg == "SAVAlg", "SAV", ifelse(ap$bveg == "Alg", "Alg", "Noveg"))
+ap$shore <- ifelse(substr(ap$Shore,1,3)=="Eme", "Emerge", ifelse(substr(ap$Shore,1,3) =="Man", "Mangrove", ifelse(substr(ap$Shore,1,3)=="Str", "Structure", ifelse(substr(ap$Shore, 1,3)=="Ter", "Terrestrial", "Non")))) 
+
+ap <- select(ap, -c(bStr, bSan, bMud, bveg, Shore)) %>% subset(!shore=="Non")
 
 ##############################################
 # MAKE POSITIVE SET
