@@ -111,18 +111,53 @@ ir <-  select(ir, c(number,year, month, bio_reference, bStr, bSan, bMud, bveg, S
 #I want to take bStr, bsan, and bmud and put them into 1 variable so I will make a new variable entirely.
 #I also want to turn bveg into a new variable based on the entries.
 #Same thing for the shore variable. Decided to have only emergent, structure, terrestrial, and mangrove. 
-# Removed rows when there was no shoreline variable. 
+#Removed rows when there was no shoreline variable. 
 
 ap$bottom <- ifelse(ap$bStr ==1, "structure", ifelse(ap$bSan>0 | ap$bMud>0, "mudsand", "unknown"))
 ap$veg <- ifelse(ap$bveg == "SAVAlg", "SAV", ifelse(ap$bveg == "Alg", "Alg", "Noveg"))
 ap$shore <- ifelse(substr(ap$Shore,1,3)=="Eme", "Emerge", ifelse(substr(ap$Shore,1,3) =="Man", "Mangrove", ifelse(substr(ap$Shore,1,3)=="Str", "Structure", ifelse(substr(ap$Shore, 1,3)=="Ter", "Terrestrial", "Non")))) 
 
+ck$bottom <- ifelse(ck$bStr ==1, "structure", ifelse(ck$bSan>0 | ck$bMud>0, "mudsand", "unknown"))
+ck$veg <- ifelse(ck$bveg == "SAVAlg", "SAV", ifelse(ck$bveg == "Alg", "Alg", "Noveg"))
+ck$shore <- ifelse(substr(ck$Shore,1,3)=="Eme", "Emerge", ifelse(substr(ck$Shore,1,3) =="Man", "Mangrove", ifelse(substr(ck$Shore,1,3)=="Str", "Structure", ifelse(substr(ck$Shore, 1,3)=="Ter", "Terrestrial", "Non")))) 
+
+tb$bottom <- ifelse(tb$bStr ==1, "structure", ifelse(tb$bSan>0 | tb$bMud>0, "mudsand", "unknown"))
+tb$veg <- ifelse(tb$bveg == "SAVAlg", "SAV", ifelse(tb$bveg == "Alg", "Alg", "Noveg"))
+tb$shore <- ifelse(substr(tb$Shore,1,3)=="Eme", "Emerge", ifelse(substr(tb$Shore,1,3) =="Man", "Mangrove", ifelse(substr(tb$Shore,1,3)=="Str", "Structure", ifelse(substr(tb$Shore, 1,3)=="Ter", "Terrestrial", "Non")))) 
+
+ch$bottom <- ifelse(ch$bStr ==1, "structure", ifelse(ch$bSan>0 | ch$bMud>0, "mudsand", "unknown"))
+ch$veg <- ifelse(ch$bveg == "SAVAlg", "SAV", ifelse(ch$bveg == "Alg", "Alg", "Noveg"))
+ch$shore <- ifelse(substr(ch$Shore,1,3)=="Eme", "Emerge", ifelse(substr(ch$Shore,1,3) =="Man", "Mangrove", ifelse(substr(ch$Shore,1,3)=="Str", "Structure", ifelse(substr(ch$Shore, 1,3)=="Ter", "Terrestrial", "Non")))) 
+
+jx$bottom <- ifelse(jx$bStr ==1, "structure", ifelse(jx$bSan>0 | jx$bMud>0, "mudsand", "unknown"))
+jx$veg <- ifelse(jx$bveg == "SAVAlg", "SAV", ifelse(jx$bveg == "Alg", "Alg", "Noveg"))
+jx$shore <- ifelse(substr(jx$Shore,1,3)=="Eme", "Emerge", ifelse(substr(jx$Shore,1,3) =="Man", "Mangrove", ifelse(substr(jx$Shore,1,3)=="Str", "Structure", ifelse(substr(jx$Shore, 1,3)=="Ter", "Terrestrial", "Non")))) 
+
+ir$bottom <- ifelse(ir$bStr ==1, "structure", ifelse(ir$bSan>0 | ir$bMud>0, "mudsand", "unknown"))
+ir$veg <- ifelse(ir$bveg == "SAVAlg", "SAV", ifelse(ir$bveg == "Alg", "Alg", "Noveg"))
+ir$shore <- ifelse(substr(ir$Shore,1,3)=="Eme", "Emerge", ifelse(substr(ir$Shore,1,3) =="Man", "Mangrove", ifelse(substr(ir$Shore,1,3)=="Str", "Structure", ifelse(substr(ir$Shore, 1,3)=="Ter", "Terrestrial", "Non")))) 
+
 ap <- select(ap, -c(bStr, bSan, bMud, bveg, Shore)) %>% subset(!shore=="Non")
+ck <- select(ck, -c(bStr, bSan, bMud, bveg, Shore)) %>% subset(!shore=="Non")
+tb <- select(tb, -c(bStr, bSan, bMud, bveg, Shore)) %>% subset(!shore=="Non")
+ch <- select(ch, -c(bStr, bSan, bMud, bveg, Shore)) %>% subset(!shore=="Non")
+jx <- select(jx, -c(bStr, bSan, bMud, bveg, Shore)) %>% subset(!shore=="Non")
+ir <- select(ir, -c(bStr, bSan, bMud, bveg, Shore)) %>% subset(!shore=="Non")
+
+# Turn habitat variables into factors so they can be treated as categorical
+
+ap[,c(2:3,5:7)] <- lapply(ap[,c(2:3, 5:7)], factor)
+ck[,c(2:3,5:7)] <- lapply(ck[,c(2:3, 5:7)], factor)
+tb[,c(2:3,5:7)] <- lapply(tb[,c(2:3, 5:7)], factor)
+ch[,c(2:3,5:7)] <- lapply(ch[,c(2:3, 5:7)], factor)
+jx[,c(2:3,5:7)] <- lapply(jx[,c(2:3, 5:7)], factor)
+ir[,c(2:3,5:7)] <- lapply(ir[,c(2:3, 5:7)], factor)
+
 
 ##############################################
 # MAKE POSITIVE SET
 # to determine the total number of positive huals and the total number of fish in all the positive hauls
-##########################
+##############################################
 #ap.pos<- ap %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
 #mutate(positive = TotalNumberOfSeatroutInPosHauls/totalnumberpositivehauls)
 
