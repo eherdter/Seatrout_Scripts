@@ -100,7 +100,7 @@ jxl = read_sas("jx_yoy_cn_l.sas7bdat")
 ################################################
 
 #based on FWRI code the three variables were bottom type (bStr, bsan, bmud), bottom vegetation (bveg), and shoreline (Shore)
-ap <-  select(ap, c(number,year, month, bio_reference, bStr, bSan, bMud, bveg, Shore)) 
+ap <-  select(ap, c(number,year, month, bio_reference, bStr, bSan, bMud, bveg, Shore, Zone)) 
 ck <-  select(ck, c(number,year, month, bio_reference, bStr, bSan, bMud, bveg, Shore)) 
 tb <-  select(tb, c(number,year, month, bio_reference, bStr, bSan, bMud, bveg, Shore)) 
 ch <-  select(ch, c(number,year, month, bio_reference, bStr, bSan, bMud, bveg, Shore)) 
@@ -109,12 +109,12 @@ ir <-  select(ir, c(number,year, month, bio_reference, bStr, bSan, bMud, bveg, S
 
 #There are three different bottom type variables each of them coded in a binary form.
 #I want to take bStr, bsan, and bmud and put them into 1 variable so I will make a new variable entirely.
-#I also want to turn bveg into a new variable based on the entries.
+#I also want to turn bveg into a new variable based on the entries. If alg or Sav then turn to SAV because there are only 9 entries for Alg. 
 #Same thing for the shore variable. Decided to have only emergent, structure, terrestrial, and mangrove. 
 #Removed rows when there was no shoreline variable. 
 
 ap$bottom <- ifelse(ap$bStr ==1, "structure", ifelse(ap$bSan>0 | ap$bMud>0, "mudsand", "unknown"))
-ap$veg <- ifelse(ap$bveg == "SAVAlg", "SAV", ifelse(ap$bveg == "Alg", "Alg", "Noveg"))
+ap$veg <- ifelse(ap$bveg == "SAVAlg", "SAV", ifelse(ap$bveg == "Alg", "SAV", ifelse(ap$bveg =="SAV", "SAV", "Noveg")))
 ap$shore <- ifelse(substr(ap$Shore,1,3)=="Eme", "Emerge", ifelse(substr(ap$Shore,1,3) =="Man", "Mangrove", ifelse(substr(ap$Shore,1,3)=="Str", "Structure", ifelse(substr(ap$Shore, 1,3)=="Ter", "Terrestrial", "Non")))) 
 
 ck$bottom <- ifelse(ck$bStr ==1, "structure", ifelse(ck$bSan>0 | ck$bMud>0, "mudsand", "unknown"))
@@ -146,18 +146,59 @@ ir <- select(ir, -c(bStr, bSan, bMud, bveg, Shore)) %>% subset(!shore=="Non")
 
 # Turn habitat variables into factors so they can be treated as categorical
 
-ap[,c(2:3,5:7)] <- lapply(ap[,c(2:3, 5:7)], factor)
+ap[,5:8] <- lapply(ap[,5:8], factor)
 ck[,c(2:3,5:7)] <- lapply(ck[,c(2:3, 5:7)], factor)
 tb[,c(2:3,5:7)] <- lapply(tb[,c(2:3, 5:7)], factor)
 ch[,c(2:3,5:7)] <- lapply(ch[,c(2:3, 5:7)], factor)
 jx[,c(2:3,5:7)] <- lapply(jx[,c(2:3, 5:7)], factor)
 ir[,c(2:3,5:7)] <- lapply(ir[,c(2:3, 5:7)], factor)
 
-
 ##############################################
 # MAKE POSITIVE SET
-# to determine the total number of positive huals and the total number of fish in all the positive hauls
+# to determine the total number of positive huals 
 ##############################################
+
+ap.pos <- ap %>% subset(number>0)
+ck.pos <- ck %>% subset(number>0)
+tb.pos <- tb %>% subset(number>0)
+ch.pos <- ch %>% subset(number>0)
+jx.pos <- jx %>% subset(number>0)
+ir.pos <- ir %>% subset(number>0)
+
+##############################################
+# BUILD MODEL
+# To produce predicted positive numbers
+##############################################
+
+#Plot the data
+plot(ap.pos$bottom, ap.pos$number, xlab= "bottom type", ylab="number")
+plot(ap.pos$year, ap.pos$number, vlab="year", ylab="number")
+
+#Build the glm
+M1 <- glm(number ~ year +month+veg+bottom+shore, data=ap.pos, family=poisson)
+
+#Test the model for overdispersion
+library(AER)
+distest <- dispersiontest(M1,trafo=1)
+distest
+
+#there is evidence of overdispersion so use quasipoisson (Zuur pg 226)
+
+M2 <- glm(number ~ year +month+veg+bottom+shore, data=ap.pos, family=quasipoisson)
+summary(M2)
+
+drop1(M2, test="F")
+
+M3 <- glm(number ~ year+veg+bottom+shore, data=ap.pos, family=quasipoisson)
+drop1(M3, test="F")
+
+M4 <-glm(number ~ veg+bottom+shore, data=ap.pos, family=quasipoisson)
+drop1(M4, test="F")
+
+M5 <-glm(number ~ veg+shore, data=ap.pos, family=quasipoisson)
+drop1(M5, test="F")
+predict(M5)
+
 #ap.pos<- ap %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
 #mutate(positive = TotalNumberOfSeatroutInPosHauls/totalnumberpositivehauls)
 
