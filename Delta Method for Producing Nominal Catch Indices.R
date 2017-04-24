@@ -36,6 +36,7 @@
 ###########################
 library(haven)
 library(dplyr)
+library(lsmeans)
 ###########################
 # Import Data Sets
 ###########################
@@ -146,7 +147,7 @@ ir <- select(ir, -c(bStr, bSan, bMud, bveg, Shore)) %>% subset(!shore=="Non")
 
 # Turn habitat variables into factors so they can be treated as categorical
 
-ap[,5:8] <- lapply(ap[,5:8], factor)
+ap[,c(2,5:8)] <- lapply(ap[,c(2,5:8)], factor)
 ck[,c(2:3,5:7)] <- lapply(ck[,c(2:3, 5:7)], factor)
 tb[,c(2:3,5:7)] <- lapply(tb[,c(2:3, 5:7)], factor)
 ch[,c(2:3,5:7)] <- lapply(ch[,c(2:3, 5:7)], factor)
@@ -166,38 +167,117 @@ jx.pos <- jx %>% subset(number>0)
 ir.pos <- ir %>% subset(number>0)
 
 ##############################################
-# BUILD MODEL
-# To produce predicted positive numbers
+# MAKE BINARY SET
 ##############################################
 
+ap.bin<- ap
+ap.bin$number <- ifelse(ap.bin$number>0,1,0)
+
+# VISUALIZE THE DATA
+###############################################
+
 #Plot the data
+
+#AP
 plot(ap.pos$bottom, ap.pos$number, xlab= "bottom type", ylab="number")
 plot(ap.pos$year, ap.pos$number, vlab="year", ylab="number")
+plot(ap.pos$shore, ap.pos$number, vlab="shore", ylab="number")
+plot(ap.pos$veg, ap.pos$number, vlab="veg", ylab="number")
 
-#Build the glm
-M1 <- glm(number ~ year +month+veg+bottom+shore, data=ap.pos, family=poisson)
 
-#Test the model for overdispersion
+
+##############################################
+# BUILD MODEL
+# To produce predicted positive numbers and binomial data set
+##############################################
+
+# 1. Build the full models with all potential variables and a base model with only year. 
+#    Do this for both the positive (Poisson distribution) and binary (Binomial distribution) datasets. 
+# 2. Check for overdispersion in the Poisson distribution scenario. 
+# 3. If there is overdispersion use quasipoisson 
+# 4. Use the drop1 function for model selection in the case of quasipoisson. Use the step command if just using Poisson
+# 5. Apply lsmeans function
+
+
+# 1. Build the full and base models for the positive and binomial datasets.  
+#AP
+Full_ap.pos <- glm(number ~ year+month+bottom+veg+shore, data=ap.pos, family=poisson)
+Base_ap.pos <- glm(number ~ year, data=ap.pos, family=poisson)
+
+Full_ap.bin <- glm(number ~ year+month+bottom+veg+shore, data=ap.bin, family=binomial)
+Base_ap.bin <- glm(number ~ year, data=ap.bin, family=binomial)
+
+#CK
+Full_ck.pos <- glm(number ~ year+month+bottom+veg+shore, data=ck.pos, family=poisson)
+Base_ck.pos <- glm(number ~ year, data=ck.pos, family=poisson)
+
+Full_ck.bin <- glm(number ~ year+month+bottom+veg+shore, data=ck.bin, family=binomial)
+Base_ck.bin <- glm(number ~ year, data=ck.bin, family=binomial)
+
+#TB
+
+#CH
+
+
+
+
+
+
+#Test the Poisson GLMs for overdispersion
 library(AER)
-distest <- dispersiontest(M1,trafo=1)
-distest
+dispersiontest(Base_ap.pos,trafo=1)
+dispersiontest(Full_ap.pos, trafo=1)
 
-#there is evidence of overdispersion so use quasipoisson (Zuur pg 226)
 
-M2 <- glm(number ~ year +month+veg+bottom+shore, data=ap.pos, family=quasipoisson)
-summary(M2)
 
-drop1(M2, test="F")
+#there is evidence of overdispersion in both models so use quasipoisson for all remaining models (Zuur pg 226)
 
-M3 <- glm(number ~ year+veg+bottom+shore, data=ap.pos, family=quasipoisson)
-drop1(M3, test="F")
+M_full_ap.pos <- glm(number ~ year +month+veg+bottom+shore, data=ap.pos, family=quasipoisson)
+M_base_ap.pos <- glm(number ~ year, data=ap.pos, family=quasipoisson)
 
-M4 <-glm(number ~ veg+bottom+shore, data=ap.pos, family=quasipoisson)
-drop1(M4, test="F")
+#the AIC is notdefined for quasipoisson models so can't use the step function like what was used in the FWRI code. 
+# Instead, use the drop1 function which is applicable for the quassiPoisson GLM (Zuur pg 227)
 
-M5 <-glm(number ~ veg+shore, data=ap.pos, family=quasipoisson)
-drop1(M5, test="F")
-predict(M5)
+# MODEL SELECTION
+
+drop1(M_full_ap.pos, test="F")
+#The only questionable variables might be 'bottom' and 'month'. With the full model the deviance is 3044.9. 
+#If we drop month or bottom the deviance only moves to 3067.9 and it appears that the Pr(>F) value is 0.069823 and 0.06999 for bottom and month, respectively 
+#Let's try to drop 'month' and see if it results in a smaller deviance
+
+M1_ap.pos <- glm(number ~ year+veg+bottom+shore, data=ap.pos, family=quasipoisson)
+drop1(M1_ap.pos, test="F")
+#Now the p value for bottom increases to 0.07. Lets drop the 'bottom' variable 
+
+M2_ap.pos <- glm(number ~ year+veg+shore, data=ap.pos, family=quasipoisson)
+drop1(M2_ap.pos, test='F')
+#Year, veg, and shore are all significant so I can stop now with model selection. 
+
+#Assign the final model. 
+glm.final.pos = M2 
+
+#################################
+# DETERMINE LEAST SQUARE MEANS 
+#################################
+
+# Same thing as covariate adjusted means. Basically, determine the mean value of total positive numbers 
+# of catch per year controlling for covariates (in this case it would be veg and shore variables). 
+# Use lsmeans CRAN document. 
+
+#Look at the reference grid
+ap.rf.grid <- ref.grid(glm.final.pos)
+
+#Can make predictions using the reference grid. It produces a mean value of numbers based on each scenario combination.  
+summary(ap.rf.grid)
+
+# Use lsmeans to determine the least square mean of positive values. 
+lsmeans(glm.final.pos, "year", data=ap.pos)
+
+# Display the response scale (as opposed to the log scale above)
+summary(lsmeans(glm.final.pos, 'year', data=ap.pos), type="response")
+
+
+
 
 #ap.pos<- ap %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
 #mutate(positive = TotalNumberOfSeatroutInPosHauls/totalnumberpositivehauls)
