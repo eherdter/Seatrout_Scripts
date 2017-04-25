@@ -1,4 +1,4 @@
-####################
+###### ABOUT ##############
 # 10/26/2016
 # Purpose: To produce adjusted nominal catch indices using the Delta Method
 # 1. Use Delta Method to produce YOY indices using predicted positive and proportion positive data sets
@@ -31,14 +31,14 @@
 
 # Then I can create the Adjusted Predicted Index = Predicted Positive Data * Predicted Proportion Positive Data
 
+##### SET PACKAGES ######################
 ###########################
-# Set packages
-###########################
-library(haven)
-library(dplyr)
-library(lsmeans)
-###########################
-# Import Data Sets
+library(haven) #to load sas
+library(dplyr) # to do df manipulation
+library(lsmeans) #to determine the least squares means
+library(AER) #to test for overdispersion
+
+##### IMPORT DATA SETS ######
 ###########################
 # These data sets were produced using the spp_comb_5_13_EG_2bays_yoy_2015_EHedits.sas program which is stored in my scratch folder
 # Bay and river stations were denoted by the gear sampling  code. There is a hard copy of this script in my green folder. 
@@ -62,30 +62,33 @@ library(lsmeans)
 
 setwd("~/Desktop/PhD project/Projects/Seatrout/FWRI SCRATCH FOLDER/Elizabeth Herdter/SAS data sets/FIMData/NEWNov7")
 
-ap = subset(read_sas("ap_yoy_cn_c.sas7bdat"), month %in% c(6,7,8,9,10,11))
+#load the data, select the peak reproductive months, reorder columns alphabetically so I can combine dataframes (some columns were in different position in other df)
+ap = subset(read_sas("ap_yoy_cn_c.sas7bdat"), month %in% c(6,7,8,9,10,11)) %>% mutate(bUnk=bunk) %>% select(-bunk) 
+ap <- ap %>% select(noquote(order(colnames(ap))))
 apl = read_sas("ap_yoy_cn_l.sas7bdat")
 
 #merge with length data and make sure the approporiate lengths are included 
 t <- merge(ap, apl, by="bio_reference")
 
-ck = subset(read_sas("ck_yoy_cn_c.sas7bdat"),  month %in% c(5,6,7,8,9,10,11)) 
+ck = subset(read_sas("ck_yoy_cn_c.sas7bdat"),  month %in% c(5,6,7,8,9,10,11))
+ck <- ck %>% select(noquote(order(colnames(ck))))
 ckl = read_sas("ck_yoy_cn_l.sas7bdat")
 
-ch = subset(read_sas("ch_yoy_cn_c.sas7bdat"), month %in% c(4,5,6,7,8,9,10)) 
+ch = subset(read_sas("ch_yoy_cn_c.sas7bdat"), month %in% c(4,5,6,7,8,9,10)) %>% mutate(bUnk=bunk) %>% select(-bunk) 
+ch <- ch %>% select(noquote(order(colnames(ch))))
 chl = read_sas("ch_yoy_cn_l.sas7bdat")
 
 tb = subset(read_sas("tb_yoy_cn_c.sas7bdat"), month %in% c(4,5,6,7,8,9,10)) 
+tb <- tb %>% select(noquote(order(colnames(tb))))
 tbl = read_sas("tb_yoy_cn_l.sas7bdat")
 
 ir = subset(read_sas("ir_yoy_cn_c.sas7bdat"), month %in% c(5,6,7,8,9,10,11)) 
+ir <- ir %>% select(noquote(order(colnames(ir))))
 irl = read_sas("ir_yoy_cn_l.sas7bdat")
 
-jx = subset(read_sas("jx_yoy_cn_c.sas7bdat") , month %in% c(5,6,7,8,9,10,11))
+jx = subset(read_sas("jx_yoy_cn_c.sas7bdat") , month %in% c(5,6,7,8,9,10,11)) 
+jx <- jx %>% select(noquote(order(colnames(jx))))
 jxl = read_sas("jx_yoy_cn_l.sas7bdat")
-
-# check years and gears
-#unique(ap$Gear)
-#unique(ap$year)
 
 #also check on zones to make sure the bays and rivers are stratefying correctly => depends on each estuary (for a more in depth description of monthly sampling within bay or riverine see Annual Report)
 #               => TB BAY(A-E), RIVERINE (K-N)
@@ -95,86 +98,54 @@ jxl = read_sas("jx_yoy_cn_l.sas7bdat")
 #               => Jax RIVERINE (A-F)
 #               => CK BAY(B-C), RIVERINE (F)
 
-################################################
-# SELECT CATEGORICAL HABITAT VALUES
+#Join all together so I can perform following steps on a single dataframe instead of individual ones. 
+
+full <- rbind(ap,ck,tb,ch,jx,ir)
+
+##### SELECT CATEGORICAL HABITAT VALUES ########
 # to be used in the model to predict positive numbers
 ################################################
 
-#based on FWRI code the three variables were bottom type (bStr, bsan, bmud), bottom vegetation (bveg), and shoreline (Shore)
-ap <-  select(ap, c(number,year, month, bio_reference, bStr, bSan, bMud, bveg, Shore, Zone)) 
-ck <-  select(ck, c(number,year, month, bio_reference, bStr, bSan, bMud, bveg, Shore)) 
-tb <-  select(tb, c(number,year, month, bio_reference, bStr, bSan, bMud, bveg, Shore)) 
-ch <-  select(ch, c(number,year, month, bio_reference, bStr, bSan, bMud, bveg, Shore)) 
-jx <-  select(jx, c(number,year, month, bio_reference, bStr, bSan, bMud, bveg, Shore))
-ir <-  select(ir, c(number,year, month, bio_reference, bStr, bSan, bMud, bveg, Shore)) 
-
+#Based on FWRI code the three variables were bottom type (bStr, bsan, bmud), bottom vegetation (bveg), and shoreline (Shore)
 #There are three different bottom type variables each of them coded in a binary form.
-#I want to take bStr, bsan, and bmud and put them into 1 variable so I will make a new variable entirely.
-#I also want to turn bveg into a new variable based on the entries. If alg or Sav then turn to SAV because there are only 9 entries for Alg. 
-#Same thing for the shore variable. Decided to have only emergent, structure, terrestrial, and mangrove. 
+#I want to take bStr, bsan, and bmud and put them into 1 variable so I will make a new variable entirely = 'bottom'
+#I also want to turn bveg into a new variable = 'veg' based on the entries. If alg or Sav then turn to SAV because there are only 9 entries for Alg. 
+#Same thing for the shore variable = 'shore'. Decided to have only emergent, structure, terrestrial, and mangrove. 
+#Removed old variables (bStr, bSan, bMud, bveg, Shore)
 #Removed rows when there was no shoreline variable. 
 
-ap$bottom <- ifelse(ap$bStr ==1, "structure", ifelse(ap$bSan>0 | ap$bMud>0, "mudsand", "unknown"))
-ap$veg <- ifelse(ap$bveg == "SAVAlg", "SAV", ifelse(ap$bveg == "Alg", "SAV", ifelse(ap$bveg =="SAV", "SAV", "Noveg")))
-ap$shore <- ifelse(substr(ap$Shore,1,3)=="Eme", "Emerge", ifelse(substr(ap$Shore,1,3) =="Man", "Mangrove", ifelse(substr(ap$Shore,1,3)=="Str", "Structure", ifelse(substr(ap$Shore, 1,3)=="Ter", "Terrestrial", "Non")))) 
+full <-  select(full, c(number,year, month, bio_reference, bStr, bSan, bMud, bveg, Shore, bay, Zone)) %>% 
+        mutate(bottom = ifelse(full$bStr ==1, "structure", ifelse(full$bSan>0 | full$bMud>0, "mudsand", "unknown")), 
+               veg= ifelse(full$bveg == "SAVAlg", "SAV", ifelse(full$bveg == "Alg", "SAV", ifelse(full$bveg =="SAV", "SAV", "Noveg"))),
+               shore = ifelse(substr(full$Shore,1,3)=="Eme", "Emerge", ifelse(substr(full$Shore,1,3) =="Man", "Mangrove", ifelse(substr(full$Shore,1,3)=="Str", "Structure", 
+                       ifelse(substr(full$Shore, 1,3)=="Ter", "Terrestrial", "Non"))))) %>% select(-c(bStr, bSan, bMud, bveg, Shore)) %>% subset(!shore=="Non") 
+      
+#Turn habitat variables into factors so they can be treated as categorical
+full[,c(2,5:8)] <- lapply(full[,c(2,5:8)], factor)
 
-ck$bottom <- ifelse(ck$bStr ==1, "structure", ifelse(ck$bSan>0 | ck$bMud>0, "mudsand", "unknown"))
-ck$veg <- ifelse(ck$bveg == "SAVAlg", "SAV", ifelse(ck$bveg == "Alg", "Alg", "Noveg"))
-ck$shore <- ifelse(substr(ck$Shore,1,3)=="Eme", "Emerge", ifelse(substr(ck$Shore,1,3) =="Man", "Mangrove", ifelse(substr(ck$Shore,1,3)=="Str", "Structure", ifelse(substr(ck$Shore, 1,3)=="Ter", "Terrestrial", "Non")))) 
-
-tb$bottom <- ifelse(tb$bStr ==1, "structure", ifelse(tb$bSan>0 | tb$bMud>0, "mudsand", "unknown"))
-tb$veg <- ifelse(tb$bveg == "SAVAlg", "SAV", ifelse(tb$bveg == "Alg", "Alg", "Noveg"))
-tb$shore <- ifelse(substr(tb$Shore,1,3)=="Eme", "Emerge", ifelse(substr(tb$Shore,1,3) =="Man", "Mangrove", ifelse(substr(tb$Shore,1,3)=="Str", "Structure", ifelse(substr(tb$Shore, 1,3)=="Ter", "Terrestrial", "Non")))) 
-
-ch$bottom <- ifelse(ch$bStr ==1, "structure", ifelse(ch$bSan>0 | ch$bMud>0, "mudsand", "unknown"))
-ch$veg <- ifelse(ch$bveg == "SAVAlg", "SAV", ifelse(ch$bveg == "Alg", "Alg", "Noveg"))
-ch$shore <- ifelse(substr(ch$Shore,1,3)=="Eme", "Emerge", ifelse(substr(ch$Shore,1,3) =="Man", "Mangrove", ifelse(substr(ch$Shore,1,3)=="Str", "Structure", ifelse(substr(ch$Shore, 1,3)=="Ter", "Terrestrial", "Non")))) 
-
-jx$bottom <- ifelse(jx$bStr ==1, "structure", ifelse(jx$bSan>0 | jx$bMud>0, "mudsand", "unknown"))
-jx$veg <- ifelse(jx$bveg == "SAVAlg", "SAV", ifelse(jx$bveg == "Alg", "Alg", "Noveg"))
-jx$shore <- ifelse(substr(jx$Shore,1,3)=="Eme", "Emerge", ifelse(substr(jx$Shore,1,3) =="Man", "Mangrove", ifelse(substr(jx$Shore,1,3)=="Str", "Structure", ifelse(substr(jx$Shore, 1,3)=="Ter", "Terrestrial", "Non")))) 
-
-ir$bottom <- ifelse(ir$bStr ==1, "structure", ifelse(ir$bSan>0 | ir$bMud>0, "mudsand", "unknown"))
-ir$veg <- ifelse(ir$bveg == "SAVAlg", "SAV", ifelse(ir$bveg == "Alg", "Alg", "Noveg"))
-ir$shore <- ifelse(substr(ir$Shore,1,3)=="Eme", "Emerge", ifelse(substr(ir$Shore,1,3) =="Man", "Mangrove", ifelse(substr(ir$Shore,1,3)=="Str", "Structure", ifelse(substr(ir$Shore, 1,3)=="Ter", "Terrestrial", "Non")))) 
-
-ap <- select(ap, -c(bStr, bSan, bMud, bveg, Shore)) %>% subset(!shore=="Non")
-ck <- select(ck, -c(bStr, bSan, bMud, bveg, Shore)) %>% subset(!shore=="Non")
-tb <- select(tb, -c(bStr, bSan, bMud, bveg, Shore)) %>% subset(!shore=="Non")
-ch <- select(ch, -c(bStr, bSan, bMud, bveg, Shore)) %>% subset(!shore=="Non")
-jx <- select(jx, -c(bStr, bSan, bMud, bveg, Shore)) %>% subset(!shore=="Non")
-ir <- select(ir, -c(bStr, bSan, bMud, bveg, Shore)) %>% subset(!shore=="Non")
-
-# Turn habitat variables into factors so they can be treated as categorical
-
-ap[,c(2,5:8)] <- lapply(ap[,c(2,5:8)], factor)
-ck[,c(2:3,5:7)] <- lapply(ck[,c(2:3, 5:7)], factor)
-tb[,c(2:3,5:7)] <- lapply(tb[,c(2:3, 5:7)], factor)
-ch[,c(2:3,5:7)] <- lapply(ch[,c(2:3, 5:7)], factor)
-jx[,c(2:3,5:7)] <- lapply(jx[,c(2:3, 5:7)], factor)
-ir[,c(2:3,5:7)] <- lapply(ir[,c(2:3, 5:7)], factor)
-
-##############################################
-# MAKE POSITIVE SET
-# to determine the total number of positive huals 
+###### MAKE POSITIVE & BINARY SET ##########
+# to determine the total number of positive huals and proportion positive
 ##############################################
 
-ap.pos <- ap %>% subset(number>0)
-ck.pos <- ck %>% subset(number>0)
-tb.pos <- tb %>% subset(number>0)
-ch.pos <- ch %>% subset(number>0)
-jx.pos <- jx %>% subset(number>0)
-ir.pos <- ir %>% subset(number>0)
+full.pos<- full %>% subset(number>0)
+full.bin <- full %>% mutate(number=ifelse(number>0,1,0))
 
-##############################################
-# MAKE BINARY SET
-##############################################
+ap.pos <- full.pos %>% subset(bay =='AP')
+ck.pos <- full.pos %>% subset(bay =='CK')
+tb.pos <- full.pos %>% subset(bay =='TB')
+ch.pos <- full.pos %>% subset(bay =='CH')
+jx.pos <- full.pos %>% subset(bay =='JX')
+ir.pos <- full.pos %>% subset(bay =='IR')
 
-ap.bin<- ap
-ap.bin$number <- ifelse(ap.bin$number>0,1,0)
+ap.bin <- full.bin %>% subset(bay =='AP')
+ck.bin <- full.bin %>% subset(bay =='CK')
+tb.bin <- full.bin %>% subset(bay =='TB')
+ch.bin <- full.bin %>% subset(bay =='CH')
+jx.bin <- full.bin %>% subset(bay =='JX')
+ir.bin <- full.bin %>% subset(bay =='IR')
 
-# VISUALIZE THE DATA
-###############################################
+##### VISUALIZE THE DATA ########
+################################
 
 #Plot the data
 
@@ -184,62 +155,87 @@ plot(ap.pos$year, ap.pos$number, vlab="year", ylab="number")
 plot(ap.pos$shore, ap.pos$number, vlab="shore", ylab="number")
 plot(ap.pos$veg, ap.pos$number, vlab="veg", ylab="number")
 
-
-
-##############################################
-# BUILD MODEL
+### BUILD MODELS #########
 # To produce predicted positive numbers and binomial data set
-##############################################
+#######################
 
 # 1. Build the full models with all potential variables and a base model with only year. 
 #    Do this for both the positive (Poisson distribution) and binary (Binomial distribution) datasets. 
 # 2. Check for overdispersion in the Poisson distribution scenario. 
 # 3. If there is overdispersion use quasipoisson 
-# 4. Use the drop1 function for model selection in the case of quasipoisson. Use the step command if just using Poisson
-# 5. Apply lsmeans function
+
 
 
 # 1. Build the full and base models for the positive and binomial datasets.  
 #AP
 Full_ap.pos <- glm(number ~ year+month+bottom+veg+shore, data=ap.pos, family=poisson)
-Base_ap.pos <- glm(number ~ year, data=ap.pos, family=poisson)
-
 Full_ap.bin <- glm(number ~ year+month+bottom+veg+shore, data=ap.bin, family=binomial)
-Base_ap.bin <- glm(number ~ year, data=ap.bin, family=binomial)
 
 #CK
 Full_ck.pos <- glm(number ~ year+month+bottom+veg+shore, data=ck.pos, family=poisson)
-Base_ck.pos <- glm(number ~ year, data=ck.pos, family=poisson)
-
 Full_ck.bin <- glm(number ~ year+month+bottom+veg+shore, data=ck.bin, family=binomial)
-Base_ck.bin <- glm(number ~ year, data=ck.bin, family=binomial)
 
 #TB
+Full_tb.pos <- glm(number ~ year+month+bottom+veg+shore, data=tb.pos, family=poisson)
+Full_tb.bin <- glm(number ~ year+month+bottom+veg+shore, data=tb.bin, family=binomial)
 
 #CH
+Full_ch.pos <- glm(number ~ year+month+bottom+veg+shore, data=ch.pos, family=poisson)
+Full_ch.bin <- glm(number ~ year+month+bottom+veg+shore, data=ch.bin, family=binomial)
 
+#JX
+Full_jx.pos <- glm(number ~ year+month+bottom+veg+shore, data=jx.pos, family=poisson)
+Full_jx.bin <- glm(number ~ year+month+bottom+veg+shore, data=jx.bin, family=binomial)
 
+#IR
+Full_ir.pos <- glm(number ~ year+month+bottom+veg+shore, data=ir.pos, family=poisson)
+Full_ir.bin <- glm(number ~ year+month+bottom+veg+shore, data=ir.bin, family=binomial)
 
+#2. Test the Poisson GLMs for overdispersion
+# With the Bernoulli GLM (binomial) overdispersion does not ever occur so I don't need to test for overdispersion in the .bin models. 
 
-
-
-#Test the Poisson GLMs for overdispersion
-library(AER)
 dispersiontest(Base_ap.pos,trafo=1)
 dispersiontest(Full_ap.pos, trafo=1)
+dispersiontest(Base_ck.pos,trafo=1)
+dispersiontest(Full_ck.pos, trafo=1)
+dispersiontest(Base_tb.pos,trafo=1)
+dispersiontest(Full_tb.pos, trafo=1)
+dispersiontest(Base_ch.pos,trafo=1)
+dispersiontest(Full_ch.pos, trafo=1)
+dispersiontest(Base_jx.pos,trafo=1)
+dispersiontest(Full_jx.pos, trafo=1)
+dispersiontest(Base_ir.pos,trafo=1)
+dispersiontest(Full_ir.pos, trafo=1)
 
-
-
-#there is evidence of overdispersion in both models so use quasipoisson for all remaining models (Zuur pg 226)
+# 3. there is evidence of overdispersion for every bay so use quasipoisson for all Positive models (Zuur pg 226)
 
 M_full_ap.pos <- glm(number ~ year +month+veg+bottom+shore, data=ap.pos, family=quasipoisson)
 M_base_ap.pos <- glm(number ~ year, data=ap.pos, family=quasipoisson)
 
-#the AIC is notdefined for quasipoisson models so can't use the step function like what was used in the FWRI code. 
-# Instead, use the drop1 function which is applicable for the quassiPoisson GLM (Zuur pg 227)
+M_full_ck.pos <- glm(number ~ year +month+veg+bottom+shore, data=ck.pos, family=quasipoisson)
+M_base_ck.pos <- glm(number ~ year, data=ck.pos, family=quasipoisson)
 
-# MODEL SELECTION
+M_full_tb.pos <- glm(number ~ year +month+veg+bottom+shore, data=tb.pos, family=quasipoisson)
+M_base_tb.pos <- glm(number ~ year, data=tb.pos, family=quasipoisson)
 
+M_full_ch.pos <- glm(number ~ year +month+veg+bottom+shore, data=ch.pos, family=quasipoisson)
+M_base_ch.pos <- glm(number ~ year, data=ch.pos, family=quasipoisson)
+
+M_full_jx.pos <- glm(number ~ year +month+veg+bottom+shore, data=jx.pos, family=quasipoisson)
+M_base_jx.pos <- glm(number ~ year, data=jx.pos, family=quasipoisson)
+
+M_full_ir.pos <- glm(number ~ year +month+veg+bottom+shore, data=ir.pos, family=quasipoisson)
+M_base_ir.pos <- glm(number ~ year, data=ir.pos, family=quasipoisson)
+
+## MODEL SELECTION w/ DROP1 command ######
+################################
+
+# The AIC is not defined for quasipoisson models so can't use the step function like what was used in the FWRI code. 
+# Instead, use the drop1 function which is applicable for the quassiPoisson GLM and it is more equivalent to hypothesis testing. (Zuur pg 227)
+# If just using Poisson or Bernoulli (binomial) can use step command but this gives AIC- not deviance. (Zuur pg 253)
+# Explained deviance is nearly the equivalent of R^2 so use this (Zuur pg 218 for equation)
+
+#AP_POS
 drop1(M_full_ap.pos, test="F")
 #The only questionable variables might be 'bottom' and 'month'. With the full model the deviance is 3044.9. 
 #If we drop month or bottom the deviance only moves to 3067.9 and it appears that the Pr(>F) value is 0.069823 and 0.06999 for bottom and month, respectively 
@@ -253,10 +249,22 @@ M2_ap.pos <- glm(number ~ year+veg+shore, data=ap.pos, family=quasipoisson)
 drop1(M2_ap.pos, test='F')
 #Year, veg, and shore are all significant so I can stop now with model selection. 
 
-#Assign the final model. 
-glm.final.pos = M2 
+# AP_BIN
+drop1(M)
 
-#################################
+### ASSIGN FINAL MODELS ###### 
+###############################
+final_ap.pos = M2_ap.pos 
+final_ck.pos = 
+final_tb.pos =
+final_ch.pos=
+final_jx.pos =
+final_ir.pos = 
+  
+
+
+
+### DETERMINE LEAST SQUARE MEANS ###########
 # DETERMINE LEAST SQUARE MEANS 
 #################################
 
