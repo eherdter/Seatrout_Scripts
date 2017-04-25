@@ -164,9 +164,7 @@ plot(ap.pos$veg, ap.pos$number, vlab="veg", ylab="number")
 # 2. Check for overdispersion in the Poisson distribution scenario. 
 # 3. If there is overdispersion use quasipoisson 
 
-
-
-# 1. Build the full and base models for the positive and binomial datasets.  
+# 1. Build the full models for the positive and binomial datasets.  
 #AP
 Full_ap.pos <- glm(number ~ year+month+bottom+veg+shore, data=ap.pos, family=poisson)
 Full_ap.bin <- glm(number ~ year+month+bottom+veg+shore, data=ap.bin, family=binomial)
@@ -192,76 +190,193 @@ Full_ir.pos <- glm(number ~ year+month+bottom+veg+shore, data=ir.pos, family=poi
 Full_ir.bin <- glm(number ~ year+month+bottom+veg+shore, data=ir.bin, family=binomial)
 
 #2. Test the Poisson GLMs for overdispersion
-# With the Bernoulli GLM (binomial) overdispersion does not ever occur so I don't need to test for overdispersion in the .bin models. 
-
-dispersiontest(Base_ap.pos,trafo=1)
+# With the Bernoulli GLM (binomial, response variable is a vector of zeros and ones) overdispersion does not ever occur (Zuur og 253) so I don't need to test for overdispersion in the .bin models. 
 dispersiontest(Full_ap.pos, trafo=1)
-dispersiontest(Base_ck.pos,trafo=1)
 dispersiontest(Full_ck.pos, trafo=1)
-dispersiontest(Base_tb.pos,trafo=1)
 dispersiontest(Full_tb.pos, trafo=1)
-dispersiontest(Base_ch.pos,trafo=1)
 dispersiontest(Full_ch.pos, trafo=1)
-dispersiontest(Base_jx.pos,trafo=1)
 dispersiontest(Full_jx.pos, trafo=1)
-dispersiontest(Base_ir.pos,trafo=1)
 dispersiontest(Full_ir.pos, trafo=1)
 
-# 3. there is evidence of overdispersion for every bay so use quasipoisson for all Positive models (Zuur pg 226)
+# 3. there is evidence of overdispersion for every bay so use quasipoisson for Positive models (Zuur pg 226)
+Full_ap.pos <- glm(number ~ year +month+veg+bottom+shore, data=ap.pos, family=quasipoisson)
+Full_ck.pos <- glm(number ~ year +month+veg+bottom+shore, data=ck.pos, family=quasipoisson)
+Full_tb.pos <- glm(number ~ year +month+veg+bottom+shore, data=tb.pos, family=quasipoisson)
+Full_ch.pos <- glm(number ~ year +month+veg+bottom+shore, data=ch.pos, family=quasipoisson)
+Full_jx.pos <- glm(number ~ year +month+veg+bottom+shore, data=jx.pos, family=quasipoisson)
+Full_ir.pos <- glm(number ~ year +month+veg+bottom+shore, data=ir.pos, family=quasipoisson)
 
-M_full_ap.pos <- glm(number ~ year +month+veg+bottom+shore, data=ap.pos, family=quasipoisson)
-M_base_ap.pos <- glm(number ~ year, data=ap.pos, family=quasipoisson)
-
-M_full_ck.pos <- glm(number ~ year +month+veg+bottom+shore, data=ck.pos, family=quasipoisson)
-M_base_ck.pos <- glm(number ~ year, data=ck.pos, family=quasipoisson)
-
-M_full_tb.pos <- glm(number ~ year +month+veg+bottom+shore, data=tb.pos, family=quasipoisson)
-M_base_tb.pos <- glm(number ~ year, data=tb.pos, family=quasipoisson)
-
-M_full_ch.pos <- glm(number ~ year +month+veg+bottom+shore, data=ch.pos, family=quasipoisson)
-M_base_ch.pos <- glm(number ~ year, data=ch.pos, family=quasipoisson)
-
-M_full_jx.pos <- glm(number ~ year +month+veg+bottom+shore, data=jx.pos, family=quasipoisson)
-M_base_jx.pos <- glm(number ~ year, data=jx.pos, family=quasipoisson)
-
-M_full_ir.pos <- glm(number ~ year +month+veg+bottom+shore, data=ir.pos, family=quasipoisson)
-M_base_ir.pos <- glm(number ~ year, data=ir.pos, family=quasipoisson)
-
-## MODEL SELECTION w/ DROP1 command ######
+## MODEL SELECTION POSITIVE w/ DROP1 command ######
 ################################
-
+# Pages 220 is to 230 in Zuur are helpful for following methods. 
 # The AIC is not defined for quasipoisson models so can't use the step function like what was used in the FWRI code. 
 # Instead, use the drop1 function which is applicable for the quassiPoisson GLM and it is more equivalent to hypothesis testing. (Zuur pg 227)
 # If just using Poisson or Bernoulli (binomial) can use step command but this gives AIC- not deviance. (Zuur pg 253)
-# Explained deviance is nearly the equivalent of R^2 so use this (Zuur pg 218 for equation)
+# Explained deviance is nearly the equivalent of R^2 so use this (Zuur pg 218 for equation), "The smaller the residual deviance the better is the model"
 
-#AP_POS
-drop1(M_full_ap.pos, test="F")
-#The only questionable variables might be 'bottom' and 'month'. With the full model the deviance is 3044.9. 
-#If we drop month or bottom the deviance only moves to 3067.9 and it appears that the Pr(>F) value is 0.069823 and 0.06999 for bottom and month, respectively 
-#Let's try to drop 'month' and see if it results in a smaller deviance
+###AP_POS (Year, Veg, Shore = significant factors)
+summary(Full_ap.pos)
+drop1(Full_ap.pos, test="F")  #model selection in quasipoisson is done using F-ratio (Zuur pg 227)
+# bottom and month do not appear significant. Drop all sequentially. 
 
+# drop month
 M1_ap.pos <- glm(number ~ year+veg+bottom+shore, data=ap.pos, family=quasipoisson)
 drop1(M1_ap.pos, test="F")
-#Now the p value for bottom increases to 0.07. Lets drop the 'bottom' variable 
 
+# drop month, bottom
 M2_ap.pos <- glm(number ~ year+veg+shore, data=ap.pos, family=quasipoisson)
-drop1(M2_ap.pos, test='F')
-#Year, veg, and shore are all significant so I can stop now with model selection. 
+drop1(M2_ap.pos, test="F")
+# Year, Veg, Shore = significant factors
 
-# AP_BIN
-drop1(M)
+### CK_POS (Year, Veg = significant factor)
+summary(Full_ck.pos)
+drop1(Full_ck.pos, test="F")
+#month, bottom, and shore do not appear significant. Drop all sequentially. 
+
+#drop month
+M1_ck.pos <- glm(number ~ year+veg+bottom+shore, data=ck.pos, family=quasipoisson)
+drop1(M1_ck.pos, test="F")
+
+#drop month, bottom
+M2_ck.pos <- glm(number ~ year+veg+shore, data=ck.pos, family=quasipoisson)
+drop1(M2_ck.pos, test="F")
+
+#drop month, bottom, and shore
+M3_ck.pos <- glm(number ~ year+veg, data=ck.pos, family=quasipoisson)
+drop1(M3_ck.pos, test="F")
+# Year, Veg = significant factors 
+
+### TB_POS (Year, Veg, Shore = significant factors)
+summary(Full_tb.pos)
+drop1(Full_tb.pos, test="F")
+# bottom and month do not appear significant. Drop all sequentially
+
+# drop month
+M1_tb.pos <- glm(number ~ year+veg+bottom+shore, data=tb.pos, family=quasipoisson)
+drop1(M1_tb.pos, test="F")
+
+# drop month, bottom
+M2_tb.pos <- glm(number ~ year+veg+shore, data=tb.pos, family=quasipoisson)
+drop1(M2_tb.pos, test="F")
+# Year, Veg, Shore = significant factors
+
+### CH_POS (Year, Month, Veg, Bottom, Shore =significnat factors )
+summary(Full_ch.pos)
+drop1(Full_ch.pos, test="F")
+# Year, Month, Veg, Bottom, Shore =significnat factors 
+
+### JX_POS (Year, Veg, Shore = significant factors)
+summary(Full_jx.pos)
+drop1(Full_jx.pos, test="F")
+# bottom and month do not appear significant. Drop all sequentially
+
+#drop month
+M1_jx.pos <- glm(number ~ year+veg+bottom+shore, data=jx.pos, family=quasipoisson)
+drop1(M1_jx.pos, test="F")
+
+#drop month, bottom
+M2_jx.pos <- glm(number ~ year+veg+shore, data=jx.pos, family=quasipoisson)
+drop1(M2_jx.pos, test="F")
+# Year, Veg, Shore = significant factors
+
+### IR_POS (Year, Veg, Bottom = significant factors)
+summary(Full_ir.pos)
+drop1(Full_ir.pos, test="F")
+#month and shore do not appear significant. Drop them all. 
+
+# drop month
+M1_ir.pos <- glm(number ~ year+veg+bottom+shore, data=ir.pos, family=quasipoisson)
+drop1(M1_ir.pos, test="F")
+
+# drop shore
+M2_ir.pos <- glm(number ~ year+veg+bottom, data=ir.pos, family=quasipoisson)
+drop1(M2_ir.pos, test="F")
+# Year, Veg, Bottom = significant factors
+
+## MODEL SELECTION BINARY w/ DROP1 command ######
+################################
+# pg 253 Zuur
+##  AP_BIN (Year, Veg = significant)
+summary(Full_ap.bin)
+drop1(Full_ap.bin, test ='Chi')
+# month, bottom, and shore are not significant so drop them one at a time
+
+#drop month
+M1_ap.bin <- glm(number ~ year+bottom+veg+shore, data=ap.bin, family=binomial)
+drop1(M1_ap.bin, test ="Chi")
+
+#drop month, bottom
+M2_ap.bin <- glm(number ~ year+veg+shore, data=ap.bin, family=binomial)
+drop1(M2_ap.bin, test ="Chi")
+
+#drop month, bottom, shore
+M3_ap.bin <- glm(number ~ year+veg, data=ap.bin, family=binomial)
+drop1(M3_ap.bin, test ="Chi")
+# Year, Veg = significant
+
+## CK_BIN (Year, Month, Veg, Shore = significant)
+summary(Full_ck.bin)
+drop1(Full_ck.bin, test ='Chi')
+# bottom is not signficiant
+
+#drop bottom 
+M1_ck.bin <- glm(number ~ year+month+veg+shore, data=ck.bin, family=binomial)
+drop1(M1_ck.bin, test ="Chi")
+
+
+## TB_BIN (Year, Month, Veg, Shore = significant)
+summary(Full_tb.bin)
+drop1(Full_tb.bin, test ='Chi')
+# bottom is not signficiant
+
+#drop bottom 
+M1_tb.bin <- glm(number ~ year+month+veg+shore, data=tb.bin, family=binomial)
+drop1(M1_tb.bin, test ="Chi")
+
+##  CH_BIN (Year, Month, Veg, Shore = significant)
+summary(Full_ch.bin)
+drop1(Full_ch.bin, test ='Chi')
+# bottom is not signficiant
+
+#drop bottom 
+M1_ch.bin <- glm(number ~ year+month+veg+shore, data=ch.bin, family=binomial)
+drop1(M1_ch.bin, test ="Chi")
+
+## JX_BIN (Year, Bottom, Veg, Shore =signficant)
+summary(Full_jx.bin)
+drop1(Full_jx.bin, test ='Chi')
+# month is not signficiant
+
+#drop month 
+M1_jx.bin <- glm(number ~ year+bottom+veg+shore, data=jx.bin, family=binomial)
+drop1(M1_jx.bin, test ="Chi")
+# Year, Bottom, Veg, Shore = significant
+
+## IR_BIN (Year, Month, Veg, Shore = significant)
+summary(Full_ir.bin)
+drop1(Full_ir.bin, test ='Chi')
+# bottom is not signficiant
+
+#drop bottom 
+M1_ir.bin <- glm(number ~ year+month+veg+shore, data=ir.bin, family=binomial)
+drop1(M1_ir.bin, test ="Chi")
+
 
 ### ASSIGN FINAL MODELS ###### 
 ###############################
 final_ap.pos = M2_ap.pos 
-final_ck.pos = 
-final_tb.pos =
-final_ch.pos=
-final_jx.pos =
-final_ir.pos = 
-  
+final_ck.pos = M3_ck.pos
+final_tb.pos = M2_tb.pos
+final_ch.pos= Full_ch.pos
+final_jx.pos = M2_jx.pos
+final_ir.pos = M2_ir.pos
 
+final_ap.bin = M3_ap.bin
+final_ck.bin = M1_ck.bin
+final_tb.bin = M1_tb.bin
+final_ch.bin = M1_ch.bin
+final_jx_bin = M1_jx.bin
+final_ir.bin = M1_ir.bin
 
 
 ### DETERMINE LEAST SQUARE MEANS ###########
