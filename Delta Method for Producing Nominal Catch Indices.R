@@ -413,62 +413,31 @@ LSM_jx.bin <- summary(lsmeans(final_jx.bin, 'year', data=jx.bin), type="response
 LSM_ir.bin <- summary(lsmeans(final_ir.bin, 'year', data=ir.bin), type="response")
 
 
-### ERROR PROPAGATION (pos * prop.pos) TO FIND FINAL VALUE (pos * prop.pos) #####
+### ERROR PROPAGATION TO FIND FINAL VALUE (pos * prop.pos) #####
 # multiply positive lsmean by porportion positive lsmean and use error propagation to determine value and associated error
-# using the package Propagate. This requires a matrix of mean values and their associated standard deviations. 
-# Since lsmeans function produces only SE I will need to convert this to SD before using the Propagate function. 
+# using the package Propagate. See example below. 
+# https://www.rdocumentation.org/packages/propagate/versions/1.0-4/topics/propagate    
+
+#Must use a for loop to do the error propagation because it goes one row at a time. 
+
+num.yr = length(LSM_ap.pos$year)  
+df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
+
+for (i in 1:num.yr) {
+  x = c(LSM_ap.pos$rate[i], LSM_ap.pos$SE[i])
+  y= c(LSM_ap.bin$prob[i], LSM_ap.bin$SE[i])
+  EXPR <- expression(x*y)
+  DF <- cbind(x,y)
+  RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
+  df[i,] <- t(matrix(RES$sim))
+}
+
+Mean_AP <- df %>% cbind(LSM_ap.pos$year)
 
 
-
-unc= (10.424299*0.36119080) * sqrt(((4.276363/10.424299)^2)+ (0.08023119/0.36119080))
-
+colnames(Mean_AP) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
 
 
-
-
-LSmeans(final_ap.pos, "year", data=ap.pos)
-
-testmodel <- bayesglm(number ~ year+veg+shore, data=ap.pos, family=quasipoisson)
-summary(testmodel)
-
-
-number <- ap.pos$number
-year <- ap.pos$year
-veg <- ap.pos$veg
-shore <- ap.pos$shore
-
-M2_ap.pos <- glm(number ~ year+veg+shore, data=ap.pos, family=quasipoisson)
-
-posterior <- MCMCpoisson(number ~ year+veg+shore, mcmc=1000)
-post.lsm <- summary(lsmeans(posterior, "year"), type="response")
-summary(as.mcmc(post.lsm))
-
-library(coda)
-
-summary(as.mcmc(lsmeans(final_ap.bin, "year", data=ap.bin)))
-LSM_AP <- as.data.frame(cbind(years, LSM_ap.pos$rate * LSM_ap.bin$prob))
-LSM_CK <- LSM_ck.pos$rate * LSM_ck.bin$prob
-LSM_TB <- LSM_tb.pos$rate * LSM_tb.bin$prob
-LSM_CH <- LSM_ch.pos$rate * LSM_ch.bin$prob
-LSM_JX <- LSM_jx.pos$rate * LSM_jx.bin$prob
-LSM_IR <- LSM_ir.pos$rate * LSM_ir.bin$prob
-
-#need to account
-
-EXPR1 <- expression(x/y)
-x= c(5, 0.01)
-y= c(1, 0.01)
-DF1 <- cbind(x,y)
-library(propagate)
-RES1 <- propagate(expr=EXPR1, data=DF1, type='stat', do.sim=TRUE, verbose=TRUE)
-
-
-
-EXPR1 <- expression(x*y)
-x = c(LSM_ap.pos$rate[1], LSM_ap.pos$SE[1])
-y= c(LSM_ap.bin$prob[1], LSM_ap.bin$SE[1])
-DF1 <- cbind(x,y)
-RES1 <- propagate(expr=EXPR1, data=DF1, type='stat', do.sim=TRUE, verbose=TRUE)
 
 
 #ap.pos<- ap %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
