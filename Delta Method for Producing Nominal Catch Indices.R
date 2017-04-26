@@ -5,6 +5,7 @@
 # 2. Use Delta Method to produce adult indices using predicted positive and proportion positive data sets
 # 3. Fit SR relationships to yoy and adult indices to produce the residuals of Beverton Holt and Ricker
 #test
+#test4_26
 #newchange
 #Delta Method
 # This method uses the Delta method for determining the nominal catch rate of Spotted Seatrout in the FIM catch
