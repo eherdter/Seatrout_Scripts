@@ -4,7 +4,7 @@
 # 1. Use Delta Method to produce YOY indices using predicted positive and proportion positive data sets
 # 2. Use Delta Method to produce adult indices using predicted positive and proportion positive data sets
 # 3. Fit SR relationships to yoy and adult indices to produce the residuals of Beverton Holt and Ricker
-
+#test
 #Delta Method
 # This method uses the Delta method for determining the nominal catch rate of Spotted Seatrout in the FIM catch
 # Uses methods described in Chyan-huei et al 1992
@@ -412,7 +412,6 @@ LSM_ch.bin <- summary(lsmeans(final_ch.bin, 'year', data=ch.bin), type="response
 LSM_jx.bin <- summary(lsmeans(final_jx.bin, 'year', data=jx.bin), type="response")
 LSM_ir.bin <- summary(lsmeans(final_ir.bin, 'year', data=ir.bin), type="response")
 
-
 ### ERROR PROPAGATION TO FIND FINAL VALUE (pos * prop.pos) #####
 # multiply positive lsmean by porportion positive lsmean and use error propagation to determine value and associated error
 # using the package Propagate. See example below. 
@@ -420,9 +419,9 @@ LSM_ir.bin <- summary(lsmeans(final_ir.bin, 'year', data=ir.bin), type="response
 
 #Must use a for loop to do the error propagation because it goes one row at a time. 
 
+#AP
 num.yr = length(LSM_ap.pos$year)  
 df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
-
 for (i in 1:num.yr) {
   x = c(LSM_ap.pos$rate[i], LSM_ap.pos$SE[i])
   y= c(LSM_ap.bin$prob[i], LSM_ap.bin$SE[i])
@@ -431,184 +430,85 @@ for (i in 1:num.yr) {
   RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
   df[i,] <- t(matrix(RES$sim))
 }
-
 Mean_AP <- df %>% cbind(LSM_ap.pos$year)
-
-
 colnames(Mean_AP) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+write.csv(Mean_AP, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/AP_yoy_index.csv")
+
+#CK
+num.yr = length(LSM_ck.pos$year)  
+df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  x = c(LSM_ck.pos$rate[i], LSM_ck.pos$SE[i])
+  y= c(LSM_ck.bin$prob[i], LSM_ck.bin$SE[i])
+  EXPR <- expression(x*y)
+  DF <- cbind(x,y)
+  RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
+  df[i,] <- t(matrix(RES$sim))
+}
+Mean_CK <- df %>% cbind(LSM_ck.pos$year)
+colnames(Mean_CK) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+
+#TB
+num.yr = length(LSM_tb.pos$year)  
+df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  x = c(LSM_tb.pos$rate[i], LSM_tb.pos$SE[i])
+  y= c(LSM_tb.bin$prob[i], LSM_tb.bin$SE[i])
+  EXPR <- expression(x*y)
+  DF <- cbind(x,y)
+  RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
+  df[i,] <- t(matrix(RES$sim))
+}
+Mean_TB <- df %>% cbind(LSM_tb.pos$year)
+colnames(Mean_TB) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+
+#CH
+num.yr = length(LSM_ch.pos$year)  
+df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  x = c(LSM_ch.pos$rate[i], LSM_ch.pos$SE[i])
+  y= c(LSM_ch.bin$prob[i], LSM_ch.bin$SE[i])
+  EXPR <- expression(x*y)
+  DF <- cbind(x,y)
+  RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
+  df[i,] <- t(matrix(RES$sim))
+}
+Mean_CH <- df %>% cbind(LSM_ch.pos$year)
+colnames(Mean_CH) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+
+#JX
+num.yr = length(LSM_jx.pos$year)  
+df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  x = c(LSM_jx.pos$rate[i], LSM_jx.pos$SE[i])
+  y= c(LSM_jx.bin$prob[i], LSM_jx.bin$SE[i])
+  EXPR <- expression(x*y)
+  DF <- cbind(x,y)
+  RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
+  df[i,] <- t(matrix(RES$sim))
+}
+Mean_JX <- df %>% cbind(LSM_jx.pos$year)
+colnames(Mean_JX) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+
+#IR
+num.yr = length(LSM_ir.pos$year)  
+df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  x = c(LSM_ir.pos$rate[i], LSM_ir.pos$SE[i])
+  y= c(LSM_ir.bin$prob[i], LSM_ir.bin$SE[i])
+  EXPR <- expression(x*y)
+  DF <- cbind(x,y)
+  RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
+  df[i,] <- t(matrix(RES$sim))
+}
+Mean_IR <- df %>% cbind(LSM_ir.pos$year)
+colnames(Mean_IR) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
 
 
-
-
-#ap.pos<- ap %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
-#mutate(positive = TotalNumberOfSeatroutInPosHauls/totalnumberpositivehauls)
-
-#apr.pos <- apr %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
-#mutate(positive = TotalNumberOfSeatroutInPosHauls/totalnumberpositivehauls)
-
-ap_all.pos <- ap %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
-  mutate(positive = TotalNumberOfSeatroutInPosHauls/totalnumberpositivehauls)
-
-
-# apr.pos doesnt have any positives for 2003, 2005 or 2013 which causes a problem when trying to make the indices because the years are of unequal length
-
-#ck.pos<- ck %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
-#mutate(positive = TotalNumberOfSeatroutInPosHauls/totalnumberpositivehauls)
-
-#ckr.pos<- ckr %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
-#mutate(positive = TotalNumberOfSeatroutInPosHauls/totalnumberpositivehauls)
-
-ck_all.pos<- ck %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
-  mutate(positive = TotalNumberOfSeatroutInPosHauls/totalnumberpositivehauls)
-
-#ch.pos<- ch %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
-#mutate(positive = TotalNumberOfSeatroutInPosHauls/totalnumberpositivehauls)
-
-#chr.pos<- chr %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
-#mutate(positive = TotalNumberOfSeatroutInPosHauls/totalnumberpositivehauls)
-
-ch_all.pos<- ch %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
-  mutate(positive = TotalNumberOfSeatroutInPosHauls/totalnumberpositivehauls)
-
-#tb.pos<- tb %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
-#mutate(positive = TotalNumberOfSeatroutInPosHauls/totalnumberpositivehauls)
-
-#tbr.pos<- tbr %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
-#mutate(positive = TotalNumberOfSeatroutInPosHauls/totalnumberpositivehauls)
-
-tb_all.pos <-  tb %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
-  mutate(positive = TotalNumberOfSeatroutInPosHauls/totalnumberpositivehauls)
-
-
-#ir.pos<- ir %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
-#mutate(positive = TotalNumberOfSeatroutInPosHauls/totalnumberpositivehauls)
-# missing positive years of data for 98,99,00,01,03,14,15
-
-#irb.pos<- irb %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
-#mutate(positive = TotalNumberOfSeatroutInPosHauls/totalnumberpositivehauls)
-
-ir_all.pos <-  ir %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
-  mutate(positive = TotalNumberOfSeatroutInPosHauls/totalnumberpositivehauls)
-
-
-jx_all.pos<- jx %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
-  mutate(positive = TotalNumberOfSeatroutInPosHauls/totalnumberpositivehauls)
-
-#########################################################
-# Make Bionomial set for Identifying Positive/Zeros Hauls
-#########################################################
-
-# ap.bin = ap %>% mutate(HaulCategory= ifelse(ap$number>0,1,0)) %>% group_by(year) %>%
-#           summarize(TotalPosHauls= sum(HaulCategory), TotalHauls = length(unique(bio_reference))) %>%
-#           mutate(ProportionPositive = TotalPosHauls/TotalHauls)
-
-# apr.bin = apr %>% mutate(HaulCategory= ifelse(apr$number>0,1,0)) %>% group_by(year) %>%
-#           summarize(TotalPosHauls= sum(HaulCategory), TotalHauls = length(unique(bio_reference))) %>%
-#           mutate(ProportionPositive = TotalPosHauls/TotalHauls)
-
-
-ap_all.bin = ap %>% mutate(HaulCategory= ifelse(ap$number>0,1,0)) %>% group_by(year) %>% 
-  summarize(TotalPosHauls= sum(HaulCategory), TotalHauls = length(unique(bio_reference))) %>%
-  mutate(ProportionPositive = TotalPosHauls/TotalHauls)
-
-# ck.bin = ck %>% mutate(HaulCategory= ifelse(ck$number>0,1,0)) %>% group_by(year) %>% 
-#         summarize(TotalPosHauls= sum(HaulCategory), TotalHauls = length(unique(bio_reference))) %>%
-#         mutate(ProportionPositive = TotalPosHauls/TotalHauls)
-# 
-# ckr.bin = ckr %>% mutate(HaulCategory= ifelse(ckr$number>0,1,0)) %>% group_by(year) %>% 
-#         summarize(TotalPosHauls= sum(HaulCategory), TotalHauls = length(unique(bio_reference))) %>%
-#         mutate(ProportionPositive = TotalPosHauls/TotalHauls)
-
-ck_all.bin <- ck %>% mutate(HaulCategory= ifelse(ck$number>0,1,0)) %>% group_by(year) %>% 
-  summarize(TotalPosHauls= sum(HaulCategory), TotalHauls = length(unique(bio_reference))) %>%
-  mutate(ProportionPositive = TotalPosHauls/TotalHauls)
-
-
-# tb.bin = tb %>% mutate(HaulCategory= ifelse(tb$number>0,1,0)) %>% group_by(year) %>% 
-#         summarize(TotalPosHauls= sum(HaulCategory), TotalHauls = length(unique(bio_reference))) %>%
-#         mutate(ProportionPositive = TotalPosHauls/TotalHauls)
-# 
-# tbr.bin = tbr %>% mutate(HaulCategory= ifelse(tbr$number>0,1,0)) %>% group_by(year) %>% 
-#         summarize(TotalPosHauls= sum(HaulCategory), TotalHauls = length(unique(bio_reference))) %>%
-#         mutate(ProportionPositive = TotalPosHauls/TotalHauls)
-
-tb_all.bin <- tb %>% mutate(HaulCategory= ifelse(tb$number>0,1,0)) %>% group_by(year) %>% 
-  summarize(TotalPosHauls= sum(HaulCategory), TotalHauls = length(unique(bio_reference))) %>%
-  mutate(ProportionPositive = TotalPosHauls/TotalHauls)
-
-# ch.bin = ch %>% mutate(HaulCategory= ifelse(ch$number>0,1,0)) %>% group_by(year) %>% 
-#         summarize(TotalPosHauls= sum(HaulCategory), TotalHauls = length(unique(bio_reference))) %>%
-#         mutate(ProportionPositive = TotalPosHauls/TotalHauls)
-# 
-# chr.bin = chr %>% mutate(HaulCategory= ifelse(chr$number>0,1,0)) %>% group_by(year) %>% 
-#         summarize(TotalPosHauls= sum(HaulCategory), TotalHauls = length(unique(bio_reference))) %>%
-#         mutate(ProportionPositive = TotalPosHauls/TotalHauls)
-
-ch_all.bin <- ch %>% mutate(HaulCategory= ifelse(ch$number>0,1,0)) %>% group_by(year) %>% 
-  summarize(TotalPosHauls= sum(HaulCategory), TotalHauls = length(unique(bio_reference))) %>%
-  mutate(ProportionPositive = TotalPosHauls/TotalHauls)
-
-# ir.bin = ir %>% mutate(HaulCategory= ifelse(ir$number>0,1,0)) %>% group_by(year) %>% 
-#           summarize(TotalPosHauls= sum(HaulCategory), TotalHauls = length(unique(bio_reference))) %>%
-#           mutate(ProportionPositive = TotalPosHauls/TotalHauls)
-# 
-# irb.bin = irb %>% mutate(HaulCategory= ifelse(irb$number>0,1,0)) %>% group_by(year) %>% 
-#   summarize(TotalPosHauls= sum(HaulCategory), TotalHauls = length(unique(bio_reference))) %>%
-#   mutate(ProportionPositive = TotalPosHauls/TotalHauls)
-
-ir_all.bin <- ir %>% mutate(HaulCategory= ifelse(ir$number>0,1,0)) %>% group_by(year) %>% 
-  summarize(TotalPosHauls= sum(HaulCategory), TotalHauls = length(unique(bio_reference))) %>%
-  mutate(ProportionPositive = TotalPosHauls/TotalHauls)
-
-# jx.bin = jx %>% mutate(HaulCategory= ifelse(jx$number>0,1,0)) %>% group_by(year) %>% 
-#           summarize(TotalPosHauls= sum(HaulCategory), TotalHauls = length(unique(bio_reference))) %>%
-#            mutate(ProportionPositive = TotalPosHauls/TotalHauls)
-
-jx_all.bin <- jx %>% mutate(HaulCategory= ifelse(jx$number>0,1,0)) %>% group_by(year) %>% 
-  summarize(TotalPosHauls= sum(HaulCategory), TotalHauls = length(unique(bio_reference))) %>%
-  mutate(ProportionPositive = TotalPosHauls/TotalHauls)
-
-############################
-# Produce Adjusted Indices 
-############################
-
-AP <- cbind(ap_all.bin$year, ap_all.pos$totalnumberpositivehauls, ap_all.pos$TotalNumberOfSeatroutInPosHauls, ap_all.bin$TotalHauls, data.frame(ap_all.pos$positive*ap_all.bin$ProportionPositive)) 
-names(AP) <- c('year','Pos_Hauls', 'Tot_C.Neb_in_Pos', 'All_Hauls', 'index')
 write.csv(AP, "~/Desktop/Github Repo/Seatrout/Data/Indices/DeltaMethod Indices/AP_yoy_index.csv")
 
-#APR <- cbind(apr.bin$year, data.frame(apr_sum$positive*apr.bin$ProportionPositive)) 
-#names(APR) <- c('year', 'index')
 
-CH <- cbind(ch_all.bin$year, ch_all.pos$totalnumberpositivehauls,ch_all.pos$TotalNumberOfSeatroutInPosHauls, ch_all.bin$TotalHauls, data.frame(ch_all.pos$positive*ch_all.bin$ProportionPositive))
-#CHR <- cbind(chr.bin$year, data.frame(chr.pos$positive*chr.bin$ProportionPositive))
-names(CH) <-  c('year','Pos_Hauls', 'Tot_C.Neb_in_Pos', 'All_Hauls', 'index')
-write.csv(CH,"~/Desktop/Github Repo/Seatrout/Data/Indices/DeltaMethod Indices/CH_yoy_index.csv" )
-
-CK <- cbind(ck_all.bin$year, ck_all.pos$totalnumberpositivehauls,ck_all.pos$TotalNumberOfSeatroutInPosHauls, ck_all.bin$TotalHauls, data.frame(ck_all.pos$positive*ck_all.bin$ProportionPositive))
-#CKR <- cbind(ckr.bin$year, data.frame(ckr.pos$positive*ckr.bin$ProportionPositive))
-names(CK) <- c('year','Pos_Hauls', 'Tot_C.Neb_in_Pos', 'All_Hauls', 'index')
-write.csv(CK,"~/Desktop/Github Repo/Seatrout/Data/Indices/DeltaMethod Indices/CK_yoy_index.csv" )
-
-
-TB <- cbind(tb_all.bin$year, tb_all.pos$totalnumberpositivehauls,tb_all.pos$TotalNumberOfSeatroutInPosHauls, tb_all.bin$TotalHauls, data.frame(tb_all.pos$positive*tb_all.bin$ProportionPositive))
-#TBR <- cbind(tbr.bin$year, data.frame(tbr.pos$positive*tbr.bin$ProportionPositive))
-names(TB) <- c('year','Pos_Hauls', 'Tot_C.Neb_in_Pos', 'All_Hauls', 'index')
-write.csv(TB,"~/Desktop/Github Repo/Seatrout/Data/Indices/DeltaMethod Indices/TB_yoy_index.csv" )
-
-
-IR <- cbind(ir_all.bin$year, ir_all.pos$totalnumberpositivehauls,ir_all.pos$TotalNumberOfSeatroutInPosHauls, ir_all.bin$TotalHauls, data.frame(ir_all.pos$positive*ir_all.bin$ProportionPositive))
-#IR <- cbind(ir.bin$year, data.frame(ir.pos$positive*ir.bin$ProportionPositive))
-names(IR) <- c('year','Pos_Hauls', 'Tot_C.Neb_in_Pos', 'All_Hauls', 'index')
-write.csv(IR,"~/Desktop/Github Repo/Seatrout/Data/Indices/DeltaMethod Indices/IR_yoy_index.csv" )
-
-
-JX <- cbind(jx_all.bin$year, jx_all.pos$totalnumberpositivehauls,jx_all.pos$TotalNumberOfSeatroutInPosHauls, jx_all.bin$TotalHauls, data.frame(jx_all.pos$positive*jx_all.bin$ProportionPositive))
-#JXB <- cbind(jxb.bin$year, data.frame(jxb.pos$positive*jxb.bin$ProportionPositive))
-names(JX) <- c('year','Pos_Hauls', 'Tot_C.Neb_in_Pos', 'All_Hauls', 'index')
-write.csv(JX,"~/Desktop/Github Repo/Seatrout/Data/Indices/DeltaMethod Indices/JX_yoy_index.csv" )
-
-
-################################################
+##OLD ########
 
 ###########################
 # LOAD ADULT DATA
