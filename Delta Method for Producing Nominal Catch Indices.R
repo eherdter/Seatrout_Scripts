@@ -361,7 +361,6 @@ drop1(Full_ir.bin, test ='Chi')
 M1_ir.bin <- glm(number ~ year+month+veg+shore, data=ir.bin, family=binomial)
 drop1(M1_ir.bin, test ="Chi")
 
-
 ### ASSIGN FINAL MODELS ###### 
 ###############################
 final_ap.pos = M2_ap.pos 
@@ -378,28 +377,98 @@ final_ch.bin = M1_ch.bin
 final_jx_bin = M1_jx.bin
 final_ir.bin = M1_ir.bin
 
-
 ### DETERMINE LEAST SQUARE MEANS ###########
 # DETERMINE LEAST SQUARE MEANS 
 #################################
-
 # Same thing as covariate adjusted means. Basically, determine the mean value of total positive numbers 
 # of catch per year controlling for covariates (in this case it would be veg and shore variables). 
 # Use lsmeans CRAN document. 
 
-#Look at the reference grid
-ap.rf.grid <- ref.grid(glm.final.pos)
+# Looking at the reference grid gives a good idea of over what levels the mean is being averaged. 
+ap.rf.grid <- ref.grid(final_ap.pos)
+ap.bin.rf.grid <- ref.grid(final_ap.bin)
 
 #Can make predictions using the reference grid. It produces a mean value of numbers based on each scenario combination.  
-summary(ap.rf.grid)
+test = summary(ap.rf.grid)
+test_ap.bin= summary(ap.bin.rf.grid)
 
 # Use lsmeans to determine the least square mean of positive values. 
-lsmeans(glm.final.pos, "year", data=ap.pos)
+# Display the response scale (as opposed to the log scale which is reported for the Poisson, and the logit scale reported for the Binomial)
 
-# Display the response scale (as opposed to the log scale above)
-summary(lsmeans(glm.final.pos, 'year', data=ap.pos), type="response")
+#POSITIVE
+test<- summary(lsmeans(final_ap.pos, 'year', data=ap.pos))
+LSM_ap.pos <- summary(lsmeans(final_ap.pos, 'year', data=ap.pos), type="response")
+LSM_ck.pos <- summary(lsmeans(final_ck.pos, 'year', data=ck.pos), type="response")
+LSM_tb.pos <- summary(lsmeans(final_tb.pos, 'year', data=tb.pos), type="response")
+LSM_ch.pos <- summary(lsmeans(final_ch.pos, 'year', data=ch.pos), type="response")
+LSM_jx.pos <- summary(lsmeans(final_jx.pos, 'year', data=jx.pos), type="response")
+LSM_ir.pos <- summary(lsmeans(final_ir.pos, 'year', data=ir.pos), type="response")
+
+#BINOMIAL (with type="response" this is equal to proportion positive)
+LSM_ap.bin <- summary(lsmeans(final_ap.bin, 'year', data=ap.bin), type="response")
+LSM_ck.bin <- summary(lsmeans(final_ck.bin, 'year', data=ck.bin), type="response")
+LSM_tb.bin <- summary(lsmeans(final_tb.bin, 'year', data=tb.bin), type="response")
+LSM_ch.bin <- summary(lsmeans(final_ch.bin, 'year', data=ch.bin), type="response")
+LSM_jx.bin <- summary(lsmeans(final_jx.bin, 'year', data=jx.bin), type="response")
+LSM_ir.bin <- summary(lsmeans(final_ir.bin, 'year', data=ir.bin), type="response")
 
 
+### ERROR PROPAGATION (pos * prop.pos) TO FIND FINAL VALUE (pos * prop.pos) #####
+# multiply positive lsmean by porportion positive lsmean and use error propagation to determine value and associated error
+# using the package Propagate. This requires a matrix of mean values and their associated standard deviations. 
+# Since lsmeans function produces only SE I will need to convert this to SD before using the Propagate function. 
+
+
+
+unc= (10.424299*0.36119080) * sqrt(((4.276363/10.424299)^2)+ (0.08023119/0.36119080))
+
+
+
+
+
+LSmeans(final_ap.pos, "year", data=ap.pos)
+
+testmodel <- bayesglm(number ~ year+veg+shore, data=ap.pos, family=quasipoisson)
+summary(testmodel)
+
+
+number <- ap.pos$number
+year <- ap.pos$year
+veg <- ap.pos$veg
+shore <- ap.pos$shore
+
+M2_ap.pos <- glm(number ~ year+veg+shore, data=ap.pos, family=quasipoisson)
+
+posterior <- MCMCpoisson(number ~ year+veg+shore, mcmc=1000)
+post.lsm <- summary(lsmeans(posterior, "year"), type="response")
+summary(as.mcmc(post.lsm))
+
+library(coda)
+
+summary(as.mcmc(lsmeans(final_ap.bin, "year", data=ap.bin)))
+LSM_AP <- as.data.frame(cbind(years, LSM_ap.pos$rate * LSM_ap.bin$prob))
+LSM_CK <- LSM_ck.pos$rate * LSM_ck.bin$prob
+LSM_TB <- LSM_tb.pos$rate * LSM_tb.bin$prob
+LSM_CH <- LSM_ch.pos$rate * LSM_ch.bin$prob
+LSM_JX <- LSM_jx.pos$rate * LSM_jx.bin$prob
+LSM_IR <- LSM_ir.pos$rate * LSM_ir.bin$prob
+
+#need to account
+
+EXPR1 <- expression(x/y)
+x= c(5, 0.01)
+y= c(1, 0.01)
+DF1 <- cbind(x,y)
+library(propagate)
+RES1 <- propagate(expr=EXPR1, data=DF1, type='stat', do.sim=TRUE, verbose=TRUE)
+
+
+
+EXPR1 <- expression(x*y)
+x = c(LSM_ap.pos$rate[1], LSM_ap.pos$SE[1])
+y= c(LSM_ap.bin$prob[1], LSM_ap.bin$SE[1])
+DF1 <- cbind(x,y)
+RES1 <- propagate(expr=EXPR1, data=DF1, type='stat', do.sim=TRUE, verbose=TRUE)
 
 
 #ap.pos<- ap %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
