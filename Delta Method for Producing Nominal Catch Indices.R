@@ -509,7 +509,7 @@ for (i in 1:num.yr) {
 }
 Mean_IR <- df %>% cbind(LSM_ir.pos$year)
 colnames(Mean_IR) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
-write.csv(IR, "~/Desktop/Github Repo/Seatrout/Data/Indices/DeltaMethod Indices/IR_yoy_index.csv")
+write.csv(Mean_IR, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/IR_yoy_index.csv")
 
 
 ##LOAD ADULT DATA ########
@@ -680,47 +680,254 @@ summary(Full_tb_ad.pos)
 drop1(Full_tb_ad.pos, test="F")
 # bottom does not appear significant. 
 
-# drop month
+# drop bottom
 M1_tb_ad.pos <- glm(number ~ year+veg+month+shore, data=tb_ad.pos, family=quasipoisson)
 drop1(M1_tb_ad.pos, test="F")
 
-# drop month, bottom
-M2_tb.pos <- glm(number ~ year+veg+shore, data=tb.pos, family=quasipoisson)
-drop1(M2_tb.pos, test="F")
-# Year, Veg, Shore = significant factors
-
 ### CH_POS (Year, Month, Veg, Bottom, Shore =significnat factors )
-summary(Full_ch.pos)
-drop1(Full_ch.pos, test="F")
-# Year, Month, Veg, Bottom, Shore =significnat factors 
+summary(Full_ch_ad.pos)
+drop1(Full_ch_ad.pos, test="F")
+# Month and shore are not significnat factors 
+
+#drop month and shore
+M1_ch_ad.pos <- glm(number ~ year+veg+bottom, data=ch_ad.pos, family=quasipoisson)
 
 ### JX_POS (Year, Veg, Shore = significant factors)
-summary(Full_jx.pos)
-drop1(Full_jx.pos, test="F")
-# bottom and month do not appear significant. Drop all sequentially
+summary(Full_jx_ad.pos)
+drop1(Full_jx_ad.pos, test="F")
+# veg, bottom, and shore do not appear significant. Drop all sequentially
 
-#drop month
-M1_jx.pos <- glm(number ~ year+veg+bottom+shore, data=jx.pos, family=quasipoisson)
-drop1(M1_jx.pos, test="F")
+#drop veg
+M1_jx_ad.pos <- glm(number ~ year+month+bottom+shore, data=jx_ad.pos, family=quasipoisson)
+drop1(M1_jx_ad.pos, test="F")
 
-#drop month, bottom
-M2_jx.pos <- glm(number ~ year+veg+shore, data=jx.pos, family=quasipoisson)
-drop1(M2_jx.pos, test="F")
+#drop veg and bottom
+M2_jx_ad.pos <- glm(number ~ year+month+shore, data=jx_ad.pos, family=quasipoisson)
+drop1(M2_jx_ad.pos, test="F")
 # Year, Veg, Shore = significant factors
 
-### IR_POS (Year, Veg, Bottom = significant factors)
-summary(Full_ir.pos)
-drop1(Full_ir.pos, test="F")
-#month and shore do not appear significant. Drop them all. 
+#drop veg, bottom, and shore
+M3_jx_ad.pos <- glm(number ~year+month, data=jx_ad.pos, family=quasipoisson)
+drop1(M3_jx_ad.pos, test="F")
 
-# drop month
-M1_ir.pos <- glm(number ~ year+veg+bottom+shore, data=ir.pos, family=quasipoisson)
-drop1(M1_ir.pos, test="F")
+### IR_POS (Year, Veg, Bottom = significant factors)
+summary(Full_ir_ad.pos)
+drop1(Full_ir_ad.pos, test="F")
+#bottom and shore do not appear significant. Drop them all. 
+
+# drop bottom
+M1_ir_ad.pos <- glm(number ~ year+veg+month+shore, data=ir_ad.pos, family=quasipoisson)
+drop1(M1_ir_ad.pos, test="F")
 
 # drop shore
-M2_ir.pos <- glm(number ~ year+veg+bottom, data=ir.pos, family=quasipoisson)
-drop1(M2_ir.pos, test="F")
-# Year, Veg, Bottom = significant factors
+M2_ir_ad.pos <- glm(number ~ year+veg+month, data=ir_ad.pos, family=quasipoisson)
+drop1(M2_ir_ad.pos, test="F")
+
+## MODEL SELECTION BINARY w/ DROP1 command_ADULT ######
+################################
+# pg 253 Zuur
+##  AP_BIN 
+summary(Full_ap_ad.bin)
+drop1(Full_ap_ad.bin, test ='Chi')
+# bottom not significant
+
+#drop bottom
+M1_ap_ad.bin <- glm(number ~ year+month+veg+shore, data=ap_ad.bin, family=binomial)
+drop1(M1_ap_ad.bin, test ="Chi")
+
+
+## CK_BIN 
+summary(Full_ck_ad.bin)
+drop1(Full_ck_ad.bin, test ='Chi')
+#all are significant
+
+## TB_BIN (Year, Month, Veg, Shore = significant)
+summary(Full_tb_ad.bin)
+drop1(Full_tb_ad.bin, test ='Chi')
+# bottom,veg,shore not significant
+
+#drop bottom 
+M1_tb_ad.bin <- glm(number ~ year+month+veg+shore, data=tb_ad.bin, family=binomial)
+drop1(M1_tb_ad.bin, test ="Chi")
+
+#drop veg, and shore, bottom
+M2_tb_ad.bin <- glm(number ~ year+month, data=tb_ad.bin, family=binomial)
+drop1(M2_tb_ad.bin, test="Chi")
+
+##  CH_BIN 
+summary(Full_ch_ad.bin)
+drop1(Full_ch_ad.bin, test ='Chi')
+# nothing is significant except for veg but also need to keep year so I will keep year and veg
+
+M1_ch_ad.bin <- glm(number ~ year+veg, data=ch_ad.bin, family=binomial)
+drop1(M1_ch_ad.bin, test='Chi')
+
+## JX_BIN 
+summary(Full_jx_ad.bin)
+drop1(Full_jx_ad.bin, test ='Chi')
+# month, year, and bottom (sort of) are not Sign
+ 
+#drop month, bottom
+M1_jx_ad.bin <- glm(number ~ year+bottom+veg+shore, data=jx_ad.bin, family=binomial)
+drop1(M1_jx_ad.bin, test ="Chi")
+
+
+## IR_BIN 
+summary(Full_ir_ad.bin)
+drop1(Full_ir_ad.bin, test ='Chi')
+# nothing is significant exceot for year
+
+#drop bottom 
+M1_ir_ad.bin <- glm(number ~ year, data=ir_ad.bin, family=binomial)
+drop1(M1_ir_ad.bin, test ="Chi")
+
+### ASSIGN FINAL MODELS_ADULT ###### 
+###############################
+final_ap_ad.pos = Full_ap_ad.pos
+final_ck_ad.pos = M3_ck_ad.pos
+final_tb_ad.pos = M1_tb_ad.pos
+final_ch_ad.pos= M1_ch_ad.pos
+final_jx_ad.pos = M3_jx_ad.pos
+final_ir_ad.pos = M2_ir_ad.pos
+
+final_ap_ad.bin = M1_ap_ad.bin
+final_ck_ad.bin = Full_ck_ad.bin
+final_tb_ad.bin = M2_tb_ad.bin
+final_ch_ad.bin = M1_ch_ad.bin
+final_jx_ad.bin = M1_jx_ad.bin
+final_ir_ad.bin = M1_ir_ad.bin
+
+### DETERMINE LEAST SQUARE MEANS_ADULT###########
+# DETERMINE LEAST SQUARE MEANS 
+#################################
+# Same thing as covariate adjusted means. Basically, determine the mean value of total positive numbers 
+# of catch per year controlling for covariates (in this case it would be veg and shore variables). 
+# Use lsmeans CRAN document. 
+
+# Looking at the reference grid gives a good idea of over what levels the mean is being averaged. 
+ap_ad.rf.grid <- ref.grid(final_ap_ad.pos)
+ap_ad.bin.rf.grid <- ref.grid(final_ap_ad.bin)
+
+#Can make predictions using the reference grid. It produces a mean value of numbers based on each scenario combination.  
+test = summary(ap_ad.rf.grid)
+test_ap_ad.bin= summary(ap_ad.bin.rf.grid)
+
+# Use lsmeans to determine the least square mean of positive values. 
+# Display the response scale (as opposed to the log scale which is reported for the Poisson, and the logit scale reported for the Binomial)
+
+#POSITIVE
+LSM_ap_ad.pos <- summary(lsmeans(final_ap_ad.pos, 'year', data=ap_ad.pos), type="response")
+LSM_ck_ad.pos <- summary(lsmeans(final_ck_ad.pos, 'year', data=ck_ad.pos), type="response")
+LSM_tb_ad.pos <- summary(lsmeans(final_tb_ad.pos, 'year', data=tb_ad.pos), type="response")
+LSM_ch_ad.pos <- summary(lsmeans(final_ch_ad.pos, 'year', data=ch_ad.pos), type="response")
+LSM_jx_ad.pos <- summary(lsmeans(final_jx_ad.pos, 'year', data=jx_ad.pos), type="response")
+LSM_ir_ad.pos <- summary(lsmeans(final_ir_ad.pos, 'year', data=ir_ad.pos), type="response")
+
+#BINOMIAL (with type="response" this is equal to proportion positive)
+LSM_ap_ad.bin <- summary(lsmeans(final_ap_ad.bin, 'year', data=ap_ad.bin), type="response")
+LSM_ck_ad.bin <- summary(lsmeans(final_ck_ad.bin, 'year', data=ck_ad.bin), type="response")
+LSM_tb_ad.bin <- summary(lsmeans(final_tb_ad.bin, 'year', data=tb_ad.bin), type="response")
+LSM_ch_ad.bin <- summary(lsmeans(final_ch_ad.bin, 'year', data=ch_ad.bin), type="response")
+LSM_jx_ad.bin <- summary(lsmeans(final_jx_ad.bin, 'year', data=jx_ad.bin), type="response")
+LSM_ir_ad.bin <- summary(lsmeans(final_ir_ad.bin, 'year', data=ir_ad.bin), type="response")
+
+### ERROR PROPAGATION TO FIND FINAL VALUE (pos * prop.pos)_ADULT #####
+# multiply positive lsmean by porportion positive lsmean and use error propagation to determine value and associated error
+# using the package Propagate. See example below. 
+# https://www.rdocumentation.org/packages/propagate/versions/1.0-4/topics/propagate    
+
+#Must use a for loop to do the error propagation because it goes one row at a time. 
+
+#AP
+num.yr = length(LSM_ap_ad.pos$year)  
+df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  x = c(LSM_ap_ad.pos$rate[i], LSM_ap_ad.pos$SE[i])
+  y= c(LSM_ap_ad.bin$prob[i], LSM_ap_ad.bin$SE[i])
+  EXPR <- expression(x*y)
+  DF <- cbind(x,y)
+  RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
+  df[i,] <- t(matrix(RES$sim))
+}
+Mean_AP_ad <- df %>% cbind(LSM_ap_ad.pos$year)
+colnames(Mean_AP_ad) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+write.csv(Mean_AP_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/AP_adult_index.csv")
+
+#CK
+num.yr = length(LSM_ck_ad.pos$year)  
+df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  x = c(LSM_ck_ad.pos$rate[i], LSM_ck_ad.pos$SE[i])
+  y= c(LSM_ck_ad.bin$prob[i], LSM_ck_ad.bin$SE[i])
+  EXPR <- expression(x*y)
+  DF <- cbind(x,y)
+  RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
+  df[i,] <- t(matrix(RES$sim))
+}
+Mean_CK_ad <- df %>% cbind(LSM_ck_ad.pos$year)
+colnames(Mean_CK_ad) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+write.csv(Mean_CK_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/CK_adult_index.csv")
+
+#TB
+num.yr = length(LSM_tb_ad.pos$year)  
+df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  x = c(LSM_tb_ad.pos$rate[i], LSM_tb_ad.pos$SE[i])
+  y= c(LSM_tb_ad.bin$prob[i], LSM_tb_ad.bin$SE[i])
+  EXPR <- expression(x*y)
+  DF <- cbind(x,y)
+  RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
+  df[i,] <- t(matrix(RES$sim))
+}
+Mean_TB_ad <- df %>% cbind(LSM_tb_ad.pos$year)
+colnames(Mean_TB_ad) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+write.csv(Mean_TB_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/TB_adult_index.csv")
+
+#CH
+num.yr = length(LSM_ch_ad.pos$year)  
+df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  x = c(LSM_ch_ad.pos$rate[i], LSM_ch_ad.pos$SE[i])
+  y= c(LSM_ch_ad.bin$prob[i], LSM_ch_ad.bin$SE[i])
+  EXPR <- expression(x*y)
+  DF <- cbind(x,y)
+  RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
+  df[i,] <- t(matrix(RES$sim))
+}
+Mean_CH_ad <- df %>% cbind(LSM_ch_ad.pos$year)
+colnames(Mean_CH_ad) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+write.csv(Mean_CH_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/CH_adult_index.csv")
+
+#JX
+num.yr = length(LSM_jx_ad.pos$year)  
+df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  x = c(LSM_jx_ad.pos$rate[i], LSM_jx_ad.pos$SE[i])
+  y= c(LSM_jx_ad.bin$prob[i], LSM_jx_ad.bin$SE[i])
+  EXPR <- expression(x*y)
+  DF <- cbind(x,y)
+  RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
+  df[i,] <- t(matrix(RES$sim))
+}
+Mean_JX_ad <- df %>% cbind(LSM_jx_ad.pos$year)
+colnames(Mean_JX_ad) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+write.csv(Mean_JX_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/JX_adult_index.csv")
+
+#IR
+num.yr = length(LSM_ir_ad.pos$year)  
+df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  x = c(LSM_ir_ad.pos$rate[i], LSM_ir_ad.pos$SE[i])
+  y= c(LSM_ir_ad.bin$prob[i], LSM_ir_ad.bin$SE[i])
+  EXPR <- expression(x*y)
+  DF <- cbind(x,y)
+  RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
+  df[i,] <- t(matrix(RES$sim))
+}
+Mean_IR_ad <- df %>% cbind(LSM_ir_ad.pos$year)
+colnames(Mean_IR_ad) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+write.csv(Mean_IR_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/IR_adult_index.csv")
+
 
 
 ####OLD #######################
