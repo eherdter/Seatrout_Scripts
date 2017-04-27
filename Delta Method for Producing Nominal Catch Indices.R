@@ -40,7 +40,7 @@ library(dplyr) # to do df manipulation
 library(lsmeans) #to determine the least squares means
 library(AER) #to test for overdispersion
 
-##### IMPORT DATA SETS ######
+##### IMPORT DATA SETS_YOY ######
 ###########################
 # These data sets were produced using the spp_comb_5_13_EG_2bays_yoy_2015_EHedits.sas program which is stored in my scratch folder
 # Bay and river stations were denoted by the gear sampling  code. There is a hard copy of this script in my green folder. 
@@ -104,7 +104,7 @@ jxl = read_sas("jx_yoy_cn_l.sas7bdat")
 
 full <- rbind(ap,ck,tb,ch,jx,ir)
 
-##### SELECT CATEGORICAL HABITAT VALUES ########
+##### SELECT CATEGORICAL HABITAT VALUES_YOY ########
 # to be used in the model to predict positive numbers
 ################################################
 
@@ -123,9 +123,9 @@ full <-  select(full, c(number,year, month, bio_reference, bStr, bSan, bMud, bve
                        ifelse(substr(full$Shore, 1,3)=="Ter", "Terrestrial", "Non"))))) %>% select(-c(bStr, bSan, bMud, bveg, Shore)) %>% subset(!shore=="Non") 
       
 #Turn habitat variables into factors so they can be treated as categorical
-full[,c(2,5:8)] <- lapply(full[,c(2,5:8)], factor)
+full[,c(2,5:9)] <- lapply(full[,c(2,5:9)], factor)
 
-###### MAKE POSITIVE & BINARY SET ##########
+###### MAKE POSITIVE & BINARY SET_YOY ##########
 # to determine the total number of positive huals and proportion positive
 ##############################################
 
@@ -146,7 +146,7 @@ ch.bin <- full.bin %>% subset(bay =='CH')
 jx.bin <- full.bin %>% subset(bay =='JX')
 ir.bin <- full.bin %>% subset(bay =='IR')
 
-##### VISUALIZE THE DATA ########
+##### VISUALIZE THE DATA_YOY ########
 ################################
 
 #Plot the data
@@ -157,7 +157,7 @@ plot(ap.pos$year, ap.pos$number, vlab="year", ylab="number")
 plot(ap.pos$shore, ap.pos$number, vlab="shore", ylab="number")
 plot(ap.pos$veg, ap.pos$number, vlab="veg", ylab="number")
 
-### BUILD MODELS #########
+### BUILD MODELS_YOY #########
 # To produce predicted positive numbers and binomial data set
 #######################
 
@@ -208,7 +208,7 @@ Full_ch.pos <- glm(number ~ year +month+veg+bottom+shore, data=ch.pos, family=qu
 Full_jx.pos <- glm(number ~ year +month+veg+bottom+shore, data=jx.pos, family=quasipoisson)
 Full_ir.pos <- glm(number ~ year +month+veg+bottom+shore, data=ir.pos, family=quasipoisson)
 
-## MODEL SELECTION POSITIVE w/ DROP1 command ######
+## MODEL SELECTION POSITIVE w/ DROP1 command_YOY ######
 ################################
 # Pages 220 is to 230 in Zuur are helpful for following methods. 
 # The AIC is not defined for quasipoisson models so can't use the step function like what was used in the FWRI code. 
@@ -295,7 +295,7 @@ M2_ir.pos <- glm(number ~ year+veg+bottom, data=ir.pos, family=quasipoisson)
 drop1(M2_ir.pos, test="F")
 # Year, Veg, Bottom = significant factors
 
-## MODEL SELECTION BINARY w/ DROP1 command ######
+## MODEL SELECTION BINARY w/ DROP1 command_YOY ######
 ################################
 # pg 253 Zuur
 ##  AP_BIN (Year, Veg = significant)
@@ -363,7 +363,7 @@ drop1(Full_ir.bin, test ='Chi')
 M1_ir.bin <- glm(number ~ year+month+veg+shore, data=ir.bin, family=binomial)
 drop1(M1_ir.bin, test ="Chi")
 
-### ASSIGN FINAL MODELS ###### 
+### ASSIGN FINAL MODELS_YOY ###### 
 ###############################
 final_ap.pos = M2_ap.pos 
 final_ck.pos = M3_ck.pos
@@ -379,7 +379,7 @@ final_ch.bin = M1_ch.bin
 final_jx_bin = M1_jx.bin
 final_ir.bin = M1_ir.bin
 
-### DETERMINE LEAST SQUARE MEANS ###########
+### DETERMINE LEAST SQUARE MEANS_YOY ###########
 # DETERMINE LEAST SQUARE MEANS 
 #################################
 # Same thing as covariate adjusted means. Basically, determine the mean value of total positive numbers 
@@ -414,7 +414,7 @@ LSM_ch.bin <- summary(lsmeans(final_ch.bin, 'year', data=ch.bin), type="response
 LSM_jx.bin <- summary(lsmeans(final_jx.bin, 'year', data=jx.bin), type="response")
 LSM_ir.bin <- summary(lsmeans(final_ir.bin, 'year', data=ir.bin), type="response")
 
-### ERROR PROPAGATION TO FIND FINAL VALUE (pos * prop.pos) #####
+### ERROR PROPAGATION TO FIND FINAL VALUE (pos * prop.pos)_YOY #####
 # multiply positive lsmean by porportion positive lsmean and use error propagation to determine value and associated error
 # using the package Propagate. See example below. 
 # https://www.rdocumentation.org/packages/propagate/versions/1.0-4/topics/propagate    
@@ -449,6 +449,7 @@ for (i in 1:num.yr) {
 }
 Mean_CK <- df %>% cbind(LSM_ck.pos$year)
 colnames(Mean_CK) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+write.csv(Mean_CK, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/CK_yoy_index.csv")
 
 #TB
 num.yr = length(LSM_tb.pos$year)  
@@ -463,6 +464,7 @@ for (i in 1:num.yr) {
 }
 Mean_TB <- df %>% cbind(LSM_tb.pos$year)
 colnames(Mean_TB) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+write.csv(Mean_TB, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/TB_yoy_index.csv")
 
 #CH
 num.yr = length(LSM_ch.pos$year)  
@@ -477,6 +479,7 @@ for (i in 1:num.yr) {
 }
 Mean_CH <- df %>% cbind(LSM_ch.pos$year)
 colnames(Mean_CH) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+write.csv(Mean_CH, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/CH_yoy_index.csv")
 
 #JX
 num.yr = length(LSM_jx.pos$year)  
@@ -491,6 +494,7 @@ for (i in 1:num.yr) {
 }
 Mean_JX <- df %>% cbind(LSM_jx.pos$year)
 colnames(Mean_JX) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+write.csv(Mean_JX, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/JX_yoy_index.csv")
 
 #IR
 num.yr = length(LSM_ir.pos$year)  
@@ -505,46 +509,221 @@ for (i in 1:num.yr) {
 }
 Mean_IR <- df %>% cbind(LSM_ir.pos$year)
 colnames(Mean_IR) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+write.csv(IR, "~/Desktop/Github Repo/Seatrout/Data/Indices/DeltaMethod Indices/IR_yoy_index.csv")
 
 
-write.csv(AP, "~/Desktop/Github Repo/Seatrout/Data/Indices/DeltaMethod Indices/AP_yoy_index.csv")
-
-
-##OLD ########
-
-###########################
-# LOAD ADULT DATA
-###########################
-
+##LOAD ADULT DATA ########
 ################################################
-# adult data are only 
 
-setwd("~/Desktop/Github Repo/Seatrout/FWRI SCRATCH FOLDER/Elizabeth Herdter/SAS data sets/FIMData")
-ap_ad = subset(read_sas("ap_adult_cn_c.sas7bdat"))
+setwd("~/Desktop/PhD project/Projects/Seatrout/FWRI SCRATCH FOLDER/Elizabeth Herdter/SAS data sets/FIMData")
+
+ap_ad = subset(read_sas("ap_adult_cn_c.sas7bdat"))%>% mutate(bUnk=bunk) %>% select(-bunk) 
+ap_ad <- ap_ad %>% select(noquote(order(colnames(ap_ad))))
+
 ap_adl = subset(read_sas("ap_adult_cn_l.sas7bdat"))
 
+ch_ad = subset(read_sas("ch_adult_cn_c.sas7bdat")) %>% mutate(bUnk=bunk) %>% select(-bunk) 
+ch_ad <- ch_ad %>% select(noquote(order(colnames(ch_ad))))
 
-ch_ad = subset(read_sas("ch_adult_cn_c.sas7bdat")) # *******
 ch_adl = subset(read_sas("ch_adult_cn_l.sas7bdat"))
 
+ck_ad = subset(read_sas("ck_adult_cn_c.sas7bdat"))%>% mutate(bUnk=bunk) %>% select(-bunk) 
+ck_ad <- ck_ad %>% select(noquote(order(colnames(ck_ad))))
 
-ck_ad = subset(read_sas("ck_adult_cn_c.sas7bdat"))
 ck_adl = subset(read_sas("ck_adult_cn_l.sas7bdat"))
 
-
 tb_ad = subset(read_sas("tb_adult_cn_c.sas7bdat"))
+tb_ad <- tb_ad %>% select(noquote(order(colnames(tb_ad))))
+
 tb_adl = subset(read_sas("tb_adult_cn_l.sas7bdat"))
 
-
 jx_ad = subset(read_sas("jx_adult_cn_c.sas7bdat"))
+jx_ad <- jx_ad %>% select(noquote(order(colnames(jx_ad))))
+
 jx_adl = subset(read_sas("jx_adult_cn_l.sas7bdat"))
 
-
 ir_ad = subset(read_sas("ir_adult_cn_c.sas7bdat"))
+ir_ad <- ir_ad %>% select(noquote(order(colnames(ir_ad))))
+
 ir_adl = subset(read_sas("ir_adult_cn_l.sas7bdat"))
 
+#join all together so I can perform habitat selection on a complete data set as opposed to on each individual bay
+full_ad <- rbind(ap_ad,ck_ad,tb_ad,ch_ad,jx_ad,ir_ad)
 
-###########################
+##### SELECT CATEGORICAL HABITAT VALUES_ ADULT_ ########
+# to be used in the model to predict positive numbers
+################################################
+
+#Based on FWRI code the three variables were bottom type (bStr, bsan, bmud), bottom vegetation (bveg), and shoreline (Shore)
+#There are three different bottom type variables each of them coded in a binary form.
+#I want to take bStr, bsan, and bmud and put them into 1 variable so I will make a new variable entirely = 'bottom'
+#I also want to turn bveg into a new variable = 'veg' based on the entries. If alg or Sav then turn to SAV because there are only 9 entries for Alg. 
+#Same thing for the shore variable = 'shore'. Decided to have only emergent, structure, terrestrial, and mangrove. 
+#Removed old variables (bStr, bSan, bMud, bveg, Shore)
+#Removed rows when there was no shoreline variable. 
+
+full_ad <-  select(full_ad, c(number,year, month, bio_reference, bStr, bSan, bMud, bveg, Shore, bay, Zone)) %>% 
+  mutate(bottom = ifelse(full_ad$bStr ==1, "structure", ifelse(full_ad$bSan>0 | full_ad$bMud>0, "mudsand", "unknown")), 
+         veg= ifelse(full_ad$bveg == "SAVAlg", "SAV", ifelse(full_ad$bveg == "Alg", "SAV", ifelse(full_ad$bveg =="SAV", "SAV", "Noveg"))),
+         shore = ifelse(substr(full_ad$Shore,1,3)=="Eme", "Emerge", ifelse(substr(full_ad$Shore,1,3) =="Man", "Mangrove", ifelse(substr(full_ad$Shore,1,3)=="Str", "Structure", 
+            ifelse(substr(full_ad$Shore, 1,3)=="Ter", "Terrestrial", "Non"))))) %>% select(-c(bStr, bSan, bMud, bveg, Shore)) %>% subset(!shore=="Non") 
+
+#Turn habitat variables into factors so they can be treated as categorical
+full_ad[,c(2,5:9)] <- lapply(full_ad[,c(2,5:9)], factor)
+
+###### MAKE POSITIVE & BINARY SET_ADULT ##########
+# to determine the total number of positive huals and proportion positive
+##############################################
+
+full_ad.pos<- full_ad %>% subset(number>0)
+full_ad.bin <- full_ad %>% mutate(number=ifelse(number>0,1,0))
+
+ap_ad.pos <- full_ad.pos %>% subset(bay =='AP')
+ck_ad.pos <- full_ad.pos %>% subset(bay =='CK')
+tb_ad.pos <- full_ad.pos %>% subset(bay =='TB')
+ch_ad.pos <- full_ad.pos %>% subset(bay =='CH')
+jx_ad.pos <- full_ad.pos %>% subset(bay =='JX')
+ir_ad.pos <- full_ad.pos %>% subset(bay =='IR')
+
+ap_ad.bin <- full_ad.bin %>% subset(bay =='AP')
+ck_ad.bin <- full_ad.bin %>% subset(bay =='CK')
+tb_ad.bin <- full_ad.bin %>% subset(bay =='TB')
+ch_ad.bin <- full_ad.bin %>% subset(bay =='CH')
+jx_ad.bin <- full_ad.bin %>% subset(bay =='JX')
+ir_ad.bin <- full_ad.bin %>% subset(bay =='IR')
+
+### BUILD MODELS_ADULT #########
+# To produce predicted positive numbers and binomial data set
+#######################
+
+# 1. Build the full models with all potential variables and a base model with only year. 
+#    Do this for both the positive (Poisson distribution) and binary (Binomial distribution) datasets. 
+# 2. Check for overdispersion in the Poisson distribution scenario. 
+# 3. If there is overdispersion use quasipoisson 
+
+# 1. Build the full models for the positive and binomial datasets.  
+#AP
+Full_ap_ad.pos <- glm(number ~ year+month+bottom+veg+shore, data=ap_ad.pos, family=poisson)
+Full_ap_ad.bin <- glm(number ~ year+month+bottom+veg+shore, data=ap_ad.bin, family=binomial)
+
+#CK
+Full_ck_ad.pos <- glm(number ~ year+month+bottom+veg+shore, data=ck_ad.pos, family=poisson)
+Full_ck_ad.bin <- glm(number ~ year+month+bottom+veg+shore, data=ck_ad.bin, family=binomial)
+
+#TB
+Full_tb_ad.pos <- glm(number ~ year+month+bottom+veg+shore, data=tb_ad.pos, family=poisson)
+Full_tb_ad.bin <- glm(number ~ year+month+bottom+veg+shore, data=tb_ad.bin, family=binomial)
+
+#CH
+Full_ch_ad.pos <- glm(number ~ year+month+bottom+veg+shore, data=ch_ad.pos, family=poisson)
+Full_ch_ad.bin <- glm(number ~ year+month+bottom+veg+shore, data=ch_ad.bin, family=binomial)
+
+#JX
+Full_jx_ad.pos <- glm(number ~ year+month+bottom+veg+shore, data=jx_ad.pos, family=poisson)
+Full_jx_ad.bin <- glm(number ~ year+month+bottom+veg+shore, data=jx_ad.bin, family=binomial)
+
+#IR
+Full_ir_ad.pos <- glm(number ~ year+month+bottom+veg+shore, data=ir_ad.pos, family=poisson)
+Full_ir_ad.bin <- glm(number ~ year+month+bottom+veg+shore, data=ir_ad.bin, family=binomial)
+
+#2. Test the Poisson GLMs for overdispersion
+# With the Bernoulli GLM (binomial, response variable is a vector of zeros and ones) overdispersion does not ever occur (Zuur og 253) so I don't need to test for overdispersion in the .bin models. 
+dispersiontest(Full_ap_ad.pos, trafo=1)
+dispersiontest(Full_ck_ad.pos, trafo=1)
+dispersiontest(Full_tb_ad.pos, trafo=1)
+dispersiontest(Full_ch_ad.pos, trafo=1)
+dispersiontest(Full_jx_ad.pos, trafo=1)
+dispersiontest(Full_ir_ad.pos, trafo=1)
+
+# 3. there is evidence of overdispersion for every bay so use quasipoisson for Positive models (Zuur pg 226)
+Full_ap_ad.pos <- glm(number ~ year +month+veg+bottom+shore, data=ap_ad.pos, family=quasipoisson)
+Full_ck_ad.pos <- glm(number ~ year +month+veg+bottom+shore, data=ck_ad.pos, family=quasipoisson)
+Full_tb_ad.pos <- glm(number ~ year +month+veg+bottom+shore, data=tb_ad.pos, family=quasipoisson)
+Full_ch_ad.pos <- glm(number ~ year +month+veg+bottom+shore, data=ch_ad.pos, family=quasipoisson)
+Full_jx_ad.pos <- glm(number ~ year +month+veg+bottom+shore, data=jx_ad.pos, family=quasipoisson)
+Full_ir_ad.pos <- glm(number ~ year +month+veg+bottom+shore, data=ir_ad.pos, family=quasipoisson)
+
+## MODEL SELECTION POSITIVE w/ DROP1 command_ADULT ######
+################################
+# Pages 220 is to 230 in Zuur are helpful for following methods. 
+# The AIC is not defined for quasipoisson models so can't use the step function like what was used in the FWRI code. 
+# Instead, use the drop1 function which is applicable for the quassiPoisson GLM and it is more equivalent to hypothesis testing. (Zuur pg 227)
+# If just using Poisson or Bernoulli (binomial) can use step command but this gives AIC- not deviance. (Zuur pg 253)
+# Explained deviance is nearly the equivalent of R^2 so use this (Zuur pg 218 for equation), "The smaller the residual deviance the better is the model"
+
+###AP_AD_POS (All Variables = significant factors)
+summary(Full_ap_ad.pos)
+drop1(Full_ap_ad.pos, test="F")  #model selection in quasipoisson is done using F-ratio (Zuur pg 227)
+# all seem significant
+
+
+### CK_POS (Year, Veg = significant factor)
+summary(Full_ck_ad.pos)
+drop1(Full_ck_ad.pos, test="F")
+#month, bottom, and shore do not appear significant. Drop all sequentially. 
+
+#drop month
+M1_ck_ad.pos <- glm(number ~ year+veg+bottom+shore, data=ck_ad.pos, family=quasipoisson)
+drop1(M1_ck_ad.pos, test="F")
+
+#drop month, bottom
+M2_ck_ad.pos <- glm(number ~ year+veg+shore, data=ck_ad.pos, family=quasipoisson)
+drop1(M2_ck_ad.pos, test="F")
+
+#drop month, bottom, and shore
+M3_ck_ad.pos <- glm(number ~ year+veg, data=ck_ad.pos, family=quasipoisson)
+drop1(M3_ck_ad.pos, test="F")
+# Year, Veg = significant factors 
+
+### TB_POS (Year, Veg, Shore = significant factors)
+summary(Full_tb_ad.pos)
+drop1(Full_tb_ad.pos, test="F")
+# bottom does not appear significant. 
+
+# drop month
+M1_tb_ad.pos <- glm(number ~ year+veg+month+shore, data=tb_ad.pos, family=quasipoisson)
+drop1(M1_tb_ad.pos, test="F")
+
+# drop month, bottom
+M2_tb.pos <- glm(number ~ year+veg+shore, data=tb.pos, family=quasipoisson)
+drop1(M2_tb.pos, test="F")
+# Year, Veg, Shore = significant factors
+
+### CH_POS (Year, Month, Veg, Bottom, Shore =significnat factors )
+summary(Full_ch.pos)
+drop1(Full_ch.pos, test="F")
+# Year, Month, Veg, Bottom, Shore =significnat factors 
+
+### JX_POS (Year, Veg, Shore = significant factors)
+summary(Full_jx.pos)
+drop1(Full_jx.pos, test="F")
+# bottom and month do not appear significant. Drop all sequentially
+
+#drop month
+M1_jx.pos <- glm(number ~ year+veg+bottom+shore, data=jx.pos, family=quasipoisson)
+drop1(M1_jx.pos, test="F")
+
+#drop month, bottom
+M2_jx.pos <- glm(number ~ year+veg+shore, data=jx.pos, family=quasipoisson)
+drop1(M2_jx.pos, test="F")
+# Year, Veg, Shore = significant factors
+
+### IR_POS (Year, Veg, Bottom = significant factors)
+summary(Full_ir.pos)
+drop1(Full_ir.pos, test="F")
+#month and shore do not appear significant. Drop them all. 
+
+# drop month
+M1_ir.pos <- glm(number ~ year+veg+bottom+shore, data=ir.pos, family=quasipoisson)
+drop1(M1_ir.pos, test="F")
+
+# drop shore
+M2_ir.pos <- glm(number ~ year+veg+bottom, data=ir.pos, family=quasipoisson)
+drop1(M2_ir.pos, test="F")
+# Year, Veg, Bottom = significant factors
+
+
+####OLD #######################
 # Make positive dataset
 
 ap_ad.pos <- ap_ad %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
