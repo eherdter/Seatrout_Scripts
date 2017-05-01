@@ -1,4 +1,4 @@
-###### ABOUT ##############
+##### ABOUT ##############
 # 10/26/2016
 # Purpose: To produce adjusted nominal catch indices using the Delta Method
 # 1. Use Delta Method to produce YOY indices using predicted positive and proportion positive data sets
@@ -39,6 +39,8 @@ library(haven) #to load sas
 library(dplyr) # to do df manipulation
 library(lsmeans) #to determine the least squares means
 library(AER) #to test for overdispersion
+#library(propagate) #DO NOT load until all select functions within dplyr are perforemd because it masks it
+library(ggplot2)
 
 ##### IMPORT DATA SETS_YOY ######
 ###########################
@@ -120,12 +122,14 @@ full <-  select(full, c(number,year, month, bio_reference, bStr, bSan, bMud, bve
         mutate(bottom = ifelse(full$bStr ==1, "structure", ifelse(full$bSan>0 | full$bMud>0, "mudsand", "unknown")), 
                veg= ifelse(full$bveg == "SAVAlg", "SAV", ifelse(full$bveg == "Alg", "SAV", ifelse(full$bveg =="SAV", "SAV", "Noveg"))),
                shore = ifelse(substr(full$Shore,1,3)=="Eme", "Emerge", ifelse(substr(full$Shore,1,3) =="Man", "Mangrove", ifelse(substr(full$Shore,1,3)=="Str", "Structure", 
-                       ifelse(substr(full$Shore, 1,3)=="Ter", "Terrestrial", "Non"))))) %>% select(-c(bStr, bSan, bMud, bveg, Shore)) %>% subset(!shore=="Non") 
+                       ifelse(substr(full$Shore, 1,3)=="Ter", "Terrestrial", "Non"))))) %>% select(-c(bStr, bSan, bMud, bveg, Shore)) %>% subset(!shore=="Non") %>% subset(!bottom == "unknown")
       
 #Turn habitat variables into factors so they can be treated as categorical
 full[,c(2,5:9)] <- lapply(full[,c(2,5:9)], factor)
 
-###### MAKE POSITIVE & BINARY SET_YOY ##########
+full <- full[complete.cases(full),]
+
+##### MAKE POSITIVE & BINARY SET_YOY ##########
 # to determine the total number of positive huals and proportion positive
 ##############################################
 
@@ -157,7 +161,7 @@ plot(ap.pos$year, ap.pos$number, vlab="year", ylab="number")
 plot(ap.pos$shore, ap.pos$number, vlab="shore", ylab="number")
 plot(ap.pos$veg, ap.pos$number, vlab="veg", ylab="number")
 
-### BUILD MODELS_YOY #########
+##### BUILD MODELS_YOY #########
 # To produce predicted positive numbers and binomial data set
 #######################
 
@@ -187,6 +191,10 @@ Full_ch.bin <- glm(number ~ year+month+bottom+veg+shore, data=ch.bin, family=bin
 Full_jx.pos <- glm(number ~ year+month+bottom+veg+shore, data=jx.pos, family=poisson)
 Full_jx.bin <- glm(number ~ year+month+bottom+veg+shore, data=jx.bin, family=binomial)
 
+Full_jx.pos_test <- glm(number ~ year+bottom+veg+shore, data=jx.pos, family=poisson)
+Full_jx.bin_test <- glm(number ~ year+bottom+veg+shore, data=jx.bin, family=binomial)
+
+
 #IR
 Full_ir.pos <- glm(number ~ year+month+bottom+veg+shore, data=ir.pos, family=poisson)
 Full_ir.bin <- glm(number ~ year+month+bottom+veg+shore, data=ir.bin, family=binomial)
@@ -208,7 +216,7 @@ Full_ch.pos <- glm(number ~ year +month+veg+bottom+shore, data=ch.pos, family=qu
 Full_jx.pos <- glm(number ~ year +month+veg+bottom+shore, data=jx.pos, family=quasipoisson)
 Full_ir.pos <- glm(number ~ year +month+veg+bottom+shore, data=ir.pos, family=quasipoisson)
 
-## MODEL SELECTION POSITIVE w/ DROP1 command_YOY ######
+##### MODEL SELECTION POSITIVE w/ DROP1 command_YOY ######
 ################################
 # Pages 220 is to 230 in Zuur are helpful for following methods. 
 # The AIC is not defined for quasipoisson models so can't use the step function like what was used in the FWRI code. 
@@ -280,6 +288,12 @@ drop1(M1_jx.pos, test="F")
 M2_jx.pos <- glm(number ~ year+veg+shore, data=jx.pos, family=quasipoisson)
 drop1(M2_jx.pos, test="F")
 # Year, Veg, Shore = significant factors
+#fit_jx.pos <- predict(M2_jx.pos, type="response")
+#jx.pos <- cbind(jx.pos, fit_jx.pos) %>% mutate(pred_num = fit_jx.pos)
+
+#jx.pos$year <- as.numeric(as.character(jx.pos$year))
+sum_jx <- summarise(group_by(jx.pos, year), sum(number), sum(pred_num), mean(number), mean(pred_num))
+#jx_11 <- subset(jx.pos, year == 2001)
 
 ### IR_POS (Year, Veg, Bottom = significant factors)
 summary(Full_ir.pos)
@@ -295,7 +309,7 @@ M2_ir.pos <- glm(number ~ year+veg+bottom, data=ir.pos, family=quasipoisson)
 drop1(M2_ir.pos, test="F")
 # Year, Veg, Bottom = significant factors
 
-## MODEL SELECTION BINARY w/ DROP1 command_YOY ######
+##### MODEL SELECTION BINARY w/ DROP1 command_YOY ######
 ################################
 # pg 253 Zuur
 ##  AP_BIN (Year, Veg = significant)
@@ -354,6 +368,15 @@ M1_jx.bin <- glm(number ~ year+bottom+veg+shore, data=jx.bin, family=binomial)
 drop1(M1_jx.bin, test ="Chi")
 # Year, Bottom, Veg, Shore = significant
 
+fit_jx.bin <- predict(M1_jx.bin, type="response")
+jx.bin <- cbind(jx.bin, fit_jx.bin) %>% mutate(pred_prop = fit_jx.bin)
+#jx.bin$year <- as.numeric(as.character(jx.bin$year))
+sum_jx.bin <- summarise(group_by(jx.bin, year), sum(number), sum(pred_prop), mean(number), mean(pred_prop))
+#jx_11.bin <- subset(jx.bin, year == 2001)
+
+
+
+
 ## IR_BIN (Year, Month, Veg, Shore = significant)
 summary(Full_ir.bin)
 drop1(Full_ir.bin, test ='Chi')
@@ -363,7 +386,7 @@ drop1(Full_ir.bin, test ='Chi')
 M1_ir.bin <- glm(number ~ year+month+veg+shore, data=ir.bin, family=binomial)
 drop1(M1_ir.bin, test ="Chi")
 
-### ASSIGN FINAL MODELS_YOY ###### 
+##### ASSIGN FINAL MODELS_YOY ###### 
 ###############################
 final_ap.pos = M2_ap.pos 
 final_ck.pos = M3_ck.pos
@@ -376,10 +399,10 @@ final_ap.bin = M3_ap.bin
 final_ck.bin = M1_ck.bin
 final_tb.bin = M1_tb.bin
 final_ch.bin = M1_ch.bin
-final_jx_bin = M1_jx.bin
+final_jx.bin = M1_jx.bin
 final_ir.bin = M1_ir.bin
 
-### DETERMINE LEAST SQUARE MEANS_YOY ###########
+##### DETERMINE LEAST SQUARE MEANS_YOY ###########
 # DETERMINE LEAST SQUARE MEANS 
 #################################
 # Same thing as covariate adjusted means. Basically, determine the mean value of total positive numbers 
@@ -387,11 +410,11 @@ final_ir.bin = M1_ir.bin
 # Use lsmeans CRAN document. 
 
 # Looking at the reference grid gives a good idea of over what levels the mean is being averaged. 
-ap.rf.grid <- ref.grid(final_ap.pos)
+jx.rf.grid <- ref.grid(final_jx.bin)
 ap.bin.rf.grid <- ref.grid(final_ap.bin)
 
 #Can make predictions using the reference grid. It produces a mean value of numbers based on each scenario combination.  
-test = summary(ap.rf.grid)
+test = summary(jx.rf.grid)
 test_ap.bin= summary(ap.bin.rf.grid)
 
 # Use lsmeans to determine the least square mean of positive values. 
@@ -414,13 +437,13 @@ LSM_ch.bin <- summary(lsmeans(final_ch.bin, 'year', data=ch.bin), type="response
 LSM_jx.bin <- summary(lsmeans(final_jx.bin, 'year', data=jx.bin), type="response")
 LSM_ir.bin <- summary(lsmeans(final_ir.bin, 'year', data=ir.bin), type="response")
 
-### ERROR PROPAGATION TO FIND FINAL VALUE (pos * prop.pos)_YOY #####
+##### ERROR PROPAGATION TO FIND FINAL INDEX MEAN # CAUGHT PER SET (lsmean_pos * lsmeans_prop.pos)_YOY #####
 # multiply positive lsmean by porportion positive lsmean and use error propagation to determine value and associated error
 # using the package Propagate. See example below. 
 # https://www.rdocumentation.org/packages/propagate/versions/1.0-4/topics/propagate    
 
 #Must use a for loop to do the error propagation because it goes one row at a time. 
-
+library(propagate)
 #AP
 num.yr = length(LSM_ap.pos$year)  
 df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
@@ -432,8 +455,10 @@ for (i in 1:num.yr) {
   RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
   df[i,] <- t(matrix(RES$sim))
 }
-Mean_AP <- df %>% cbind(LSM_ap.pos$year)
-colnames(Mean_AP) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+
+#turn into dataframe, attach year, add estuary label, scale to mean so that the mean indices can be visualized in ggplot below
+Mean_AP <- df %>% cbind(LSM_ap.pos$year)%>% mutate(bay= rep("AP",18))%>%mutate(Scaled_Mean=scale(df$X1))
+colnames(Mean_AP) <- c("Mean", "SE", "Median", "MAD", "2.5%", "97.5%", "Year", "Bay", "Scaled_Mean")
 write.csv(Mean_AP, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/AP_yoy_index.csv")
 
 #CK
@@ -447,8 +472,8 @@ for (i in 1:num.yr) {
   RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
   df[i,] <- t(matrix(RES$sim))
 }
-Mean_CK <- df %>% cbind(LSM_ck.pos$year)
-colnames(Mean_CK) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+Mean_CK <- df %>% cbind(LSM_ck.pos$year)%>% mutate(bay= rep("CK",20))%>%mutate(Scaled_Mean=scale(df$X1))
+colnames(Mean_CK) <- c("Mean", "SE", "Median", "MAD", "2.5%", "97.5%", "Year", "Bay", "Scaled_Mean")
 write.csv(Mean_CK, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/CK_yoy_index.csv")
 
 #TB
@@ -462,8 +487,8 @@ for (i in 1:num.yr) {
   RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
   df[i,] <- t(matrix(RES$sim))
 }
-Mean_TB <- df %>% cbind(LSM_tb.pos$year)
-colnames(Mean_TB) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+Mean_TB <- df %>% cbind(LSM_tb.pos$year)%>% mutate(bay= rep("TB",27))%>%mutate(Scaled_Mean=scale(df$X1))
+colnames(Mean_TB) <- c("Mean", "SE", "Median", "MAD", "2.5%", "97.5%", "Year", "Bay","Scaled_Mean")
 write.csv(Mean_TB, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/TB_yoy_index.csv")
 
 #CH
@@ -477,8 +502,8 @@ for (i in 1:num.yr) {
   RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
   df[i,] <- t(matrix(RES$sim))
 }
-Mean_CH <- df %>% cbind(LSM_ch.pos$year)
-colnames(Mean_CH) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+Mean_CH <- df %>% cbind(LSM_ch.pos$year)%>% mutate(bay= rep("CH",27))%>%mutate(Scaled_Mean=scale(df$X1))
+colnames(Mean_CH) <- c("Mean", "SE", "Median", "MAD", "2.5%", "97.5%", "Year", "Bay", "Scaled_Mean")
 write.csv(Mean_CH, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/CH_yoy_index.csv")
 
 #JX
@@ -492,8 +517,8 @@ for (i in 1:num.yr) {
   RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
   df[i,] <- t(matrix(RES$sim))
 }
-Mean_JX <- df %>% cbind(LSM_jx.pos$year)
-colnames(Mean_JX) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+Mean_JX <- df %>% cbind(LSM_jx.pos$year)%>% mutate(bay= rep("JX",15)) %>% mutate(Scaled_Mean=scale(df$X1))
+colnames(Mean_JX) <- c("Mean", "SE", "Median", "MAD", "2.5%", "97.5%", "Year", "Bay", "Scaled_Mean")
 write.csv(Mean_JX, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/JX_yoy_index.csv")
 
 #IR
@@ -507,16 +532,103 @@ for (i in 1:num.yr) {
   RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
   df[i,] <- t(matrix(RES$sim))
 }
-Mean_IR <- df %>% cbind(LSM_ir.pos$year)
-colnames(Mean_IR) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+Mean_IR <- df %>% cbind(LSM_ir.pos$year)%>% mutate(bay= rep("IR",26)) %>% mutate(Scaled_Mean = scale(df$X1))
+colnames(Mean_IR) <- c("Mean", "SE", "Median", "MAD", "2.5%", "97.5%", "Year", "Bay", "Scaled_Mean")
 write.csv(Mean_IR, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/IR_yoy_index.csv")
 
+##### DETERMINE STANDARDIZED TOTAL # PER YEAR INDEX _ YOY ####
+# sum pred_num = total positive
+# use mean of pred_prob (same thing as summing pred_prob and dividing by total numbers) = proportion positive
 
-##LOAD ADULT DATA ########
+#total positive * proportion positive = index of total per year 
+
+fit_ap.pos <- predict(M2_ap.pos, type='response')
+fit_ck.pos <- predict(M3_ck.pos, type='response')
+fit_tb.pos <- predict(M2_tb.pos, type='response')
+fit_ch.pos <- predict(Full_ch.pos, type='response')
+fit_jx.pos <- predict(M2_jx.pos, type='response')
+fit_ir.pos <- predict()
+
+ap.pos <- cbind(ap.pos, fit_ap.pos) %>% mutate(pred_num = fit_ap.pos) 
+
+fit_jx.pos <- predict(M2_jx.pos, type="response")
+jx.pos <- cbind(jx.pos, fit_jx.pos) %>% mutate(pred_num = fit_jx.pos)
+
+
+
+
+
+#### GGPLOT LSMEAN CAUGHT PER SET - YOY ####
+
+#join together to put in a ggplot
+#can load these dataframes without running the above lines of code
+#setwd("~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices")
+#Mean_AP = read.csv("Mean_AP.csv", header=T) 
+#Mean_CK = read.csv("Mean_CK.csv", header=T) 
+#Mean_TB = read.csv("Mean_TB.csv", header=T) 
+#Mean_CH = read.csv("Mean_CH.csv", header=T) 
+#Mean_JX = read.csv("Mean_JX.csv", header=T) 
+#Mean_IR = read.csv("Mean_IR.csv", header=T) 
+
+All <- rbind(Mean_AP, Mean_CK, Mean_TB, Mean_CH, Mean_JX, Mean_IR) 
+
+#Convert Year to Numeric so that it plots normally
+All$Year <- as.numeric(as.character(All$Year))
+
+
+#scaled
+recruitment_scaled <- ggplot(All, aes(x=Year, y=Scaled_Mean, group=Bay)) + #color=est
+  geom_line(aes(linetype=Bay), size =.5)+ # make line types based on the different labels- this will be our workaround because in a few stps we will specify the first label (obserseved) be a blank line (therefore a scatter plot)
+  #geom_line(aes(color=Bay))+
+  geom_point(aes(shape=Bay), size=2) + #, color=bay))+ # groups the points together correctly and then gives them a unique shape them differently based on the line type 
+  ylab("Mean Number Caught Per Set") +
+  xlab("Year")+ 
+  scale_y_continuous(limits=c(-3,3))+
+  scale_colour_discrete(name="Location")+
+  theme(panel.grid.minor=element_blank(),panel.grid.major=element_blank(), 
+        panel.background=element_rect(colour="black", fill="white"),
+        axis.title.x =element_text(colour="black"),
+        axis.text.x = element_text(colour="black"),
+        axis.title.y =element_text(colour="black"),
+        axis.text.y = element_text(colour="black"),
+        axis.text.x=element_text(colour="black"), #changing  colour of x axis
+        axis.text.y=element_text(colour="black"), #changing colour of y acis
+        plot.title=element_text(size=14)) 
+#+ facet_grid(Bay~.)
+
+#not scaled 
+recruitment <- ggplot(All, aes(x=Year, y= Mean, group=Bay)) + #color=est
+  geom_line(aes(linetype=Bay), size =.5)+ # make line types based on the different labels- this will be our workaround because in a few stps we will specify the first label (obserseved) be a blank line (therefore a scatter plot)
+  #geom_line(aes(color=Bay))+
+  geom_point(aes(shape=Bay), size=2) + #, color=bay))+ # groups the points together correctly and then gives them a unique shape them differently based on the line type 
+  ylab("Mean Number Caught Per Set") +
+  xlab("Year")+ 
+  scale_y_continuous(limits=c(-3,3))+
+  scale_colour_discrete(name="Location")+
+  theme(panel.grid.minor=element_blank(),panel.grid.major=element_blank(), 
+        panel.background=element_rect(colour="black", fill="white"),
+        axis.title.x =element_text(colour="black"),
+        axis.text.x = element_text(colour="black"),
+        axis.title.y =element_text(colour="black"),
+        axis.text.y = element_text(colour="black"),
+        axis.text.x=element_text(colour="black"), #changing  colour of x axis
+        axis.text.y=element_text(colour="black"), #changing colour of y acis
+        plot.title=element_text(size=14)) 
+#+ facet_grid(Bay~.)
+
+##### GGPLOT STANDARDIZED TOTAL CAUGHT PER YEAR - YOY ####
+
+#Take predicted numbers and sum them by year (_.pos data frames)
+# Take predicted proportions and sum them by year
+
+
+
+
+##### LOAD ADULT DATA ########
 ################################################
 
 setwd("~/Desktop/PhD project/Projects/Seatrout/FWRI SCRATCH FOLDER/Elizabeth Herdter/SAS data sets/FIMData")
-
+library(dplyr)
 ap_ad = subset(read_sas("ap_adult_cn_c.sas7bdat"))%>% mutate(bUnk=bunk) %>% select(-bunk) 
 ap_ad <- ap_ad %>% select(noquote(order(colnames(ap_ad))))
 
@@ -549,6 +661,7 @@ ir_adl = subset(read_sas("ir_adult_cn_l.sas7bdat"))
 
 #join all together so I can perform habitat selection on a complete data set as opposed to on each individual bay
 full_ad <- rbind(ap_ad,ck_ad,tb_ad,ch_ad,jx_ad,ir_ad)
+full_ad <- full_ad[complete.cases(full_ad),]
 
 ##### SELECT CATEGORICAL HABITAT VALUES_ ADULT_ ########
 # to be used in the model to predict positive numbers
@@ -567,11 +680,12 @@ full_ad <-  select(full_ad, c(number,year, month, bio_reference, bStr, bSan, bMu
          veg= ifelse(full_ad$bveg == "SAVAlg", "SAV", ifelse(full_ad$bveg == "Alg", "SAV", ifelse(full_ad$bveg =="SAV", "SAV", "Noveg"))),
          shore = ifelse(substr(full_ad$Shore,1,3)=="Eme", "Emerge", ifelse(substr(full_ad$Shore,1,3) =="Man", "Mangrove", ifelse(substr(full_ad$Shore,1,3)=="Str", "Structure", 
             ifelse(substr(full_ad$Shore, 1,3)=="Ter", "Terrestrial", "Non"))))) %>% select(-c(bStr, bSan, bMud, bveg, Shore)) %>% subset(!shore=="Non") 
+            %>% subset(!bottom == "unknown")
 
 #Turn habitat variables into factors so they can be treated as categorical
 full_ad[,c(2,5:9)] <- lapply(full_ad[,c(2,5:9)], factor)
 
-###### MAKE POSITIVE & BINARY SET_ADULT ##########
+##### MAKE POSITIVE & BINARY SET_ADULT ##########
 # to determine the total number of positive huals and proportion positive
 ##############################################
 
@@ -592,7 +706,7 @@ ch_ad.bin <- full_ad.bin %>% subset(bay =='CH')
 jx_ad.bin <- full_ad.bin %>% subset(bay =='JX')
 ir_ad.bin <- full_ad.bin %>% subset(bay =='IR')
 
-### BUILD MODELS_ADULT #########
+##### BUILD MODELS_ADULT #########
 # To produce predicted positive numbers and binomial data set
 #######################
 
@@ -643,7 +757,7 @@ Full_ch_ad.pos <- glm(number ~ year +month+veg+bottom+shore, data=ch_ad.pos, fam
 Full_jx_ad.pos <- glm(number ~ year +month+veg+bottom+shore, data=jx_ad.pos, family=quasipoisson)
 Full_ir_ad.pos <- glm(number ~ year +month+veg+bottom+shore, data=ir_ad.pos, family=quasipoisson)
 
-## MODEL SELECTION POSITIVE w/ DROP1 command_ADULT ######
+##### MODEL SELECTION POSITIVE w/ DROP1 command_ADULT ######
 ################################
 # Pages 220 is to 230 in Zuur are helpful for following methods. 
 # The AIC is not defined for quasipoisson models so can't use the step function like what was used in the FWRI code. 
@@ -723,7 +837,7 @@ drop1(M1_ir_ad.pos, test="F")
 M2_ir_ad.pos <- glm(number ~ year+veg+month, data=ir_ad.pos, family=quasipoisson)
 drop1(M2_ir_ad.pos, test="F")
 
-## MODEL SELECTION BINARY w/ DROP1 command_ADULT ######
+##### MODEL SELECTION BINARY w/ DROP1 command_ADULT ######
 ################################
 # pg 253 Zuur
 ##  AP_BIN 
@@ -781,7 +895,7 @@ drop1(Full_ir_ad.bin, test ='Chi')
 M1_ir_ad.bin <- glm(number ~ year, data=ir_ad.bin, family=binomial)
 drop1(M1_ir_ad.bin, test ="Chi")
 
-### ASSIGN FINAL MODELS_ADULT ###### 
+##### ASSIGN FINAL MODELS_ADULT ###### 
 ###############################
 final_ap_ad.pos = Full_ap_ad.pos
 final_ck_ad.pos = M3_ck_ad.pos
@@ -797,7 +911,7 @@ final_ch_ad.bin = M1_ch_ad.bin
 final_jx_ad.bin = M1_jx_ad.bin
 final_ir_ad.bin = M1_ir_ad.bin
 
-### DETERMINE LEAST SQUARE MEANS_ADULT###########
+##### DETERMINE LEAST SQUARE MEANS_ADULT###########
 # DETERMINE LEAST SQUARE MEANS 
 #################################
 # Same thing as covariate adjusted means. Basically, determine the mean value of total positive numbers 
@@ -831,7 +945,7 @@ LSM_ch_ad.bin <- summary(lsmeans(final_ch_ad.bin, 'year', data=ch_ad.bin), type=
 LSM_jx_ad.bin <- summary(lsmeans(final_jx_ad.bin, 'year', data=jx_ad.bin), type="response")
 LSM_ir_ad.bin <- summary(lsmeans(final_ir_ad.bin, 'year', data=ir_ad.bin), type="response")
 
-### ERROR PROPAGATION TO FIND FINAL VALUE (pos * prop.pos)_ADULT #####
+##### ERROR PROPAGATION TO FIND FINAL VALUE (lsmean_pos * lsmeans_prop.pos)_ADULT #####
 # multiply positive lsmean by porportion positive lsmean and use error propagation to determine value and associated error
 # using the package Propagate. See example below. 
 # https://www.rdocumentation.org/packages/propagate/versions/1.0-4/topics/propagate    
@@ -850,7 +964,7 @@ for (i in 1:num.yr) {
   df[i,] <- t(matrix(RES$sim))
 }
 Mean_AP_ad <- df %>% cbind(LSM_ap_ad.pos$year)
-colnames(Mean_AP_ad) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+colnames(Mean_AP_ad) <- c("Mean", "SE", "Median", "MAD", "2.5%", "97.5%", "Year")
 write.csv(Mean_AP_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/AP_adult_index.csv")
 
 #CK
@@ -865,7 +979,7 @@ for (i in 1:num.yr) {
   df[i,] <- t(matrix(RES$sim))
 }
 Mean_CK_ad <- df %>% cbind(LSM_ck_ad.pos$year)
-colnames(Mean_CK_ad) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+colnames(Mean_CK_ad) <- c("Mean", "SE", "Median", "MAD", "2.5%", "97.5%", "Year")
 write.csv(Mean_CK_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/CK_adult_index.csv")
 
 #TB
@@ -880,7 +994,7 @@ for (i in 1:num.yr) {
   df[i,] <- t(matrix(RES$sim))
 }
 Mean_TB_ad <- df %>% cbind(LSM_tb_ad.pos$year)
-colnames(Mean_TB_ad) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+colnames(Mean_TB_ad) <- c("Mean", "SE", "Median", "MAD", "2.5%", "97.5%", "Year")
 write.csv(Mean_TB_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/TB_adult_index.csv")
 
 #CH
@@ -895,7 +1009,7 @@ for (i in 1:num.yr) {
   df[i,] <- t(matrix(RES$sim))
 }
 Mean_CH_ad <- df %>% cbind(LSM_ch_ad.pos$year)
-colnames(Mean_CH_ad) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+colnames(Mean_CH_ad) <- c("Mean", "SE", "Median", "MAD", "2.5%", "97.5%", "Year")
 write.csv(Mean_CH_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/CH_adult_index.csv")
 
 #JX
@@ -910,7 +1024,7 @@ for (i in 1:num.yr) {
   df[i,] <- t(matrix(RES$sim))
 }
 Mean_JX_ad <- df %>% cbind(LSM_jx_ad.pos$year)
-colnames(Mean_JX_ad) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+colnames(Mean_JX_ad) <- c("Mean", "SE", "Median", "MAD", "2.5%", "97.5%", "Year")
 write.csv(Mean_JX_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/JX_adult_index.csv")
 
 #IR
@@ -925,89 +1039,10 @@ for (i in 1:num.yr) {
   df[i,] <- t(matrix(RES$sim))
 }
 Mean_IR_ad <- df %>% cbind(LSM_ir_ad.pos$year)
-colnames(Mean_IR_ad) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+colnames(Mean_IR_ad) <- c("Mean", "SE", "Median", "MAD", "2.5%", "97.5%", "Year")
 write.csv(Mean_IR_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/IR_adult_index.csv")
 
-
-
-####OLD #######################
-# Make positive dataset
-
-ap_ad.pos <- ap_ad %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
-  mutate(positive = TotalNumberOfSeatroutInPosHauls/totalnumberpositivehauls)
-
-ch_ad.pos <- ch_ad %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
-  mutate(positive = TotalNumberOfSeatroutInPosHauls/totalnumberpositivehauls)
-
-ck_ad.pos <- ck_ad %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
-  mutate(positive = TotalNumberOfSeatroutInPosHauls/totalnumberpositivehauls)
-
-tb_ad.pos <- tb_ad %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
-  mutate(positive = TotalNumberOfSeatroutInPosHauls/totalnumberpositivehauls)
-
-ir_ad.pos <- ir_ad %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
-  mutate(positive = TotalNumberOfSeatroutInPosHauls/totalnumberpositivehauls)
-
-jx_ad.pos <- jx_ad %>% subset(number>0) %>% group_by(year) %>% summarize(totalnumberpositivehauls=length(unique(bio_reference)), TotalNumberOfSeatroutInPosHauls=sum(number))  %>% 
-  mutate(positive = TotalNumberOfSeatroutInPosHauls/totalnumberpositivehauls)
-
-###################
-# Make binomial dataset
-
-ap_ad.bin = ap_ad %>% mutate(HaulCategory= ifelse(ap_ad$number>0,1,0)) %>% group_by(year) %>% 
-  summarize(TotalPosHauls= sum(HaulCategory), TotalHauls = length(unique(bio_reference))) %>%
-  mutate(ProportionPositive = TotalPosHauls/TotalHauls)
-
-ch_ad.bin = ch_ad %>% mutate(HaulCategory= ifelse(ch_ad$number>0,1,0)) %>% group_by(year) %>% 
-  summarize(TotalPosHauls= sum(HaulCategory), TotalHauls = length(unique(bio_reference))) %>%
-  mutate(ProportionPositive = TotalPosHauls/TotalHauls)
-
-ck_ad.bin = ck_ad %>% mutate(HaulCategory= ifelse(ck_ad$number>0,1,0)) %>% group_by(year) %>% 
-  summarize(TotalPosHauls= sum(HaulCategory), TotalHauls = length(unique(bio_reference))) %>%
-  mutate(ProportionPositive = TotalPosHauls/TotalHauls)
-
-tb_ad.bin = tb_ad %>% mutate(HaulCategory= ifelse(tb_ad$number>0,1,0)) %>% group_by(year) %>% 
-  summarize(TotalPosHauls= sum(HaulCategory), TotalHauls = length(unique(bio_reference))) %>%
-  mutate(ProportionPositive = TotalPosHauls/TotalHauls)
-
-ir_ad.bin = ir_ad %>% mutate(HaulCategory= ifelse(ir_ad$number>0,1,0)) %>% group_by(year) %>% 
-  summarize(TotalPosHauls= sum(HaulCategory), TotalHauls = length(unique(bio_reference))) %>%
-  mutate(ProportionPositive = TotalPosHauls/TotalHauls)
-
-jx_ad.bin = jx_ad %>% mutate(HaulCategory= ifelse(jx_ad$number>0,1,0)) %>% group_by(year) %>% 
-  summarize(TotalPosHauls= sum(HaulCategory), TotalHauls = length(unique(bio_reference))) %>%
-  mutate(ProportionPositive = TotalPosHauls/TotalHauls)
-
-
-###################################
-# Produce Adjusted Indices for Adult
-##################################
-
-AP_ad <- cbind(ap_ad.bin$year, ap_ad.pos$totalnumberpositivehauls, ap_ad.pos$TotalNumberOfSeatroutInPosHauls, ap_ad.bin$TotalHauls, data.frame(ap_ad.pos$positive*ap_ad.bin$ProportionPositive)) 
-names(AP_ad) <- c('year','Pos_Hauls', 'Tot_C.Neb_in_Pos', 'All_Hauls', 'index')
-write.csv(AP_ad, "~/Desktop/Github Repo/Seatrout/Data/Indices/DeltaMethod Indices/AP_adult_index.csv")
-
-CH_ad <- cbind(ch_ad.bin$year, ch_ad.pos$totalnumberpositivehauls, ch_ad.pos$TotalNumberOfSeatroutInPosHauls, ch_ad.bin$TotalHauls, data.frame(ch_ad.pos$positive*ch_ad.bin$ProportionPositive)) 
-names(CH_ad) <- c('year','Pos_Hauls', 'Tot_C.Neb_in_Pos', 'All_Hauls', 'index')
-write.csv(CH_ad, "~/Desktop/Github Repo/Seatrout/Data/Indices/DeltaMethod Indices/CH_adult_index.csv")
-
-CK_ad <- cbind(ck_ad.bin$year, ck_ad.pos$totalnumberpositivehauls, ck_ad.pos$TotalNumberOfSeatroutInPosHauls, ck_ad.bin$TotalHauls, data.frame(ck_ad.pos$positive*ck_ad.bin$ProportionPositive)) 
-names(CK_ad) <- c('year','Pos_Hauls', 'Tot_C.Neb_in_Pos', 'All_Hauls', 'index')
-write.csv(CK_ad, "~/Desktop/Github Repo/Seatrout/Data/Indices/DeltaMethod Indices/CK_adult_index.csv")
-
-TB_ad <- cbind(tb_ad.bin$year, tb_ad.pos$totalnumberpositivehauls, tb_ad.pos$TotalNumberOfSeatroutInPosHauls, tb_ad.bin$TotalHauls, data.frame(tb_ad.pos$positive*tb_ad.bin$ProportionPositive)) 
-names(TB_ad) <- c('year','Pos_Hauls', 'Tot_C.Neb_in_Pos', 'All_Hauls', 'index')
-write.csv(TB_ad, "~/Desktop/Github Repo/Seatrout/Data/Indices/DeltaMethod Indices/TB_adult_index.csv")
-
-IR_ad <- cbind(ir_ad.bin$year, ir_ad.pos$totalnumberpositivehauls, ir_ad.pos$TotalNumberOfSeatroutInPosHauls, ir_ad.bin$TotalHauls, data.frame(ir_ad.pos$positive*ir_ad.bin$ProportionPositive)) 
-names(IR_ad) <- c('year','Pos_Hauls', 'Tot_C.Neb_in_Pos', 'All_Hauls', 'index')
-write.csv(IR_ad, "~/Desktop/Github Repo/Seatrout/Data/Indices/DeltaMethod Indices/IR_adult_index.csv")
-
-JX_ad <- cbind(jx_ad.bin$year, jx_ad.pos$totalnumberpositivehauls, jx_ad.pos$TotalNumberOfSeatroutInPosHauls, jx_ad.bin$TotalHauls, data.frame(jx_ad.pos$positive*jx_ad.bin$ProportionPositive)) 
-names(JX_ad) <- c('year','Pos_Hauls', 'Tot_C.Neb_in_Pos', 'All_Hauls', 'index')
-write.csv(JX_ad, "~/Desktop/Github Repo/Seatrout/Data/Indices/DeltaMethod Indices/JX_adult_index.csv")
-
-###################################################
+##### COMBINE YOY & ADULT INDICES ########
 # Make combined biomass indices for YOY and Adults 
 ####################################################
 #I will trim the yoy data because the adult timeseries are shorter- only for TB, CH, IR, and CK
@@ -1030,8 +1065,7 @@ names(IR_bio) <- c("adult", "yoy", "logyoy", "logadult")
 JX_bio <- data.frame(cbind(JX_ad$index, JX$index)) %>% mutate(logyoy=log(JX$index), logadult=log(JX_ad$index))
 names(JX_bio) <- c("adult", "yoy", "logyoy", "logadult")
 
-
-######################################################
+##### FIT SR CURVES TO DETERMINE RESIDUALS###############################################
 # FIT SR CURVES TO DETERMINE RESIDUALS
 #####################################################
 
