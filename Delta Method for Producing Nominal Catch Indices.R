@@ -1,8 +1,8 @@
 ##### ABOUT ##############
 # 10/26/2016
 # Purpose: To produce adjusted nominal catch indices using the Delta Method
-# 1. Use Delta Method to produce YOY indices using predicted positive and proportion positive data sets
-# 2. Use Delta Method to produce adult indices using predicted positive and proportion positive data sets
+# 1. Use Delta Method to produce YOY indices using predicted positive and predicted proportion positive data sets
+# 2. Use Delta Method to produce adult indices using predicted positive and  predicted proportion positive data sets
 # 3. Fit SR relationships to yoy and adult indices to produce the residuals of Beverton Holt and Ricker
 #test
 #test4_26
@@ -288,8 +288,6 @@ drop1(M1_jx.pos, test="F")
 M2_jx.pos <- glm(number ~ year+veg+shore, data=jx.pos, family=quasipoisson)
 drop1(M2_jx.pos, test="F")
 # Year, Veg, Shore = significant factors
-#fit_jx.pos <- predict(M2_jx.pos, type="response")
-#jx.pos <- cbind(jx.pos, fit_jx.pos) %>% mutate(pred_num = fit_jx.pos)
 
 #jx.pos$year <- as.numeric(as.character(jx.pos$year))
 sum_jx <- summarise(group_by(jx.pos, year), sum(number), sum(pred_num), mean(number), mean(pred_num))
@@ -368,15 +366,6 @@ M1_jx.bin <- glm(number ~ year+bottom+veg+shore, data=jx.bin, family=binomial)
 drop1(M1_jx.bin, test ="Chi")
 # Year, Bottom, Veg, Shore = significant
 
-fit_jx.bin <- predict(M1_jx.bin, type="response")
-jx.bin <- cbind(jx.bin, fit_jx.bin) %>% mutate(pred_prop = fit_jx.bin)
-#jx.bin$year <- as.numeric(as.character(jx.bin$year))
-sum_jx.bin <- summarise(group_by(jx.bin, year), sum(number), sum(pred_prop), mean(number), mean(pred_prop))
-#jx_11.bin <- subset(jx.bin, year == 2001)
-
-
-
-
 ## IR_BIN (Year, Month, Veg, Shore = significant)
 summary(Full_ir.bin)
 drop1(Full_ir.bin, test ='Chi')
@@ -404,7 +393,7 @@ final_ir.bin = M1_ir.bin
 
 ##### DETERMINE LEAST SQUARE MEANS_YOY ###########
 # DETERMINE LEAST SQUARE MEANS 
-#################################
+
 # Same thing as covariate adjusted means. Basically, determine the mean value of total positive numbers 
 # of catch per year controlling for covariates (in this case it would be veg and shore variables). 
 # Use lsmeans CRAN document. 
@@ -537,27 +526,80 @@ colnames(Mean_IR) <- c("Mean", "SE", "Median", "MAD", "2.5%", "97.5%", "Year", "
 write.csv(Mean_IR, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/IR_yoy_index.csv")
 
 ##### DETERMINE STANDARDIZED TOTAL # PER YEAR INDEX _ YOY ####
-# sum pred_num = total positive
-# use mean of pred_prob (same thing as summing pred_prob and dividing by total numbers) = proportion positive
-
+# Summarize the fitted numbers for each year. This will = total positive
+# Use mean of pred_prob (same thing as summing pred_prob and dividing by total numbers). This will = proportion positive. 
 #total positive * proportion positive = index of total per year 
 
-fit_ap.pos <- predict(M2_ap.pos, type='response')
-fit_ck.pos <- predict(M3_ck.pos, type='response')
-fit_tb.pos <- predict(M2_tb.pos, type='response')
-fit_ch.pos <- predict(Full_ch.pos, type='response')
-fit_jx.pos <- predict(M2_jx.pos, type='response')
-fit_ir.pos <- predict()
-
-ap.pos <- cbind(ap.pos, fit_ap.pos) %>% mutate(pred_num = fit_ap.pos) 
-
-fit_jx.pos <- predict(M2_jx.pos, type="response")
-jx.pos <- cbind(jx.pos, fit_jx.pos) %>% mutate(pred_num = fit_jx.pos)
+# To get the fitted value for each observation and its associated standard error use following format
+# R <- predict.glm(model, data, type="response", se.fit=T)
+# R$fit = fitted values
+# R$se.fit = standard error of fitted values
 
 
+fit_ap.pos <- predict.glm(final_ap.pos, data=ap.pos$number, type='response', se.fit=T) 
+fit_ck.pos <- predict.glm(final_ck.pos, data=ck.pos$number, type='response', se.fit=T) 
+fit_tb.pos <- predict.glm(final_tb.pos, data=tb.pos$number, type='response', se.fit=T) 
+fit_ch.pos <- predict.glm(final_ch.pos, data=ch.pos$number, type='response', se.fit=T) 
+fit_jx.pos <- predict.glm(final_jx.pos, data=jx.pos$number, type='response', se.fit=T) 
+fit_ir.pos <- predict.glm(final_ir.pos, data=ir.pos$number, type='response', se.fit=T) 
 
+fit_ap.bin <- predict.glm(final_ap.bin, data=ap.bin$number, type='response', se.fit=T) 
+fit_ck.bin <- predict.glm(final_ck.bin, data=ck.bin$number, type='response', se.fit=T) 
+fit_tb.bin <- predict.glm(final_tb.bin, data=tb.bin$number, type='response', se.fit=T) 
+fit_ch.bin <- predict.glm(final_ch.bin, data=ch.bin$number, type='response', se.fit=T) 
+fit_jx.bin <- predict.glm(final_jx.bin, data=jx.bin$number, type='response', se.fit=T) 
+fit_ir.bin <- predict.glm(final_ir.bin, data=ir.bin$number, type='response', se.fit=T) 
 
+#bind together the original data frame, the fitted values, standard error of fitted values
+ap.pos <- cbind(ap.pos, fit_ap.pos$fit, fit_ap.pos$se.fit) %>% mutate(fitted_num = fit_ap.pos$fit,fitted_se=fit_ap.pos$se.fit) %>% select(year, number, fitted_num, fitted_se)
+ck.pos <- cbind(ck.pos, fit_ck.pos$fit, fit_ck.pos$se.fit) %>% mutate(fitted_num = fit_ck.pos$fit,fitted_se=fit_ck.pos$se.fit) %>% select(year, number, fitted_num, fitted_se)
+tb.pos <- cbind(tb.pos, fit_tb.pos$fit, fit_tb.pos$se.fit) %>% mutate(fitted_num = fit_tb.pos$fit,fitted_se=fit_tb.pos$se.fit) %>% select(year, number, fitted_num, fitted_se)
+ch.pos <- cbind(ch.pos, fit_ch.pos$fit, fit_ch.pos$se.fit) %>% mutate(fitted_num = fit_ch.pos$fit,fitted_se=fit_ch.pos$se.fit) %>% select(year, number, fitted_num, fitted_se)
+jx.pos <- cbind(jx.pos, fit_jx.pos$fit, fit_jx.pos$se.fit) %>% mutate(fitted_num = fit_jx.pos$fit,fitted_se=fit_jx.pos$se.fit) %>% select(year, number, fitted_num, fitted_se)
+ir.pos <- cbind(ir.pos, fit_ir.pos$fit, fit_ir.pos$se.fit) %>% mutate(fitted_num = fit_ir.pos$fit,fitted_se=fit_ir.pos$se.fit) %>% select(year, number, fitted_num, fitted_se)
 
+ap.bin <- cbind(ap.bin, fit_ap.bin$fit, fit_ap.bin$se.fit) %>% mutate(fitted_num = fit_ap.bin$fit,fitted_se=fit_ap.bin$se.fit) %>% select(year, number, fitted_num, fitted_se)
+ck.bin <- cbind(ck.bin, fit_ck.bin$fit, fit_ck.bin$se.fit) %>% mutate(fitted_num = fit_ck.bin$fit,fitted_se=fit_ck.bin$se.fit)%>% select(year, number, fitted_num, fitted_se) 
+tb.bin <- cbind(tb.bin, fit_tb.bin$fit, fit_tb.bin$se.fit) %>% mutate(fitted_num = fit_tb.bin$fit,fitted_se=fit_tb.bin$se.fit) %>% select(year, number, fitted_num, fitted_se)
+ch.bin <- cbind(ch.bin, fit_ch.bin$fit, fit_ch.bin$se.fit) %>% mutate(fitted_num = fit_ch.bin$fit,fitted_se=fit_ch.bin$se.fit) %>% select(year, number, fitted_num, fitted_se)
+jx.bin <- cbind(jx.bin, fit_jx.bin$fit, fit_jx.bin$se.fit) %>% mutate(fitted_num = fit_jx.bin$fit,fitted_se=fit_jx.bin$se.fit) %>% select(year, number, fitted_num, fitted_se)
+ir.bin <- cbind(ir.bin, fit_ir.bin$fit, fit_ir.bin$se.fit) %>% mutate(fitted_num = fit_ir.bin$fit,fitted_se=fit_ir.bin$se.fit) %>% select(year, number, fitted_num, fitted_se)
+
+#summarise by year
+sum_ap.bin <- group_by(ap.bin, year) %>% summarise(total_pos_hauls = sum(number), total_pred_pos_hauls=sum(fitted_num), SE_prop=sum(fitted_se), total_hauls = length(number)) %>% mutate(prop_pos = total_pos_hauls/total_hauls)
+sum_ap.pos <- group_by(ap.pos, year) %>% summarise(total_number = sum(fitted_num),SE = sum(fitted_se)) 
+ap_adj <- cbind(sum_ap.bin, sum_ap.pos)
+
+ap_adj <- summarize(group_by(ap.pos, year), total_number = sum(fitted_num), SE = sum(fitted_se)) %>%
+              mutate(total_pred_pos_hauls=sum_ap.bin$total_pos_hauls, SE_prop= sum_ap.bin$SE_prop, total_hauls=sum_ap.bin$total_hauls,
+                     prop_pos = sum_ap.bin$prop_pos, adjusted_num= sum_ap.bin$prop_pos*total_number, bay= rep("AP",18), scaled_num = scale(adjusted_num))
+           
+sum_ck.bin <- summarize(group_by(ck.bin, year), total_pos_hauls = sum(number), total_pred_pos=sum(fitted_num), SE_prop=sum(fitted_se), total_hauls = length(number))%>% mutate(prop_pos = total_pos_hauls/total_hauls)
+ck_adj <- summarize(group_by(ck.pos, year), total_number = sum(fitted_num), SE = sum(fitted_se)) %>%
+              mutate(total_pred_pos_hauls=sum_ck.bin$total_pos_hauls, SE_prop= sum_ck.bin$SE_prop, total_hauls=sum_ck.bin$total_hauls,
+                     prop_pos = sum_ck.bin$prop_pos, adjusted_num= sum_ck.bin$prop_pos*total_number,bay= rep("CK",20), scaled_num=scale(adjusted_num))
+
+sum_tb.bin <- summarize(group_by(tb.bin, year), total_pos_hauls = sum(number), total_pred_pos=sum(fitted_num), SE_prop=sum(fitted_se), total_hauls = length(number))%>% mutate(prop_pos = total_pos_hauls/total_hauls)
+tb_adj <- summarize(group_by(tb.pos, year), total_number = sum(fitted_num), SE = sum(fitted_se)) %>%
+             mutate(total_pred_pos_hauls=sum_tb.bin$total_pos_hauls, SE_prop= sum_tb.bin$SE_prop, total_hauls=sum_tb.bin$total_hauls,
+                    prop_pos = sum_tb.bin$prop_pos, adjusted_num= sum_tb.bin$prop_pos*total_number)%>% mutate(bay= rep("TB",27), scaled_num=scale(adjusted_num))
+
+sum_ch.bin <- summarize(group_by(ch.bin, year), total_pos_hauls = sum(number), total_pred_pos=sum(fitted_num), SE_prop=sum(fitted_se), total_hauls = length(number))%>% mutate(prop_pos = total_pos_hauls/total_hauls)
+ch_adj <- summarize(group_by(ch.pos, year), total_number = sum(fitted_num), SE = sum(fitted_se)) %>%
+              mutate(total_pred_pos_hauls=sum_ch.bin$total_pos_hauls, SE_prop= sum_ch.bin$SE_prop, total_hauls=sum_ch.bin$total_hauls,
+                     prop_pos = sum_ch.bin$prop_pos, adjusted_num= sum_ch.bin$prop_pos*total_number)%>% mutate(bay= rep("CH",27), scaled_num=scale(adjusted_num))
+
+sum_jx.bin <- summarize(group_by(jx.bin, year), total_pos_hauls = sum(number), total_pred_pos=sum(fitted_num), SE_prop=sum(fitted_se), total_hauls = length(number))%>% mutate(prop_pos = total_pos_hauls/total_hauls)
+jx_adj <- summarize(group_by(jx.pos, year), total_number = sum(fitted_num), SE = sum(fitted_se)) %>%
+              mutate(total_pred_pos_hauls=sum_jx.bin$total_pos_hauls, SE_prop= sum_jx.bin$SE_prop, total_hauls=sum_jx.bin$total_hauls,
+                     prop_pos = sum_jx.bin$prop_pos, adjusted_num= sum_jx.bin$prop_pos*total_number)%>% mutate(bay= rep("JX",15), scaled_num=scale(adjusted_num))
+
+sum_ir.bin <- summarize(group_by(ir.bin, year), total_pos_hauls = sum(number), total_pred_pos=sum(fitted_num), SE_prop=sum(fitted_se), total_hauls = length(number))%>% mutate(prop_pos = total_pos_hauls/total_hauls)
+ir_adj <- summarize(group_by(ir.pos, year), total_number = sum(fitted_num), SE = sum(fitted_se)) %>%
+              mutate(total_pred_pos_hauls=sum_ir.bin$total_pos_hauls, SE_prop= sum_ir.bin$SE_prop, total_hauls=sum_ir.bin$total_hauls,
+                     prop_pos = sum_ir.bin$prop_pos, adjusted_num= sum_ir.bin$prop_pos*total_number)%>% mutate(bay= rep("IR",26), scaled_num=scale(adjusted_num))
+
+All_adj <- rbind(ap_adj, ck_adj, tb_adj, ch_adj, jx_adj, ir_adj)
 #### GGPLOT LSMEAN CAUGHT PER SET - YOY ####
 
 #join together to put in a ggplot
