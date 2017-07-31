@@ -10,6 +10,7 @@
 #test 7_30
 #this is a test from work
 #newchange
+
 #Delta Method
 # This method uses the Delta method for determining the nominal catch rate of Spotted Seatrout in the FIM catch
 # Uses methods described in Chyan-huei et al 1992
@@ -42,7 +43,7 @@ library(haven) #to load sas
 library(dplyr) # to do df manipulation
 library(lsmeans) #to determine the least squares means
 library(AER) #to test for overdispersion
-
+library(propagate) # for propagating error when multiplying predicted positive by predicted proportion positive
 ##### IMPORT DATA SETS_YOY ######
 ###########################
 # These data sets were produced using the spp_comb_5_13_EG_2bays_yoy_2015_EHedits.sas program which is stored in my scratch folder
@@ -65,11 +66,14 @@ library(AER) #to test for overdispersion
 # Created a new GitHub repository for just my scripts in the Seatrout project
 # New repository is called Seatrout_Scripts
 
-setwd("~/Desktop/PhD project/Projects/Seatrout/FWRI SCRATCH FOLDER/Elizabeth Herdter/SAS data sets/FIMData/NEWNov7")
+#must change working directory for data when working on personal vs work computer
+#setwd("~/Desktop/PhD project/Projects/Seatrout/FWRI SCRATCH FOLDER/Elizabeth Herdter/SAS data sets/FIMData/NEWNov7")
+#setwd("T:/Elizabeth Herdter/SAS data sets/FIMData/NEWNov7")
+
 
 #load the data, select the peak reproductive months, reorder columns alphabetically so I can combine dataframes (some columns were in different position in other df)
 ap = subset(read_sas("ap_yoy_cn_c.sas7bdat"), month %in% c(6,7,8,9,10,11)) %>% mutate(bUnk=bunk) %>% select(-bunk) 
-ap <- ap %>% select(noquote(order(colnames(ap))))
+ap <- ap %>% select(noquote(order(colnames(ap))))  #reorders the columns alphabetically 
 apl = read_sas("ap_yoy_cn_l.sas7bdat")
 
 #merge with length data and make sure the approporiate lengths are included 
@@ -164,7 +168,7 @@ plot(ap.pos$veg, ap.pos$number, vlab="veg", ylab="number")
 # To produce predicted positive numbers and binomial data set
 #######################
 
-# 1. Build the full models with all potential variables and a base model with only year. 
+# 1. Build the full models with all potential variables and a base model with only year as a variable. 
 #    Do this for both the positive (Poisson distribution) and binary (Binomial distribution) datasets. 
 # 2. Check for overdispersion in the Poisson distribution scenario. 
 # 3. If there is overdispersion use quasipoisson 
@@ -203,7 +207,7 @@ dispersiontest(Full_ch.pos, trafo=1)
 dispersiontest(Full_jx.pos, trafo=1)
 dispersiontest(Full_ir.pos, trafo=1)
 
-# 3. there is evidence of overdispersion for every bay so use quasipoisson for Positive models (Zuur pg 226)
+# 3. there is evidence of overdispersion for every bay (p values were less than) so use quasipoisson for Positive models (Zuur pg 226)
 Full_ap.pos <- glm(number ~ year +month+veg+bottom+shore, data=ap.pos, family=quasipoisson)
 Full_ck.pos <- glm(number ~ year +month+veg+bottom+shore, data=ck.pos, family=quasipoisson)
 Full_tb.pos <- glm(number ~ year +month+veg+bottom+shore, data=tb.pos, family=quasipoisson)
@@ -379,7 +383,7 @@ final_ap.bin = M3_ap.bin
 final_ck.bin = M1_ck.bin
 final_tb.bin = M1_tb.bin
 final_ch.bin = M1_ch.bin
-final_jx_bin = M1_jx.bin
+final_jx.bin = M1_jx.bin
 final_ir.bin = M1_ir.bin
 
 ### DETERMINE LEAST SQUARE MEANS_YOY ###########
@@ -394,7 +398,7 @@ ap.rf.grid <- ref.grid(final_ap.pos)
 ap.bin.rf.grid <- ref.grid(final_ap.bin)
 
 #Can make predictions using the reference grid. It produces a mean value of numbers based on each scenario combination.  
-test = summary(ap.rf.grid)
+test_ap.pos = summary(ap.rf.grid)
 test_ap.bin= summary(ap.bin.rf.grid)
 
 # Use lsmeans to determine the least square mean of positive values. 
@@ -409,7 +413,7 @@ LSM_ch.pos <- summary(lsmeans(final_ch.pos, 'year', data=ch.pos), type="response
 LSM_jx.pos <- summary(lsmeans(final_jx.pos, 'year', data=jx.pos), type="response")
 LSM_ir.pos <- summary(lsmeans(final_ir.pos, 'year', data=ir.pos), type="response")
 
-#BINOMIAL (with type="response" this is equal to proportion positive)
+#BINOMIAL (with type="response" this is equal to proportion positive becuase its like a percentage- proportion of 0s to 1s)
 LSM_ap.bin <- summary(lsmeans(final_ap.bin, 'year', data=ap.bin), type="response")
 LSM_ck.bin <- summary(lsmeans(final_ck.bin, 'year', data=ck.bin), type="response")
 LSM_tb.bin <- summary(lsmeans(final_tb.bin, 'year', data=tb.bin), type="response")
@@ -422,14 +426,17 @@ LSM_ir.bin <- summary(lsmeans(final_ir.bin, 'year', data=ir.bin), type="response
 # using the package Propagate. See example below. 
 # https://www.rdocumentation.org/packages/propagate/versions/1.0-4/topics/propagate    
 
-#Must use a for loop to do the error propagation because it goes one row at a time. 
+#Must use a for loop to do the error propagation because it goes one row at a time without the loop and its very cumbersome 
+#error propagation steps start with the EXPR command where you tell it what the expression is going to be. 
+# The the expression setup gets used within the propagation step below with the actual dataframe (DF)
+
 
 #AP
 num.yr = length(LSM_ap.pos$year)  
 df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
 for (i in 1:num.yr) {
-  x = c(LSM_ap.pos$rate[i], LSM_ap.pos$SE[i])
-  y= c(LSM_ap.bin$prob[i], LSM_ap.bin$SE[i])
+  x = c(LSM_ap.pos$rate[1], LSM_ap.pos$SE[1])
+  y= c(LSM_ap.bin$prob[1], LSM_ap.bin$SE[1])
   EXPR <- expression(x*y)
   DF <- cbind(x,y)
   RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
