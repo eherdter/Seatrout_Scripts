@@ -65,7 +65,11 @@ library(AER) #to test for overdispersion
 # Created a new GitHub repository for just my scripts in the Seatrout project
 # New repository is called Seatrout_Scripts
 
-setwd("~/Desktop/PhD project/Projects/Seatrout/FWRI SCRATCH FOLDER/Elizabeth Herdter/SAS data sets/FIMData/NEWNov7")
+#must change working directory for data when working on personal vs work computer
+#setwd("~/Desktop/PhD project/Projects/Seatrout/FWRI SCRATCH FOLDER/Elizabeth Herdter/SAS data sets/FIMData/NEWNov7")
+#setwd("T:/Elizabeth Herdter/SAS data sets/FIMData/NEWNov7")
+
+
 
 #load the data, select the peak reproductive months, reorder columns alphabetically so I can combine dataframes (some columns were in different position in other df)
 ap = subset(read_sas("ap_yoy_cn_c.sas7bdat"), month %in% c(6,7,8,9,10,11)) %>% mutate(bUnk=bunk) %>% select(-bunk) 
