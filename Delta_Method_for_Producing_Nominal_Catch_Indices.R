@@ -39,14 +39,15 @@
 # Then I can create the Adjusted Predicted Index = Predicted Positive Data * Predicted Proportion Positive Data
 
 ##### SET PACKAGES ######################
-###########################
+
 library(haven) #to load sas
 library(dplyr) # to do df manipulation
 library(lsmeans) #to determine the least squares means
 library(AER) #to test for overdispersion
-library(propagate) # for propagating error when multiplying predicted positive by predicted proportion positive
+
+#DO NOT LOAD PROPAGATE NOW, ONLY LOAD WHEN USING BELOW. IT SCREWS THINGS UP#
+#library(propagate) # for propagating error when multiplying predicted positive by predicted proportion positive
 ##### IMPORT DATA SETS_YOY ######
-###########################
 # These data sets were produced using the spp_comb_5_13_EG_2bays_yoy_2015_EHedits.sas program which is stored in my scratch folder
 # Bay and river stations were denoted by the gear sampling  code. There is a hard copy of this script in my green folder. 
 #11/7/16- Realized that the data sets that were produced by the above sas program that I edited was pretty crummy in that
@@ -114,7 +115,6 @@ full <- rbind(ap,ck,tb,ch,jx,ir)
 
 ##### SELECT CATEGORICAL HABITAT VALUES_YOY ########
 # to be used in the model to predict positive numbers
-################################################
 
 #Based on FWRI code the three variables were bottom type (bStr, bsan, bmud), bottom vegetation (bveg), and shoreline (Shore)
 #There are three different bottom type variables each of them coded in a binary form.
@@ -135,7 +135,7 @@ full[,c(2,5:9)] <- lapply(full[,c(2,5:9)], factor)
 
 ###### MAKE POSITIVE & BINARY SET_YOY ##########
 # to determine the total number of positive huals and proportion positive
-##############################################
+
 
 full.pos<- full %>% subset(number>0)
 full.bin <- full %>% mutate(number=ifelse(number>0,1,0))
@@ -155,7 +155,7 @@ jx.bin <- full.bin %>% subset(bay =='JX')
 ir.bin <- full.bin %>% subset(bay =='IR')
 
 ##### VISUALIZE THE DATA_YOY ########
-################################
+
 
 #Plot the data
 
@@ -167,7 +167,6 @@ plot(ap.pos$veg, ap.pos$number, vlab="veg", ylab="number")
 
 ### BUILD MODELS_YOY #########
 # To produce predicted positive numbers and binomial data set
-#######################
 
 # 1. Build the full models with all potential variables and a base model with only year as a variable. 
 #    Do this for both the positive (Poisson distribution) and binary (Binomial distribution) datasets. 
@@ -217,7 +216,6 @@ Full_jx.pos <- glm(number ~ year +month+veg+bottom+shore, data=jx.pos, family=qu
 Full_ir.pos <- glm(number ~ year +month+veg+bottom+shore, data=ir.pos, family=quasipoisson)
 
 ## MODEL SELECTION POSITIVE w/ DROP1 command_YOY ######
-################################
 # Pages 220 is to 230 in Zuur are helpful for following methods. 
 # The AIC is not defined for quasipoisson models so can't use the step function like what was used in the FWRI code. 
 # Instead, use the drop1 function which is applicable for the quassiPoisson GLM and it is more equivalent to hypothesis testing. (Zuur pg 227)
@@ -304,7 +302,6 @@ drop1(M2_ir.pos, test="F")
 # Year, Veg, Bottom = significant factors
 
 ## MODEL SELECTION BINARY w/ DROP1 command_YOY ######
-################################
 # pg 253 Zuur
 ##  AP_BIN (Year, Veg = significant)
 summary(Full_ap.bin)
@@ -372,7 +369,6 @@ M1_ir.bin <- glm(number ~ year+month+veg+shore, data=ir.bin, family=binomial)
 drop1(M1_ir.bin, test ="Chi")
 
 ### ASSIGN FINAL MODELS_YOY ###### 
-###############################
 final_ap.pos = M2_ap.pos 
 final_ck.pos = M3_ck.pos
 final_tb.pos = M2_tb.pos
@@ -389,7 +385,6 @@ final_ir.bin = M1_ir.bin
 
 ### DETERMINE LEAST SQUARE MEANS_YOY ###########
 # DETERMINE LEAST SQUARE MEANS 
-#################################
 # Same thing as covariate adjusted means. Basically, determine the mean value of total positive numbers 
 # of catch per year controlling for covariates (in this case it would be veg and shore variables). 
 # Use lsmeans CRAN document. 
@@ -431,13 +426,13 @@ LSM_ir.bin <- summary(lsmeans(final_ir.bin, 'year', data=ir.bin), type="response
 #error propagation steps start with the EXPR command where you tell it what the expression is going to be. 
 # The the expression setup gets used within the propagation step below with the actual dataframe (DF)
 
-
+library(propagate)
 #AP
 num.yr = length(LSM_ap.pos$year)  
 df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
 for (i in 1:num.yr) {
-  x = c(LSM_ap.pos$rate[1], LSM_ap.pos$SE[1])
-  y= c(LSM_ap.bin$prob[1], LSM_ap.bin$SE[1])
+  x = c(LSM_ap.pos$rate[i], LSM_ap.pos$SE[i])
+  y= c(LSM_ap.bin$prob[i], LSM_ap.bin$SE[i])
   EXPR <- expression(x*y)
   DF <- cbind(x,y)
   RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
@@ -445,7 +440,6 @@ for (i in 1:num.yr) {
 }
 Mean_AP <- df %>% cbind(LSM_ap.pos$year)
 colnames(Mean_AP) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
-write.csv(Mean_AP, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/AP_yoy_index.csv")
 
 #CK
 num.yr = length(LSM_ck.pos$year)  
@@ -460,7 +454,6 @@ for (i in 1:num.yr) {
 }
 Mean_CK <- df %>% cbind(LSM_ck.pos$year)
 colnames(Mean_CK) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
-write.csv(Mean_CK, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/CK_yoy_index.csv")
 
 #TB
 num.yr = length(LSM_tb.pos$year)  
@@ -475,7 +468,6 @@ for (i in 1:num.yr) {
 }
 Mean_TB <- df %>% cbind(LSM_tb.pos$year)
 colnames(Mean_TB) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
-write.csv(Mean_TB, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/TB_yoy_index.csv")
 
 #CH
 num.yr = length(LSM_ch.pos$year)  
@@ -490,7 +482,6 @@ for (i in 1:num.yr) {
 }
 Mean_CH <- df %>% cbind(LSM_ch.pos$year)
 colnames(Mean_CH) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
-write.csv(Mean_CH, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/CH_yoy_index.csv")
 
 #JX
 num.yr = length(LSM_jx.pos$year)  
@@ -505,7 +496,6 @@ for (i in 1:num.yr) {
 }
 Mean_JX <- df %>% cbind(LSM_jx.pos$year)
 colnames(Mean_JX) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
-write.csv(Mean_JX, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/JX_yoy_index.csv")
 
 #IR
 num.yr = length(LSM_ir.pos$year)  
@@ -520,8 +510,45 @@ for (i in 1:num.yr) {
 }
 Mean_IR <- df %>% cbind(LSM_ir.pos$year)
 colnames(Mean_IR) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
-write.csv(Mean_IR, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/IR_yoy_index.csv")
 
+#detach propagate
+detach_package <- function(pkg, character.only = FALSE)
+{
+  if(!character.only)
+  {
+    pkg <- deparse(substitute(pkg))
+  }
+  search_item <- paste("package", pkg, sep = ":")
+  while(search_item %in% search())
+  {
+    detach(search_item, unload = TRUE, character.only = TRUE)
+  }
+}
+
+
+detach_package(propagate)
+
+
+#make sure certain functions are not masked- shouldnt be if the detachment of propagate functioned as expected
+conflicts(detail=TRUE)
+
+#EXPORT PREDICTED INDEX_YOY ####
+#export to csv after detaching Propagate_PERSONAL COMPUTER
+#write.csv(Mean_AP, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/AP_yoy_index.csv")
+#write.csv(Mean_IR, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/IR_yoy_index.csv")
+#write.csv(Mean_JX, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/JX_yoy_index.csv")
+#write.csv(Mean_CH, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/CH_yoy_index.csv")
+#write.csv(Mean_TB, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/TB_yoy_index.csv")
+#write.csv(Mean_CK, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/CK_yoy_index.csv")
+
+
+#export to csv after detaching Propagate_WORK COMPUTER
+write.csv(Mean_AP, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/AP_yoy_index.csv")
+write.csv(Mean_IR, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/IR_yoy_index.csv")
+write.csv(Mean_JX, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/JX_yoy_index.csv")
+write.csv(Mean_CH, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/CH_yoy_index.csv")
+write.csv(Mean_TB, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/TB_yoy_index.csv")
+write.csv(Mean_CK, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/CK_yoy_index.csv")
 
 ##LOAD ADULT DATA ########
 ################################################
