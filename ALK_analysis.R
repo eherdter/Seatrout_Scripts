@@ -20,17 +20,18 @@
 #################################################################
 library(FSA)
 library(magrittr)
-library(dplyr)
 library(nnet)
 library(plotrix)
 library(haven)
 library(ggplot2)
 library(scales)
 library(fishmethods)
+library(dplyr)
 
 # set working directory
-setwd("~/Desktop/PhD project/Projects/Seatrout/Data")
+#setwd("~/Desktop/PhD project/Projects/Seatrout/Data")
 #must add working directory for work 
+setwd("U:/PhD_projectfiles/Raw_Data/Age_Length_Data")
 
 
 
@@ -45,33 +46,33 @@ setwd("~/Desktop/PhD project/Projects/Seatrout/Data")
 # turn tl from mm to cm
 # create length categories with FSA package
 
-test <- read.csv("ALK with Bay.csv", header=T)
+test <- read.csv("ALK_Bay_and_weight.csv", header=T)
 
-Agelength_TB<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="TB" & tl>14 & final_age >0 & program== 'FIM', select=c(sex,specimennumber, bay, tl,sl, final_age, Date))) %>% mutate(tl=tl/10, sl=sl/10, lcat2 =lencat(tl, w=1)) #, as.fact=TRUE))- can include this when determing ALK below but the smoothed ALK needs to be the nonfactored version of the length categorization variable. 
+Agelength_TB<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="TB" & tl>14 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10, sl=sl/10, lcat2 =lencat(tl, w=1)) #, as.fact=TRUE))- can include this when determing ALK below but the smoothed ALK needs to be the nonfactored version of the length categorization variable. 
 Agelength_TB$sex[which(Agelength_TB$sex == "m")] = "M"
 Agelength_TB$sex <- droplevels(Agelength_TB$sex)
 
 #change date format into a factor so that I can do summary statistics by year later on
-Agelength_TB$Date=as.character(Agelength_TB$Date)
-Agelength_TB$DateNew = as.POSIXct(strptime(Agelength_TB$Date, format="%m/%d/%y", tz="")) 
-Agelength_TB = mutate(Agelength_TB, year = strftime(DateNew, format="%Y")) %>%select(-Date, -DateNew)
+Agelength_TB$date=as.character(Agelength_TB$date)
+Agelength_TB$DateNew = as.POSIXct(strptime(Agelength_TB$date, format="%d-%B-%y", tz=""))  #B is the selection for when month is spelled out
+Agelength_TB = mutate(Agelength_TB, year = strftime(DateNew, format="%Y")) %>% select(-date, -DateNew)
 Agelength_TB$year = as.factor(Agelength_TB$year) 
 
-Agelength_AP<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="AP" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,specimennumber, bay, tl,sl, final_age, Date))) %>% mutate(tl=tl/10, sl=sl/10, lcat2 =lencat(tl, w=1)) #, as.fact=TRUE))
+Agelength_AP<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="AP" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, date))) %>% mutate(tl=tl/10, sl=sl/10, lcat2 =lencat(tl, w=1)) #, as.fact=TRUE))
 
 Agelength_AP$Date=as.character(Agelength_AP$Date)
 Agelength_AP$DateNew = as.POSIXct(strptime(Agelength_AP$Date, format="%m/%d/%y", tz="")) 
 Agelength_AP = mutate(Agelength_AP, year = strftime(DateNew, format="%Y")) %>%select(-Date, -DateNew)
 Agelength_AP$year = as.factor(Agelength_AP$year) 
 
-Agelength_CK<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="CK" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,specimennumber, bay, tl,sl, final_age, Date))) %>% mutate(tl=tl/10, sl=sl/10,lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
+Agelength_CK<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="CK" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, Date))) %>% mutate(tl=tl/10, sl=sl/10,lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
 
 Agelength_CK$Date=as.character(Agelength_CK$Date)
 Agelength_CK$DateNew = as.POSIXct(strptime(Agelength_CK$Date, format="%m/%d/%y", tz="")) 
 Agelength_CK = mutate(Agelength_CK, year = strftime(DateNew, format="%Y")) %>%select(-Date, -DateNew)
 Agelength_CK$year = as.factor(Agelength_CK$year) 
 
-Agelength_CH<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="CH" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,specimennumber, bay, tl,sl, final_age, Date))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
+Agelength_CH<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="CH" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, Date))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
 Agelength_CH$sex[which(Agelength_CH$sex == "f")] = "F"
 Agelength_CH$sex <- droplevels(Agelength_CH$sex)
 
@@ -80,14 +81,14 @@ Agelength_CH$DateNew = as.POSIXct(strptime(Agelength_CH$Date, format="%m/%d/%y",
 Agelength_CH = mutate(Agelength_CH, year = strftime(DateNew, format="%Y")) %>%select(-Date, -DateNew)
 Agelength_CH$year = as.factor(Agelength_CH$year) 
 
-Agelength_IR<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="IR" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,specimennumber, bay, tl,sl, final_age, Date))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
+Agelength_IR<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="IR" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, Date))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
 
 Agelength_IR$Date=as.character(Agelength_IR$Date)
 Agelength_IR$DateNew = as.POSIXct(strptime(Agelength_IR$Date, format="%m/%d/%y", tz="")) 
 Agelength_IR = mutate(Agelength_IR, year = strftime(DateNew, format="%Y")) %>%select(-Date, -DateNew)
 Agelength_IR$year = as.factor(Agelength_IR$year) 
 
-Agelength_JX<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="JX" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,specimennumber, bay, tl,sl, final_age, Date))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
+Agelength_JX<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="JX" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, Date))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
 
 Agelength_JX$Date=as.character(Agelength_JX$Date)
 Agelength_JX$DateNew = as.POSIXct(strptime(Agelength_JX$Date, format="%m/%d/%y", tz="")) 
@@ -586,7 +587,7 @@ smoJX <- alkPlot(alksmo.jx, type="barplot", xlab="Total Length (cm)", pal="rainb
 #AMONG GROUP STATISTICAL COMPARISONS #####
 #page 102 in Ogle
 
-Agelength_ALL<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH" | bay=="IR" |bay=="AP" | bay=="JX"),select=c(specimennumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+Agelength_ALL<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH" | bay=="IR" |bay=="AP" | bay=="JX"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_ALL, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_ALL, maxit=500) #more complex model
 
@@ -597,7 +598,7 @@ test <- anova(mod1, mod2)
       #Null Hypothesis- there is no significant difference in alk between groups
 
   #removing IR
-Agelength_minIR<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH" | bay=="AP" | bay=="JX"),select=c(specimennumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+Agelength_minIR<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH" | bay=="AP" | bay=="JX"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_minIR, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_minIR, maxit=500) #more complex model
 
@@ -605,7 +606,7 @@ anova(mod1, mod2)
   #still significantly different
 
   #now remove JX also
-Agelength_minIRJX<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH" | bay=="AP"),select=c(specimennumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+Agelength_minIRJX<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH" | bay=="AP"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_minIRJX, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_minIRJX, maxit=500) #more complex model
 
@@ -613,14 +614,14 @@ anova(mod1, mod2)
   #still significantly different
 
   #now remove AP also
-Agelength_minIRJXAP<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH"),select=c(specimennumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+Agelength_minIRJXAP<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_minIRJXAP, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_minIRJXAP, maxit=500) #more complex model
 
 anova(mod1, mod2)
 
 #now remove CH also
-Agelength_minIRJXAPCH<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK"),select=c(specimennumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+Agelength_minIRJXAPCH<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_minIRJXAPCH, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_minIRJXAPCH, maxit=500) #more complex model
 
@@ -631,7 +632,7 @@ anova(mod1, mod2)
       #Null Hypothesis- there is no significant difference in alk between groups
 
 #TB vs CK 
-Agelength_TBCK<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" |  bay== "CK" ),select=c(specimennumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+Agelength_TBCK<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" |  bay== "CK" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_TBCK, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_TBCK, maxit=500) #more complex model
 
@@ -642,14 +643,14 @@ anova(mod1, mod2)
 # -2*LL of model 2
 
 #TB vs CH
-Agelength_TBCH<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" |  bay== "CH" ),select=c(specimennumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+Agelength_TBCH<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" |  bay== "CH" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_TBCH, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_TBCH, maxit=500) #more complex model
 
 anova(mod1, mod2)
 
 #TB vs AP
-Agelength_TBAP<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" |  bay== "AP" ),select=c(specimennumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+Agelength_TBAP<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" |  bay== "AP" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_TBAP, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_TBAP, maxit=500) #more complex model
 
@@ -659,7 +660,7 @@ library(lmtest)
 #t <- lrtest(mod1, mod2)
 
 #TB vs JX
-Agelength_TBJX<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" |  bay== "JX" ),select=c(specimennumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+Agelength_TBJX<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" |  bay== "JX" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_TBJX, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_TBJX, maxit=500) #more complex model
 
@@ -667,7 +668,7 @@ lrtest(mod1, mod2)
 
 
 #TB vs IR
-Agelength_TBIR<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" |  bay== "IR" ),select=c(specimennumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+Agelength_TBIR<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" |  bay== "IR" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_TBIR, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_TBIR, maxit=500) #more complex model
 
@@ -675,28 +676,28 @@ anova(mod1, mod2)
 
 #CK vs CH
 
-Agelength_CKCH<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "CK" |  bay== "CH" ),select=c(specimennumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+Agelength_CKCH<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "CK" |  bay== "CH" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_CKCH, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_CKCH, maxit=500) #more complex model
 
 anova(mod1, mod2)
 
 #CK Vs AP
-Agelength_CKAP<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "CK" |  bay== "AP" ),select=c(specimennumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+Agelength_CKAP<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "CK" |  bay== "AP" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_CKAP, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_CKAP, maxit=500) #more complex model
 
 anova(mod1, mod2)
 
 #CK Vs JX
-Agelength_CKJX<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "CK" |  bay== "JX" ),select=c(specimennumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+Agelength_CKJX<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "CK" |  bay== "JX" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_CKJX, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_CKJX, maxit=500) #more complex model
 
 anova(mod1, mod2)
 
 #CK Vs IR
-Agelength_CKIR<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "CK" |  bay== "IR" ),select=c(specimennumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+Agelength_CKIR<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "CK" |  bay== "IR" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_CKIR, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_CKIR, maxit=500) #more complex model
 
@@ -704,14 +705,14 @@ anova(mod1, mod2)
 
 
 #CH Vs AP
-Agelength_CKAP<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "CH" |  bay== "AP" ),select=c(specimennumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+Agelength_CKAP<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "CH" |  bay== "AP" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_CKAP, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_CKAP, maxit=500) #more complex model
 
 anova(mod1, mod2)
 
 #CH Vs JX
-Agelength_CKJX<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "CH" |  bay== "JX" ),select=c(specimennumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+Agelength_CKJX<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "CH" |  bay== "JX" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_CKJX, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_CKJX, maxit=500) #more complex model
 
@@ -719,14 +720,14 @@ anova(mod1, mod2)
 
 
 #CH Vs IR
-Agelength_CKIR<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "CH" |  bay== "IR" ),select=c(specimennumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+Agelength_CKIR<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "CH" |  bay== "IR" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_CKIR, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_CKIR, maxit=500) #more complex model
 
 anova(mod1, mod2)
 
 #AP Vs JX
-Agelength_APJX<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "AP" |  bay== "JX" ),select=c(specimennumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+Agelength_APJX<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "AP" |  bay== "JX" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_APJX, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_APJX, maxit=500) #more complex model
 
@@ -734,14 +735,14 @@ anova(mod1, mod2)
 
 
 #AP Vs IR
-Agelength_APIR<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "AP" |  bay== "IR" ),select=c(specimennumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+Agelength_APIR<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "AP" |  bay== "IR" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_APIR, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_APIR, maxit=500) #more complex model
 
 anova(mod1, mod2)
 
 #JX Vs IR
-Agelength_JXIR<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "JX" |  bay== "IR" ),select=c(specimennumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+Agelength_JXIR<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "JX" |  bay== "IR" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_JXIR, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_JXIR, maxit=500) #more complex model
 
