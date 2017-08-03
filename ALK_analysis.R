@@ -26,6 +26,7 @@ library(plotrix)
 library(haven)
 library(ggplot2)
 library(scales)
+library(fishmethods)
 
 # set working directory
 setwd("~/Desktop/PhD project/Projects/Seatrout/Data")
