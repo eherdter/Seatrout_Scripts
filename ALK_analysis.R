@@ -1,9 +1,12 @@
 # ABOUT ####\
-#NEW_test
+#Notes 8/3/17
+#1. Must add working directory for work
+#2. Must send data to working directory at work
+#3. Must clean up script at the end 
 #test
 # 10/10/2016 This script imports ALK with Bay.xlsx
 # Main Objectives of this script: 
-# 1. Imports otolith data. Summarizes data, mean age, mean length, sd and se and total sample number. PROJECT TYPE!
+# 1. Imports otolith data. Summarizes data, mean age, mean length, sd and se and total sample number. 
 # 2. Makes bay-specific observed ALK, calculates some summary statistics.  
 # 3. Makes bay specific smoothed (modeled) ALK with multinomial modeling methods in Ogle (87-).
 # 4. Likelihood ratio testing to do among group statistical comparisons - Ogle (102-103)
@@ -13,6 +16,7 @@
 # 8. One way anova to determine if the mean lengths (and mean ages) of males and females are significantly different among estuaries
 # 9. T test to determine whether there is a significant difference between male and female age for each estuary
 # 10. T test to determine whether there is a significant difference in male and female length for each estuary.
+#11.Calculates proportional age distribution for ADULTS to be used in Delta_Method script (different from #6)
 #################################################################
 library(FSA)
 library(magrittr)
@@ -22,13 +26,18 @@ library(plotrix)
 library(haven)
 library(ggplot2)
 library(scales)
+library(fishmethods)
 
 # set working directory
 setwd("~/Desktop/PhD project/Projects/Seatrout/Data")
+#must add working directory for work 
 
-# LOAD DATA ####
+
+
+#1. LOAD DATA ####
 #load the csv file
 # subset by which bay I want
+# subset the FIM program 
 # make sure I have just the "aged sample"
 # turn mm to cm
 # select just a few variables to make it more manageable
@@ -38,7 +47,7 @@ setwd("~/Desktop/PhD project/Projects/Seatrout/Data")
 
 test <- read.csv("ALK with Bay.csv", header=T)
 
-Agelength_TB<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="TB" & tl>14 & final_age >0 & program== 'FIM', select=c(sex,specimennumber, bay, tl, final_age, Date))) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) #, as.fact=TRUE))- can include this when determing ALK below but the smoothed ALK needs to be the nonfactored version of the length categorization variable. 
+Agelength_TB<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="TB" & tl>14 & final_age >0 & program== 'FIM', select=c(sex,specimennumber, bay, tl,sl, final_age, Date))) %>% mutate(tl=tl/10, sl=sl/10, lcat2 =lencat(tl, w=1)) #, as.fact=TRUE))- can include this when determing ALK below but the smoothed ALK needs to be the nonfactored version of the length categorization variable. 
 Agelength_TB$sex[which(Agelength_TB$sex == "m")] = "M"
 Agelength_TB$sex <- droplevels(Agelength_TB$sex)
 
@@ -48,21 +57,21 @@ Agelength_TB$DateNew = as.POSIXct(strptime(Agelength_TB$Date, format="%m/%d/%y",
 Agelength_TB = mutate(Agelength_TB, year = strftime(DateNew, format="%Y")) %>%select(-Date, -DateNew)
 Agelength_TB$year = as.factor(Agelength_TB$year) 
 
-Agelength_AP<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="AP" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,specimennumber, bay, tl, final_age, Date))) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) #, as.fact=TRUE))
+Agelength_AP<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="AP" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,specimennumber, bay, tl,sl, final_age, Date))) %>% mutate(tl=tl/10, sl=sl/10, lcat2 =lencat(tl, w=1)) #, as.fact=TRUE))
 
 Agelength_AP$Date=as.character(Agelength_AP$Date)
 Agelength_AP$DateNew = as.POSIXct(strptime(Agelength_AP$Date, format="%m/%d/%y", tz="")) 
 Agelength_AP = mutate(Agelength_AP, year = strftime(DateNew, format="%Y")) %>%select(-Date, -DateNew)
 Agelength_AP$year = as.factor(Agelength_AP$year) 
 
-Agelength_CK<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="CK" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,specimennumber, bay, tl, final_age, Date))) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
+Agelength_CK<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="CK" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,specimennumber, bay, tl,sl, final_age, Date))) %>% mutate(tl=tl/10, sl=sl/10,lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
 
 Agelength_CK$Date=as.character(Agelength_CK$Date)
 Agelength_CK$DateNew = as.POSIXct(strptime(Agelength_CK$Date, format="%m/%d/%y", tz="")) 
 Agelength_CK = mutate(Agelength_CK, year = strftime(DateNew, format="%Y")) %>%select(-Date, -DateNew)
 Agelength_CK$year = as.factor(Agelength_CK$year) 
 
-Agelength_CH<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="CH" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,specimennumber, bay, tl, final_age, Date))) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
+Agelength_CH<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="CH" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,specimennumber, bay, tl,sl, final_age, Date))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
 Agelength_CH$sex[which(Agelength_CH$sex == "f")] = "F"
 Agelength_CH$sex <- droplevels(Agelength_CH$sex)
 
@@ -71,14 +80,14 @@ Agelength_CH$DateNew = as.POSIXct(strptime(Agelength_CH$Date, format="%m/%d/%y",
 Agelength_CH = mutate(Agelength_CH, year = strftime(DateNew, format="%Y")) %>%select(-Date, -DateNew)
 Agelength_CH$year = as.factor(Agelength_CH$year) 
 
-Agelength_IR<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="IR" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,specimennumber, bay, tl, final_age, Date))) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
+Agelength_IR<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="IR" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,specimennumber, bay, tl,sl, final_age, Date))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
 
 Agelength_IR$Date=as.character(Agelength_IR$Date)
 Agelength_IR$DateNew = as.POSIXct(strptime(Agelength_IR$Date, format="%m/%d/%y", tz="")) 
 Agelength_IR = mutate(Agelength_IR, year = strftime(DateNew, format="%Y")) %>%select(-Date, -DateNew)
 Agelength_IR$year = as.factor(Agelength_IR$year) 
 
-Agelength_JX<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="JX" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,specimennumber, bay, tl, final_age, Date))) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
+Agelength_JX<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="JX" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,specimennumber, bay, tl,sl, final_age, Date))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
 
 Agelength_JX$Date=as.character(Agelength_JX$Date)
 Agelength_JX$DateNew = as.POSIXct(strptime(Agelength_JX$Date, format="%m/%d/%y", tz="")) 
@@ -86,7 +95,7 @@ Agelength_JX = mutate(Agelength_JX, year = strftime(DateNew, format="%Y")) %>%se
 Agelength_JX$year = as.factor(Agelength_JX$year) 
 
 
-# BASIC SUMMARIZATION ####
+# BASIC DATA SUMMARIZATION ####
 #total sample number of FIM data
 
 N= nrow(Agelength_TB) + nrow(Agelength_AP) +nrow(Agelength_CK) +nrow(Agelength_CH) + nrow(Agelength_IR) +nrow(Agelength_JX)
@@ -239,7 +248,6 @@ TukeyHSD(results,  conf.level=0.95)
 
 # MAKE ALKS ####
 # Make table with observed total numbers at length by age 
-###########################################################
 (rawfreq_TB <- xtabs(~lcat2+final_age, data=Agelength_TB)) 
 #rawfreq_TB_test_df <- as.data.frame(as.matrix(xtabs(~lcat2+final_age, data=TB_test)))
 # there appears to be a fish that was assigned an age of 3 but is in the 0-2 length category. Going to remove this because its probably a typo. Specified in above subsetting step as tl>20mm =(2cm).   
@@ -263,9 +271,8 @@ colSums(rawfreq_JX)
 
 
 
-############################################
-# Make observed ALK from the above tables.
-############################################
+# MAKE OBSERVED ALK FROM ABOVE TABLES #####
+
 #The conditional proportions that form the ALK are calculated by dividing ecah cell of the frequency table by the sum of the corresponding row. 
 #These row proportions are constructed by submitting the xtabs() object to prop.table() and including margin=1 to indicate that the proportions are computed by row (page 92). 
 
@@ -308,11 +315,10 @@ names(alk_IR) <- c(1,2,3,4,5,6,7,8,9)
 round(alk_IR,3)
 
 
-######################################################################
-# Apply.
+
+# Apply Proportional Age Distribution and Mean Length at Age #####
 # 1. Proportional age distribution
 # 1. Mean length-at-age. (otolith database)
-######################################################################
 
 #Proportional age distribution
   # might need to make sure I add some dummy data for bays that don't have equal number of ages
@@ -442,17 +448,7 @@ age_IR <- ggplot(Agelength_IR, aes(x=final_age))+
   annotate("text", x=10, y=.35, label="IR", size=10, family="Times New Roman")
 
 
-
-
-
-
-
-
-
-
-
-
-# Plot of individual lengths at age with mean lengths at age superimposed. 
+# Plot of individual lengths at age with mean lengths at age superimpose ##### 
 
 plot(tl~final_age, data=Agelength_TB, pch=19, col=rgb(0,0,0,1/10), xlab="Age", ylab= "Total Length (cm)", ylim=c(0,80), xlim=c(0,9))
 lines(mn~final_age, data=TB_sumlen, lwd=2, lty=2)
@@ -478,12 +474,13 @@ plot(tl~final_age, data=Agelength_JX, pch=19, col=rgb(0,0,0,1/10), xlab="Age", y
 lines(mn~final_age, data=JX_sumlen, lwd=2, lty=2)
 #change scale of x axis
 
-###############################################################################################################
-# Produce smoothed ALK from multinomial modeling exercise which can be used to do Likelihood ratio testing. 
+
+# PRODUCE SMOOTHED ALKS #####
+#from multinomial modeling exercise which can be used to do Likelihood ratio testing. 
 #MODELED AGE LENGTH KEYS (aka SMOOTHED ALK)
 #-fixes two common issues with Age Length keys detailed on page 92 Ogle. 
 #multinomial logistic regression model -Gerritsen et al. 2006. The response variable has more than two levels
-###############################################################################################################
+
 #TB
 tb <- multinom(final_age~lcat2, data=Agelength_TB, maxit=500)
 lens<- seq(0,80, 1)
@@ -528,10 +525,10 @@ round(alksmo.ir, 3)
 
 
 
-#################################################
-#Plot length frequency by age, observed ALK, and modeled ALK
+
+#Plot length frequency by age, observed ALK, and modeled ALK #####
 # Multiple options below. 
-#################################################
+
 
 #Length frequency by age
 histStack(lcat2~final_age, data=Agelength_TB, col=gray.colors(9, start=0, end=1), breaks=seq(0,80,1), xlim=c(0,80), ylim=c(0,700), xlab="Total Length (cm)", legend.pos="topright", xaxt="n") #remove col argument if we want it in rainbow format
@@ -553,7 +550,7 @@ axis(1, at=seq(0, 80, by=4))
 histStack(lcat2~final_age, data=Agelength_JX, col=gray.colors(8, start=0, end=1), breaks=seq(0,80,1), ylim=c(0,100), xlab="Total Length (cm)", legend.pos="topright", xaxt="n") #remove col argument if we want it in rainbow format
 axis(1, at=seq(0, 80, by=4))
 
-####Observed ALK###
+####Observed ALK
 alkPlot(alk_TB, type="barplot", xlab="Total Length (cm)", showLegend=T, pal="gray") #could remove legend and just reference in figure description
 
 alkPlot(alk_CH, type="barplot", xlab="Total Length (cm)", showLegend=T, pal="gray")     
@@ -585,10 +582,10 @@ smoIR <- alkPlot(alksmo.ir, type="barplot", xlab="Total Length (cm)", pal="rainb
 
 smoJX <- alkPlot(alksmo.jx, type="barplot", xlab="Total Length (cm)", pal="rainbow", showLegend=TRUE)
 
-#########################################
-#AMONG GROUP STATISTICAL COMPARISONS
+
+#AMONG GROUP STATISTICAL COMPARISONS #####
 #page 102 in Ogle
-##########################################
+
 Agelength_ALL<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH" | bay=="IR" |bay=="AP" | bay=="JX"),select=c(specimennumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_ALL, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_ALL, maxit=500) #more complex model
@@ -750,7 +747,52 @@ mod2 <- multinom(final_age~lcat2*bay,data=Agelength_JXIR, maxit=500) #more compl
 
 anova(mod1, mod2)
 
-########################################
-# ONE WAY ANOVA to determine if there are significant differences among estuary-specific mean lengths
-##################################
+# ONE WAY ANOVA to determine if there are significant differences among estuary-specific mean lengths#####
+
+#11. DETERMINE AGE PROPORTION OF ADULTS #####
+#of all FIM subset... select sl > = 200 mm which is what was chosen to determine reproductively mature adults
+# "Distribution of ages described by either the proportion of fish at age (Pi) or the number of fish at each age (Ni)" Ogle 96
+"These calculcations are more easily performed by first computing the Nj values and then dividing each of these by N to compute the Pi values"
+
+
+TB_adult <- subset(Agelength_TB, sl>= 20)
+AP_adult <- subset(Agelength_AP, sl>=20)
+CK_adult <- subset(Agelength_CK, sl>=20)
+CH_adult <- subset(Agelength_CH, sl>=20)
+JX_adult <- subset(Agelength_JX, sl>=20)
+IR_adult <- subset(Agelength_IR, sl>=20)
+
+age.n_TB <- xtabs(final_age, data=TB_adult)
+age.n_AP <- xtabs(final_age, data=AP_adult)
+age.n_CK <- xtabs(final_age, data=CK_adult)
+age.n_CH <- xtabs(final_age, data=CH_adult)
+age.n_JX <- xtabs(final_age, data=JX_adult)
+age.n_IR <- xtabs(final_age, data=IR_adult)
+
+#think I can use prop.table to give the proportion of fish at each age 
+
+prop_TB <- round(prop.table(age.n_TB),3)
+prop_AP <- round(prop.table(age.n_AP),3)
+prop_CK <- round(prop.table(age.n_CK),3)
+prop_CH <- round(prop.table(age.n_CH),3)
+prop_JX <- round(prop.table(age.n_JX),3)
+prop_IR <- round(prop.table(age.n_IR),3)
+
+#Export proportions at adult age for the FIM catch to use in the Delta_Method script
+#For personal computer
+#write.csv(prop_TB, "~/Desktop/PhD project/Projects/Seatrout/Data/....../PropAtAge_TBadult_FIMdata.csv")
+#write.csv(prop_AP, "~/Desktop/PhD project/Projects/Seatrout/Data/....../PropAtAge_APadult_FIMdata.csv")
+#write.csv(prop_CK, "~/Desktop/PhD project/Projects/Seatrout/Data/....../PropAtAge_CKadult_FIMdata.csv")
+#write.csv(prop_CH, "~/Desktop/PhD project/Projects/Seatrout/Data/....../PropAtAge_CHadult_FIMdata.csv")
+#write.csv(prop_JX, "~/Desktop/PhD project/Projects/Seatrout/Data/....../PropAtAge_JXadult_FIMdata.csv")
+#write.csv(prop_IR, "~/Desktop/PhD project/Projects/Seatrout/Data/....../PropAtAge_IRadult_FIMdata.csv")
+
+
+#For work computer
+write.csv(prop_TB, "U:/Elizabeth.Herdter/PhD_projectfiles/Exported_R_Files/PropAtAge_TBadult_FIMdata.csv")
+write.csv(prop_AP, "U:/Elizabeth.Herdter/PhD_projectfiles/Exported_R_Files/PropAtAge_APadult_FIMdata.csv")
+write.csv(prop_CK, "U:/Elizabeth.Herdter/PhD_projectfiles/Exported_R_Files/PropAtAge_CKadult_FIMdata.csv")
+write.csv(prop_CH, "U:/Elizabeth.Herdter/PhD_projectfiles/Exported_R_Files/PropAtAge_CHadult_FIMdata.csv")
+write.csv(prop_JX, "U:/Elizabeth.Herdter/PhD_projectfiles/Exported_R_Files/PropAtAge_JXadult_FIMdata.csv")
+write.csv(prop_IR, "U:/Elizabeth.Herdter/PhD_projectfiles/Exported_R_Files/PropAtAge_IRadult_FIMdata.csv")
 
