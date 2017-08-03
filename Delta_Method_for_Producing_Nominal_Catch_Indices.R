@@ -41,7 +41,7 @@
 ##### SET WORKING DIRECTORY_YOY ####
 #must change working directory for data when working on personal vs work computer
 #setwd("~/Desktop/PhD project/Projects/Seatrout/FWRI SCRATCH FOLDER/Elizabeth Herdter/SAS data sets/FIMData/NEWNov7")
-#setwd("T:/Elizabeth Herdter/SAS data sets/FIMData/NEWNov7")
+setwd("T:/Elizabeth Herdter/SAS data sets/FIMData/NEWNov7")
 
 ##### SET PACKAGES ######################
 library(propagate) #error propagation.. MUST load this first or else it will mask other good functions in dplyr
@@ -131,7 +131,7 @@ full <-  select(full, c(number,year, month, bio_reference, bStr, bSan, bMud, bve
 #Turn habitat variables into factors so they can be treated as categorical
 full[,c(2,5:9)] <- lapply(full[,c(2,5:9)], factor)
 
-###### MAKE POSITIVE & BINARY SET_YOY ##########
+##### MAKE POSITIVE & BINARY SET_YOY ##########
 # to determine the total number of positive huals and proportion positive
 
 
@@ -510,7 +510,7 @@ Mean_IR <- df %>% cbind(LSM_ir.pos$year)
 colnames(Mean_IR) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
 
 
-#####EXPORT PREDICTED INDEX_YOY ####
+##### EXPORT PREDICTED INDEX_YOY ####
 #export to csv _PERSONAL COMPUTER
 #write.csv(Mean_AP, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/AP_yoy_index.csv")
 #write.csv(Mean_IR, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/IR_yoy_index.csv")
@@ -521,12 +521,12 @@ colnames(Mean_IR) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
 
 
 #export to csv _WORK COMPUTER
-write.csv(Mean_AP, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/AP_yoy_index.csv")
-write.csv(Mean_IR, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/IR_yoy_index.csv")
-write.csv(Mean_JX, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/JX_yoy_index.csv")
-write.csv(Mean_CH, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/CH_yoy_index.csv")
-write.csv(Mean_TB, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/TB_yoy_index.csv")
-write.csv(Mean_CK, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/CK_yoy_index.csv")
+write.csv(Mean_AP, "U:/Elizabeth.Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/AP_yoy_index.csv")
+write.csv(Mean_IR, "U:/Elizabeth.Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/IR_yoy_index.csv")
+write.csv(Mean_JX, "U:/Elizabeth.Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/JX_yoy_index.csv")
+write.csv(Mean_CH, "U:/Elizabeth.Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/CH_yoy_index.csv")
+write.csv(Mean_TB, "U:/Elizabeth.Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/TB_yoy_index.csv")
+write.csv(Mean_CK, "U:/Elizabeth.Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/CK_yoy_index.csv")
 
 ##### ADULT SECTION ####
 # Now that the YOY index is done... I need to load the adult data because I need this to predict
@@ -593,7 +593,7 @@ full_ad <-  select(full_ad, c(number,year, month, bio_reference, bStr, bSan, bMu
 #Turn habitat variables into factors so they can be treated as categorical
 full_ad[,c(2,5:9)] <- lapply(full_ad[,c(2,5:9)], factor)
 
-###### MAKE POSITIVE & BINARY SET_ADULT ##########
+##### MAKE POSITIVE & BINARY SET_ADULT ##########
 # to determine the total number of positive huals and proportion positive
 
 full_ad.pos<- full_ad %>% subset(number>0)
@@ -613,7 +613,7 @@ ch_ad.bin <- full_ad.bin %>% subset(bay =='CH')
 jx_ad.bin <- full_ad.bin %>% subset(bay =='JX')
 ir_ad.bin <- full_ad.bin %>% subset(bay =='IR')
 
-### BUILD MODELS_ADULT #########
+##### BUILD MODELS_ADULT #########
 # To produce predicted positive numbers and binomial data set
 
 # 1. Build the full models with all potential variables and a base model with only year. 
@@ -663,7 +663,7 @@ Full_ch_ad.pos <- glm(number ~ year +month+veg+bottom+shore, data=ch_ad.pos, fam
 Full_jx_ad.pos <- glm(number ~ year +month+veg+bottom+shore, data=jx_ad.pos, family=quasipoisson)
 Full_ir_ad.pos <- glm(number ~ year +month+veg+bottom+shore, data=ir_ad.pos, family=quasipoisson)
 
-## MODEL SELECTION POSITIVE w/ DROP1 command_ADULT ######
+##### MODEL SELECTION POSITIVE w/ DROP1 command_ADULT ######
 # Pages 220 is to 230 in Zuur are helpful for following methods. 
 # The AIC is not defined for quasipoisson models so can't use the step function like what was used in the FWRI code. 
 # Instead, use the drop1 function which is applicable for the quassiPoisson GLM and it is more equivalent to hypothesis testing. (Zuur pg 227)
@@ -798,7 +798,7 @@ drop1(Full_ir_ad.bin, test ='Chi')
 M1_ir_ad.bin <- glm(number ~ year, data=ir_ad.bin, family=binomial)
 drop1(M1_ir_ad.bin, test ="Chi")
 
-### ASSIGN FINAL MODELS_ADULT ###### 
+##### ASSIGN FINAL MODELS_ADULT ###### 
 final_ap_ad.pos = Full_ap_ad.pos
 final_ck_ad.pos = M3_ck_ad.pos
 final_tb_ad.pos = M1_tb_ad.pos
@@ -845,7 +845,7 @@ LSM_ch_ad.bin <- summary(lsmeans(final_ch_ad.bin, 'year', data=ch_ad.bin), type=
 LSM_jx_ad.bin <- summary(lsmeans(final_jx_ad.bin, 'year', data=jx_ad.bin), type="response")
 LSM_ir_ad.bin <- summary(lsmeans(final_ir_ad.bin, 'year', data=ir_ad.bin), type="response")
 
-### ERROR PROPAGATION TO FIND FINAL VALUE (pos * prop.pos)_ADULT #####
+##### ERROR PROPAGATION TO FIND FINAL VALUE (pos * prop.pos)_ADULT #####
 # multiply positive lsmean by porportion positive lsmean and use error propagation to determine value and associated error
 # using the package Propagate. See example below. 
 # https://www.rdocumentation.org/packages/propagate/versions/1.0-4/topics/propagate    
@@ -954,16 +954,23 @@ write.csv(Mean_CH_ad, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaM
 write.csv(Mean_TB_ad, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/TB_adult_index.csv")
 write.csv(Mean_CK_ad, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/CK_adult_index.csv")
 
-### WORKING 8/1/17######
+##### WORKING 8/1/17######
 # To Do: Convert numbers to spawning stock biomass
-# To do this,, determine age composition of adults. Apply proportion at age composition to total numbers
+# To do this,, determine age composition of adults. Apply proportion at age composition to overall predicted index
 # Apply weight schedule to the age proportion to determine total weight by age
 # Sum the weights to create a total SSB
 
-# I think I should apply this when I determine predicted numbers and before I do anything else. 
+# I think I should apply this after everything is complete
+
+##### APPLY AGE & WEIGHT SCHEDULE TO OBTAIN PREDICTED SSB OF ADULTS #######
 
 
-# FIT SR CURVES TO DETERMINE RESIDUALS #####
+
+
+
+
+
+###### FIT SR CURVES TO DETERMINE RESIDUALS #####
 
 library(FSA)
 library(nlstools)
