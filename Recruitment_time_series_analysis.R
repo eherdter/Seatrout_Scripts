@@ -3,13 +3,15 @@
 # Updated 10/21/16
 # ***** Formerly this was called  "Autocorrelation and correlation with DeltaLogNorm Indices.R"
 # Main Objectives of this script: 
-# 1. Plots the indices
-# 2. Tests interseries correlation (autocorrelation). If interseries correlation exists 
+# 1. Imports Indices
+# 2. Plots the indices
+# 3. Tests interseries correlation (autocorrelation). If interseries correlation exists 
 #   then significance tests must be adjusted based on degrees of freedom (Pyper et al. 2001)
-# 3. Pearson product-moment correlation (Mueter et al. 2002, Field and Ralston 2005, Pyper et al. 2001, Peterman et al. 1998, Myers at al. 1997)
-# 4. Cluster analysis
-# 5. DFA
-# 6. PCA
+# 4. Pearson product-moment correlation (Mueter et al. 2002, Field and Ralston 2005, Pyper et al. 2001, Peterman et al. 1998, Myers at al. 1997)
+# 5. Cluster analysis
+# 6. DFA
+# 7. PCA
+# 8. Tests indices for linear trends
 
 ##### LOAD PACKAGES #####
 # library(dplyr) NOTE: loading dplyr conflicts with the lag1.plot in astsa. DO NOT LOAD before using ASTSA.
@@ -22,12 +24,12 @@ library(astsa)
 library(MARSS) #for DFA
 setwd("~/Desktop/Github Repo/Seatrout/Data/Indices/DeltaMethod Indices")
 
-##### IMPORT INDICES #################################
+##### 1. IMPORT INDICES #################################
 # IMPORT INDICES
 # indices produced with Delta Method for Producing Nominal Indices.R
 # and select the year, assign bay name,
 # scale each index (z score, 0 mean 1 unit variance)
-##############################
+
 AP<- subset(read.csv("AP_yoy_index.csv", header=T), select=c(year, index)) %>% mutate(bay= rep("AP",18)) 
   names(AP) <- c("year", "index", "est") #assign names
   AP$est <- as.factor(AP$est) #turn bay into a factor
@@ -73,9 +75,9 @@ JX<- subset(read.csv("JX_yoy_index.csv", header=T), select=c(year, index))%>% mu
   
 All <- rbind(AP,CH,CK,IR,JX, TB)
 
-##### PLOT TIMES SERIES DATA ###############################################
+##### 2. PLOT TIMES SERIES DATA ######
 # PLOT TIME SERIES DATA
-######################################################
+
 # plot either the standardized or non standardized time series on the same plot
 # might do this with ggplot
 library(ggplot2)
@@ -98,9 +100,10 @@ recruitment <- ggplot(All, aes(x=year, y=index, group=est)) + #color=est
         axis.text.y=element_text(colour="black"), #changing colour of y acis
         plot.title=element_text(size=14))
 
-##### LAGGED SCATTERPLOTS OF EACH TIMESERIES####################################
-#1A. LAGGED SCATTERPLOTS of each time series
-#################################################
+#### 8. TEST INDICES FOR LINEAR TRENDS #####
+
+##### 3. LAGGED SCATTERPLOTS OF EACH TIMESERIES#######
+#LAGGED SCATTERPLOTS of each time series
 # From Notes_3, GEOS 585A, Spring 2015 handout printed from arizona (website above)
 # " An attribute of the lagged scatterplot is that it can display autocorrelation regardless of the form of the
 # dependence on the past values. An assumption of linear dependence is not necessary."
@@ -135,9 +138,10 @@ acf2(JX$index)
 
 #little evidence of interseries correlation so can use standard significance test for pairwise correlations
 
-##### PEARSON CORRELATION TESTS####################
+
+## 4.PEARSON CORRELATION TESTS######
 # PEARSON CORRELATION
-#########################
+
 # To not end up with a bunch of "est" columns I will just make some new dfs that do not contain the est columns
 
 ap_min <- subset(AP, select=(-est)) 
@@ -197,9 +201,8 @@ colnames(rho_P_vec)<-  c("rho", "P", "N")
 write.csv(rho_P_vec, "~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/Rho_P_vector.csv")
 
 
-##### CLUSTER ANALYSIS####
+### 5. CLUSTER ANALYSIS####
 # CLUSTER ANALYSIS
-#############################
 
 #using compelete linkage method and the correlation matrix as the distance matrix
 
@@ -207,9 +210,9 @@ library(cluster)
 ac <- agnes(rho_mat)
 plot(ac, ask=TRUE)
 
-##### PRINCIPAL COMPONENTS######
+##### 7. PRINCIPAL COMPONENTS######
 # Principal Components 
-#################################
+
 library(vegan)
 
 pcamat <- mat[11:25,2:7]
@@ -227,9 +230,8 @@ text(pcaind, "species",  col="blue", cex=0.8) #plots the response data (species)
 text(pcaind, "sites", col="red", cex=0.8)
 title(xlab="PCA 1 (33.45%)", ylab= "PCA 2 (28.8%)")  #labeled axes with %variance explained. Unfortunately it doesnt look like this is a default in the vegan package so I had to hand calculcate below. 
 
-##### DFA######
+##### 6. DFA######
 # DFA
-#############################
 
 #page 120 in Holmes-Analysis of multivariate using MARSS
 # first fit two trends
