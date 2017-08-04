@@ -977,70 +977,129 @@ prop_IR <- read.csv("PropAtAge_IRadult_FIMdata.csv", header=T)
 #cycle through rows of the adult index data frame and multiply by the proportion at age
 
 #AP
- num.yr = length(Mean_AP_ad$Year)  
- Prop_Numbers_AP_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=10)) #make a dataframe for the loop to store results in
+ num.yr = length(Mean_AP_ad$Year)
+ num.age =length(prop_AP$Freq)
+ Pred_Numbers_at_age_AP_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=num.age)) #make a dataframe for the loop to store results in
  for (i in 1:num.yr) {
-   Prop_Numbers_AP_adult[i,] <- Mean_AP_ad$Mean[i]*prop_AP$Freq
+   Pred_Numbers_at_age_AP_adult[i,] <- Mean_AP_ad$Mean[i]*prop_AP$Freq
  }
- Prop_Numbers_AP_adult <-cbind(Prop_Numbers_AP_adult, Mean_AP_ad$Year)   
-colnames(Prop_Numbers_AP_adult) <- c("P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "Year") 
+colnames(Pred_Numbers_at_age_AP_adult) <- c("P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10")
 
 #CK
-num.yr = length(Mean_CK_ad$Year)  
-Prop_Numbers_CK_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=10)) #make a dataframe for the loop to store results in
+num.yr = length(Mean_CK_ad$Year)
+num.age =length(prop_CK$Freq)
+Pred_Numbers_at_age_CK_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=num.age)) #make a dataframe for the loop to store results in
 for (i in 1:num.yr) {
-  Prop_Numbers_CK_adult[i,] <- Mean_CK_ad$Mean[i]*prop_CK$Freq
+  Pred_Numbers_at_age_CK_adult[i,] <- Mean_CK_ad$Mean[i]*prop_CK$Freq
 }
-Prop_Numbers_CK_adult <-cbind(Prop_Numbers_CK_adult, Mean_CK_ad$Year)   
-colnames(Prop_Numbers_CK_adult) <- c("P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "Year") 
-
+colnames(Pred_Numbers_at_age_CK_adult) <- c("P1", "P2", "P3", "P4", "P5", "P6", "P7") 
 
 #TB
-num.yr = length(Mean_TB_ad$Year)  
-Prop_Numbers_TB_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=10)) #make a dataframe for the loop to store results in
+num.yr = length(Mean_TB_ad$Year)
+num.age =length(prop_TB$Freq)
+Pred_Numbers_at_age_TB_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=num.age)) #make a dataframe for the loop to store results in
 for (i in 1:num.yr) {
-  Prop_Numbers_TB_adult[i,] <- Mean_TB_ad$Mean[i]*prop_TB$Freq
+  Pred_Numbers_at_age_TB_adult[i,] <- Mean_TB_ad$Mean[i]*prop_TB$Freq
 }
-Prop_Numbers_TB_adult <-cbind(Prop_Numbers_TB_adult, Mean_TB_ad$Year)   
-colnames(Prop_Numbers_TB_adult) <- c("P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "Year") 
-
+colnames(Pred_Numbers_at_age_TB_adult) <- c("P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9") 
 
 #CH
-num.yr = length(Mean_CH_ad$Year)  
-Prop_Numbers_CH_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=10)) #make a dataframe for the loop to store results in
+num.yr = length(Mean_CH_ad$Year)
+num.age =length(prop_CH$Freq)
+Pred_Numbers_at_age_CH_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=num.age)) #make a dataframe for the loop to store results in
 for (i in 1:num.yr) {
-  Prop_Numbers_CH_adult[i,] <- Mean_CH_ad$Mean[i]*prop_CH$Freq
+  Pred_Numbers_at_age_CH_adult[i,] <- Mean_CH_ad$Mean[i]*prop_CH$Freq
 }
-Prop_Numbers_CH_adult <-cbind(Prop_Numbers_CH_adult, Mean_CH_ad$Year)   
-colnames(Prop_Numbers_CH_adult) <- c("P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "Year") 
+colnames(Pred_Numbers_at_age_CH_adult) <- c("P1", "P2", "P3", "P4", "P5", "P6", "P7")
 
 #JX
-num.yr = length(Mean_JX_ad$Year)  
-Prop_Numbers_JX_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=10)) #make a dataframe for the loop to store results in
+num.yr = length(Mean_JX_ad$Year)
+num.age =length(prop_JX$Freq)
+Pred_Numbers_at_age_JX_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=num.age)) #make a dataframe for the loop to store results in
 for (i in 1:num.yr) {
-  Prop_Numbers_JX_adult[i,] <- Mean_JX_ad$Mean[i]*prop_JX$Freq
+  Pred_Numbers_at_age_JX_adult[i,] <- Mean_JX_ad$Mean[i]*prop_JX$Freq
 }
-Prop_Numbers_JX_adult <-cbind(Prop_Numbers_JX_adult, Mean_JX_ad$Year)   
-colnames(Prop_Numbers_JX_adult) <- c("P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "Year") 
+colnames(Pred_Numbers_at_age_JX_adult) <- c("P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8") 
 
 #IR
-num.yr = length(Mean_IR_ad$Year)  
-Prop_Numbers_IR_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=10)) #make a dataframe for the loop to store results in
+num.yr = length(Mean_IR_ad$Year) 
+num.age =length(prop_IR$Freq)
+Pred_Numbers_at_age_IR_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=num.age)) #make a dataframe for the loop to store results in
 for (i in 1:num.yr) {
-  Prop_Numbers_IR_adult[i,] <- Mean_IR_ad$Mean[i]*prop_IR$Freq
+  Pred_Numbers_at_age_IR_adult[i,] <- Mean_IR_ad$Mean[i]*prop_IR$Freq
 }
-Prop_Numbers_IR_adult <-cbind(Prop_Numbers_IR_adult, Mean_IR_ad$Year)   
-colnames(Prop_Numbers_IR_adult) <- c("P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "Year") 
 
-#Now apply weight (per individual) at age schedules to the index of numbers of adults at age to get index of SSB at age
+colnames(Pred_Numbers_at_age_IR_adult) <- c("P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9")
+
+#Now apply weight (per individual)-at-age schedules to the index of numbers of adult-at-age to get index of SSB-at-age () and then total biomass (sumbiomass)
+
+AP_weight <- read.csv("Weight_at_Age_AP_ad_FIMdata.csv", header=TRUE)
+CK_weight <- read.csv("Weight_at_Age_CK_ad_FIMdata.csv", header=TRUE)
+TB_weight <- read.csv("Weight_at_Age_TB_ad_FIMdata.csv", header=TRUE)
+CH_weight <- read.csv("Weight_at_Age_CH_ad_FIMdata.csv", header=TRUE)
+IR_weight <- read.csv("Weight_at_Age_IR_ad_FIMdata.csv", header=TRUE)
+JX_weight <- read.csv("Weight_at_Age_JX_ad_FIMdata.csv", header=TRUE)
+
+#AP
+num.yr = length(Mean_AP_ad$Year) 
+num.age =length(prop_AP$Freq)
+Pred_Biomass_AP_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=num.age)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  Pred_Biomass_AP_adult[i,] <- Pred_Numbers_at_age_AP_adult[i,]*AP_weight$mean_wt
+}
+
+Pred_Biomass_AP_adult <- Biomass_AP_adult %>% mutate(sumbiomass = rowSums(Biomass_AP_adult))
+
+#CK
+num.yr = length(Mean_CK_ad$Year) 
+num.age =length(prop_CK$Freq)
+Pred_Biomass_CK_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=num.age)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  Pred_Biomass_CK_adult[i,] <- Pred_Numbers_at_age_CK_adult[i,]*CK_weight$mean_wt
+}
+
+Pred_Biomass_CK_adult <- Biomass_CK_adult %>% mutate(sumbiomass = rowSums(Biomass_CK_adult))
+
+#TB
+num.yr = length(Mean_TB_ad$Year) 
+num.age =length(prop_TB$Freq)
+Pred_Biomass_TB_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=num.age)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  Pred_Biomass_TB_adult[i,] <- Pred_Numbers_at_age_TB_adult[i,]*TB_weight$mean_wt
+}
+
+Pred_Biomass_TB_adult <- Biomass_TB_adult %>% mutate(sumbiomass = rowSums(Biomass_TB_adult))
+
+#CH
+num.yr = length(Mean_CH_ad$Year) 
+num.age =length(prop_CH$Freq)
+Pred_Biomass_CH_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=num.age)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  Pred_Biomass_CH_adult[i,] <- Pred_Numbers_at_age_CH_adult[i,]*CH_weight$mean_wt
+}
+
+Pred_Biomass_CH_adult <- Biomass_CH_adult %>% mutate(sumbiomass = rowSums(Biomass_CH_adult))
+
+#JX
+num.yr = length(Mean_JX_ad$Year) 
+num.age =length(prop_JX$Freq)
+Pred_Biomass_JX_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=num.age)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  Pred_Biomass_JX_adult[i,] <- Pred_Numbers_at_age_JX_adult[i,]*JX_weight$mean_wt
+}
+
+Pred_Biomass_JX_adult <- Biomass_JX_adult %>% mutate(sumbiomass = rowSums(Biomass_JX_adult))
 
 
+#IR
+num.yr = length(Mean_IR_ad$Year) 
+num.age =length(prop_IR$Freq)
+Pred_Biomass_IR_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=num.age)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  Pred_Biomass_IR_adult[i,] <- Pred_Numbers_at_age_IR_adult[i,]*IR_weight$mean_wt
+}
 
-
-# Sum SSB at age for each year to get total predicted index of SSB
-
-
-
+Pred_Biomass_IR_adult <- Biomass_IR_adult %>% mutate(sumbiomass = rowSums(Biomass_IR_adult))
 
 
 
