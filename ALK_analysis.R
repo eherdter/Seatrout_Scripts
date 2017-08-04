@@ -1,7 +1,8 @@
 # ABOUT ####\
-#Notes 8/3/17
+#Notes 8/4/17
 #2. Must send data to working directory at work
-#3. Must clean up script at the end 
+#3. Must clean up script at the end
+#4. Must calculate weight at age for ADULTs so that I can use it in the Delta Method script 
 #test
 # 10/10/2016 This script imports ALK with Bay.xlsx
 # Main Objectives of this script: 
@@ -16,6 +17,7 @@
 # 9. T test to determine whether there is a significant difference between male and female age for each estuary
 # 10. T test to determine whether there is a significant difference in male and female length for each estuary.
 #11.Calculates proportional age distribution for ADULTS to be used in Delta_Method script (different from #6)
+#12. Calculates weight at age for ADULTS to be used in Delta_Method script
 
 
 # LOAD PACKAGES #####
@@ -794,4 +796,31 @@ write.csv(prop_CK, "U:/PhD_projectfiles/Exported_R_Datafiles/PropAtAge_CKadult_F
 write.csv(prop_CH, "U:/PhD_projectfiles/Exported_R_Datafiles/PropAtAge_CHadult_FIMdata.csv")
 write.csv(prop_JX, "U:/PhD_projectfiles/Exported_R_Datafiles/PropAtAge_JXadult_FIMdata.csv")
 write.csv(prop_IR, "U:/PhD_projectfiles/Exported_R_Datafiles/PropAtAge_IRadult_FIMdata.csv")
+
+#12. DETERMINE WEIGHT AT AGE SCHEDULE OF ADULTS ######
+
+Weight_at_Age_AP_ad <- Agelength_AP %>% group_by(final_age) %>% summarize(n=length(wt_total), mean_wt=mean(wt_total, na.rm=TRUE), sd=sd(wt_total, na.rm=TRUE), se=se(wt_total, na.rm=TRUE))
+Weight_at_Age_CK_ad <- Agelength_CK %>% group_by(final_age) %>% summarize(n=length(wt_total), mean_wt=mean(wt_total, na.rm=TRUE), sd=sd(wt_total, na.rm=TRUE), se=se(wt_total, na.rm=TRUE))
+Weight_at_Age_TB_ad <- Agelength_TB %>% group_by(final_age) %>% summarize(n=length(wt_total), mean_wt=mean(wt_total, na.rm=TRUE), sd=sd(wt_total, na.rm=TRUE), se=se(wt_total, na.rm=TRUE))
+Weight_at_Age_CH_ad <- Agelength_CH %>% group_by(final_age) %>% summarize(n=length(wt_total), mean_wt=mean(wt_total, na.rm=TRUE), sd=sd(wt_total, na.rm=TRUE), se=se(wt_total, na.rm=TRUE))
+Weight_at_Age_JX_ad <- Agelength_JX %>% group_by(final_age) %>% summarize(n=length(wt_total), mean_wt=mean(wt_total, na.rm=TRUE), sd=sd(wt_total, na.rm=TRUE), se=se(wt_total, na.rm=TRUE))
+Weight_at_Age_IR_ad <- Agelength_IR %>% group_by(final_age) %>% summarize(n=length(wt_total), mean_wt=mean(wt_total, na.rm=TRUE), sd=sd(wt_total, na.rm=TRUE), se=se(wt_total, na.rm=TRUE))
+
+#Export weight at adult age for the FIM catch to use in the Delta_Method script
+#For personal computer
+#write.csv(Weight_at_Age_AP_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/....../PropAtAge_APadult_FIMdata.csv")
+#write.csv(Weight_at_Age_CK_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/....../PropAtAge_CKadult_FIMdata.csv")
+#write.csv(Weight_at_Age_TB_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/....../PropAtAge_TBadult_FIMdata.csv")
+#write.csv(Weight_at_Age_CH_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/....../PropAtAge_CHadult_FIMdata.csv")
+#write.csv(Weight_at_Age_JX_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/....../PropAtAge_JXadult_FIMdata.csv")
+#write.csv(Weight_at_Age_IR_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/....../PropAtAge_IRadult_FIMdata.csv")
+
+
+#For work computer
+write.csv(Weight_at_Age_AP_ad, "U:/PhD_projectfiles/Exported_R_Datafiles/Weight_at_Age_AP_ad_FIMdata.csv")
+write.csv(Weight_at_Age_CK_ad, "U:/PhD_projectfiles/Exported_R_Datafiles/Weight_at_Age_CK_ad_FIMdata.csv")
+write.csv(Weight_at_Age_TB_ad, "U:/PhD_projectfiles/Exported_R_Datafiles/Weight_at_Age_TB_ad_FIMdata.csv")
+write.csv(Weight_at_Age_CH_ad, "U:/PhD_projectfiles/Exported_R_Datafiles/Weight_at_Age_CH_ad_FIMdata.csv")
+write.csv(Weight_at_Age_JX_ad, "U:/PhD_projectfiles/Exported_R_Datafiles/Weight_at_Age_JX_ad_FIMdata.csv")
+write.csv(Weight_at_Age_IR_ad, "U:/PhD_projectfiles/Exported_R_Datafiles/Weight_at_Age_IR_ad_FIMdata.csv")
 
