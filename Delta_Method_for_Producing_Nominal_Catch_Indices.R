@@ -4,13 +4,9 @@
 # 1. Use Delta Method to produce YOY indices using predicted positive and proportion positive data sets
 # 2. Use Delta Method to produce adult indices using predicted positive and proportion positive data sets
 # 3. Fit SR relationships to yoy and adult indices to produce the residuals of Beverton Holt and Ricker
-#test
-#test4_26
-#test 7_30
-#test 7_30
-#this is a test from work
-#newchange
-#test
+# 4. Apply proportion of adult numbers and a weight schedule to the predicted index to determine the total predicted adult SSB that is also used
+#  when applying the stock recruitment curves 
+
 
 #Delta Method
 # This method uses the Delta method for determining the nominal catch rate of Spotted Seatrout in the FIM catch
@@ -41,7 +37,7 @@
 ##### SET WORKING DIRECTORY_YOY ####
 #must change working directory for data when working on personal vs work computer
 #setwd("~/Desktop/PhD project/Projects/Seatrout/FWRI SCRATCH FOLDER/Elizabeth Herdter/SAS data sets/FIMData/NEWNov7")
-setwd("T:/Elizabeth Herdter/SAS data sets/FIMData/NEWNov7")
+setwd("U:/PhD_projectfiles/Raw_Data/Seatrout_FIM_Data/FIMData/NEWNov7")
 
 ##### SET PACKAGES ######################
 library(propagate) #error propagation.. MUST load this first or else it will mask other good functions in dplyr
@@ -535,7 +531,7 @@ write.csv(Mean_CK, "U:/Elizabeth.Herdter/PhD_projectfiles/Data/Indices/DeltaMeth
 # convert total numbers to SSB necessary to create the stock recruitment curves
 
 ##### SET WORKING DIRECTORY_ADULT ####
-setwd("T:/Elizabeth Herdter/SAS data sets/FIMData")
+setwd("U:/PhD_projectfiles/Raw_Data/Seatrout_FIM_Data/FIMData")
 #setwd("~/Desktop/PhD project/Projects/Seatrout/FWRI SCRATCH FOLDER/Elizabeth Herdter/SAS data sets/FIMData")
 
 ##### IMPORT DATASETS_ADULT ####
@@ -937,7 +933,7 @@ Mean_IR_ad <- df %>% cbind(LSM_ir_ad.pos$year)
 colnames(Mean_IR_ad) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
 
 
-##### EXPORT PREDICTED INDEX_ADULT ######
+##### EXPORT PREDICTED INDEX (NUMBERS)_ADULT ######
 #export to csv _PERSONAL COMPUTER
 #write.csv(Mean_AP_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/AP_adult_index.csv")
 #write.csv(Mean_IR_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/IR_adult_index.csv")
@@ -963,7 +959,85 @@ write.csv(Mean_CK_ad, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaM
 # I think I should apply this after everything is complete
 
 ##### APPLY AGE & WEIGHT SCHEDULE TO OBTAIN PREDICTED SSB OF ADULTS #######
+#obtain proportion at age schedule from the output files of ALK_analysis.R
 
+#setwd to get the age proportion data on my work computer
+setwd("U:/PhD_projectfiles/Exported_R_Datafiles")
+
+#Import the datafiles
+prop_AP <- read.csv("PropAtAge_APadult_FIMdata.csv", header=T)
+prop_CK <- read.csv("PropAtAge_CKadult_FIMdata.csv", header=T)
+prop_TB <- read.csv("PropAtAge_TBadult_FIMdata.csv", header=T)
+prop_CH <- read.csv("PropAtAge_CHadult_FIMdata.csv", header=T)
+prop_JX <- read.csv("PropAtAge_JXadult_FIMdata.csv", header=T)
+prop_IR <- read.csv("PropAtAge_IRadult_FIMdata.csv", header=T)
+
+#Apply proportions to the adult indices created above using a for loop
+#create empty dataframe for results to be stored
+#cycle through rows of the adult index data frame and multiply by the proportion at age
+
+#AP
+ num.yr = length(Mean_AP_ad$Year)  
+ Prop_Numbers_AP_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=10)) #make a dataframe for the loop to store results in
+ for (i in 1:num.yr) {
+   Prop_Numbers_AP_adult[i,] <- Mean_AP_ad$Mean[i]*prop_AP$Freq
+ }
+ Prop_Numbers_AP_adult <-cbind(Prop_Numbers_AP_adult, Mean_AP_ad$Year)   
+colnames(Prop_Numbers_AP_adult) <- c("P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "Year") 
+
+#CK
+num.yr = length(Mean_CK_ad$Year)  
+Prop_Numbers_CK_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=10)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  Prop_Numbers_CK_adult[i,] <- Mean_CK_ad$Mean[i]*prop_CK$Freq
+}
+Prop_Numbers_CK_adult <-cbind(Prop_Numbers_CK_adult, Mean_CK_ad$Year)   
+colnames(Prop_Numbers_CK_adult) <- c("P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "Year") 
+
+
+#TB
+num.yr = length(Mean_TB_ad$Year)  
+Prop_Numbers_TB_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=10)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  Prop_Numbers_TB_adult[i,] <- Mean_TB_ad$Mean[i]*prop_TB$Freq
+}
+Prop_Numbers_TB_adult <-cbind(Prop_Numbers_TB_adult, Mean_TB_ad$Year)   
+colnames(Prop_Numbers_TB_adult) <- c("P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "Year") 
+
+
+#CH
+num.yr = length(Mean_CH_ad$Year)  
+Prop_Numbers_CH_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=10)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  Prop_Numbers_CH_adult[i,] <- Mean_CH_ad$Mean[i]*prop_CH$Freq
+}
+Prop_Numbers_CH_adult <-cbind(Prop_Numbers_CH_adult, Mean_CH_ad$Year)   
+colnames(Prop_Numbers_CH_adult) <- c("P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "Year") 
+
+#JX
+num.yr = length(Mean_JX_ad$Year)  
+Prop_Numbers_JX_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=10)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  Prop_Numbers_JX_adult[i,] <- Mean_JX_ad$Mean[i]*prop_JX$Freq
+}
+Prop_Numbers_JX_adult <-cbind(Prop_Numbers_JX_adult, Mean_JX_ad$Year)   
+colnames(Prop_Numbers_JX_adult) <- c("P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "Year") 
+
+#IR
+num.yr = length(Mean_IR_ad$Year)  
+Prop_Numbers_IR_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=10)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  Prop_Numbers_IR_adult[i,] <- Mean_IR_ad$Mean[i]*prop_IR$Freq
+}
+Prop_Numbers_IR_adult <-cbind(Prop_Numbers_IR_adult, Mean_IR_ad$Year)   
+colnames(Prop_Numbers_IR_adult) <- c("P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "Year") 
+
+#Now apply weight (per individual) at age schedules to the index of numbers of adults at age to get index of SSB at age
+
+
+
+
+# Sum SSB at age for each year to get total predicted index of SSB
 
 
 
