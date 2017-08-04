@@ -1,6 +1,5 @@
 # ABOUT ####\
 #Notes 8/3/17
-#1. Must add working directory for work
 #2. Must send data to working directory at work
 #3. Must clean up script at the end 
 #test
@@ -17,7 +16,9 @@
 # 9. T test to determine whether there is a significant difference between male and female age for each estuary
 # 10. T test to determine whether there is a significant difference in male and female length for each estuary.
 #11.Calculates proportional age distribution for ADULTS to be used in Delta_Method script (different from #6)
-#################################################################
+
+
+# LOAD PACKAGES #####
 library(FSA)
 library(magrittr)
 library(nnet)
@@ -28,12 +29,9 @@ library(scales)
 library(fishmethods)
 library(dplyr)
 
-# set working directory
+# set working directory#####
 #setwd("~/Desktop/PhD project/Projects/Seatrout/Data")
-#must add working directory for work 
 setwd("U:/PhD_projectfiles/Raw_Data/Age_Length_Data")
-
-
 
 #1. LOAD DATA ####
 #load the csv file
@@ -58,41 +56,41 @@ Agelength_TB$DateNew = as.POSIXct(strptime(Agelength_TB$date, format="%d-%B-%y",
 Agelength_TB = mutate(Agelength_TB, year = strftime(DateNew, format="%Y")) %>% select(-date, -DateNew)
 Agelength_TB$year = as.factor(Agelength_TB$year) 
 
-Agelength_AP<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="AP" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, date))) %>% mutate(tl=tl/10, sl=sl/10, lcat2 =lencat(tl, w=1)) #, as.fact=TRUE))
+Agelength_AP<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="AP" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10, sl=sl/10, lcat2 =lencat(tl, w=1)) #, as.fact=TRUE))
 
-Agelength_AP$Date=as.character(Agelength_AP$Date)
-Agelength_AP$DateNew = as.POSIXct(strptime(Agelength_AP$Date, format="%m/%d/%y", tz="")) 
-Agelength_AP = mutate(Agelength_AP, year = strftime(DateNew, format="%Y")) %>%select(-Date, -DateNew)
+Agelength_AP$date=as.character(Agelength_AP$date)
+Agelength_AP$DateNew = as.POSIXct(strptime(Agelength_AP$date, format="%d-%B-%y", tz="")) 
+Agelength_AP = mutate(Agelength_AP, year = strftime(DateNew, format="%Y")) %>%select(-date, -DateNew)
 Agelength_AP$year = as.factor(Agelength_AP$year) 
 
-Agelength_CK<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="CK" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, Date))) %>% mutate(tl=tl/10, sl=sl/10,lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
+Agelength_CK<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="CK" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10, sl=sl/10,lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
 
-Agelength_CK$Date=as.character(Agelength_CK$Date)
-Agelength_CK$DateNew = as.POSIXct(strptime(Agelength_CK$Date, format="%m/%d/%y", tz="")) 
-Agelength_CK = mutate(Agelength_CK, year = strftime(DateNew, format="%Y")) %>%select(-Date, -DateNew)
+Agelength_CK$date=as.character(Agelength_CK$date)
+Agelength_CK$DateNew = as.POSIXct(strptime(Agelength_CK$date, format="%d-%B-%y", tz="")) 
+Agelength_CK = mutate(Agelength_CK, year = strftime(DateNew, format="%Y")) %>%select(-date, -DateNew)
 Agelength_CK$year = as.factor(Agelength_CK$year) 
 
-Agelength_CH<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="CH" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, Date))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
+Agelength_CH<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="CH" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
 Agelength_CH$sex[which(Agelength_CH$sex == "f")] = "F"
 Agelength_CH$sex <- droplevels(Agelength_CH$sex)
 
-Agelength_CH$Date=as.character(Agelength_CH$Date)
-Agelength_CH$DateNew = as.POSIXct(strptime(Agelength_CH$Date, format="%m/%d/%y", tz="")) 
-Agelength_CH = mutate(Agelength_CH, year = strftime(DateNew, format="%Y")) %>%select(-Date, -DateNew)
+Agelength_CH$date=as.character(Agelength_CH$date)
+Agelength_CH$DateNew = as.POSIXct(strptime(Agelength_CH$date, format="%d-%B-%y", tz="")) 
+Agelength_CH = mutate(Agelength_CH, year = strftime(DateNew, format="%Y")) %>%select(-date, -DateNew)
 Agelength_CH$year = as.factor(Agelength_CH$year) 
 
-Agelength_IR<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="IR" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, Date))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
+Agelength_IR<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="IR" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
 
-Agelength_IR$Date=as.character(Agelength_IR$Date)
-Agelength_IR$DateNew = as.POSIXct(strptime(Agelength_IR$Date, format="%m/%d/%y", tz="")) 
-Agelength_IR = mutate(Agelength_IR, year = strftime(DateNew, format="%Y")) %>%select(-Date, -DateNew)
+Agelength_IR$date=as.character(Agelength_IR$date)
+Agelength_IR$DateNew = as.POSIXct(strptime(Agelength_IR$date, format="%d-%B-%y", tz="")) 
+Agelength_IR = mutate(Agelength_IR, year = strftime(DateNew, format="%Y")) %>%select(-date, -DateNew)
 Agelength_IR$year = as.factor(Agelength_IR$year) 
 
-Agelength_JX<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="JX" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, Date))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
+Agelength_JX<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="JX" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
 
-Agelength_JX$Date=as.character(Agelength_JX$Date)
-Agelength_JX$DateNew = as.POSIXct(strptime(Agelength_JX$Date, format="%m/%d/%y", tz="")) 
-Agelength_JX = mutate(Agelength_JX, year = strftime(DateNew, format="%Y")) %>%select(-Date, -DateNew)
+Agelength_JX$date=as.character(Agelength_JX$date)
+Agelength_JX$DateNew = as.POSIXct(strptime(Agelength_JX$date, format="%d-%B-%y", tz="")) 
+Agelength_JX = mutate(Agelength_JX, year = strftime(DateNew, format="%Y")) %>%select(-date, -DateNew)
 Agelength_JX$year = as.factor(Agelength_JX$year) 
 
 
@@ -763,21 +761,21 @@ CH_adult <- subset(Agelength_CH, sl>=20)
 JX_adult <- subset(Agelength_JX, sl>=20)
 IR_adult <- subset(Agelength_IR, sl>=20)
 
-age.n_TB <- xtabs(final_age, data=TB_adult)
-age.n_AP <- xtabs(final_age, data=AP_adult)
-age.n_CK <- xtabs(final_age, data=CK_adult)
-age.n_CH <- xtabs(final_age, data=CH_adult)
-age.n_JX <- xtabs(final_age, data=JX_adult)
-age.n_IR <- xtabs(final_age, data=IR_adult)
+age.n_TB <- xtabs(~final_age, data=TB_adult)
+age.n_AP <- xtabs(~final_age, data=AP_adult)
+age.n_CK <- xtabs(~final_age, data=CK_adult)
+age.n_CH <- xtabs(~final_age, data=CH_adult)
+age.n_JX <- xtabs(~final_age, data=JX_adult)
+age.n_IR <- xtabs(~final_age, data=IR_adult)
 
 #think I can use prop.table to give the proportion of fish at each age 
 
-prop_TB <- round(prop.table(age.n_TB),3)
-prop_AP <- round(prop.table(age.n_AP),3)
-prop_CK <- round(prop.table(age.n_CK),3)
-prop_CH <- round(prop.table(age.n_CH),3)
-prop_JX <- round(prop.table(age.n_JX),3)
-prop_IR <- round(prop.table(age.n_IR),3)
+prop_TB <- as.data.frame(round(prop.table(age.n_TB),3))
+prop_AP <- as.data.frame(round(prop.table(age.n_AP),3))
+prop_CK <- as.data.frame(round(prop.table(age.n_CK),3))
+prop_CH <- as.data.frame(round(prop.table(age.n_CH),3))
+prop_JX <- as.data.frame(round(prop.table(age.n_JX),3))
+prop_IR <- as.data.frame(round(prop.table(age.n_IR),3))
 
 #Export proportions at adult age for the FIM catch to use in the Delta_Method script
 #For personal computer
@@ -790,10 +788,10 @@ prop_IR <- round(prop.table(age.n_IR),3)
 
 
 #For work computer
-write.csv(prop_TB, "U:/Elizabeth.Herdter/PhD_projectfiles/Exported_R_Files/PropAtAge_TBadult_FIMdata.csv")
-write.csv(prop_AP, "U:/Elizabeth.Herdter/PhD_projectfiles/Exported_R_Files/PropAtAge_APadult_FIMdata.csv")
-write.csv(prop_CK, "U:/Elizabeth.Herdter/PhD_projectfiles/Exported_R_Files/PropAtAge_CKadult_FIMdata.csv")
-write.csv(prop_CH, "U:/Elizabeth.Herdter/PhD_projectfiles/Exported_R_Files/PropAtAge_CHadult_FIMdata.csv")
-write.csv(prop_JX, "U:/Elizabeth.Herdter/PhD_projectfiles/Exported_R_Files/PropAtAge_JXadult_FIMdata.csv")
-write.csv(prop_IR, "U:/Elizabeth.Herdter/PhD_projectfiles/Exported_R_Files/PropAtAge_IRadult_FIMdata.csv")
+write.csv(prop_TB, "U:/PhD_projectfiles/Exported_R_Datafiles/PropAtAge_TBadult_FIMdata.csv")
+write.csv(prop_AP, "U:/PhD_projectfiles/Exported_R_Datafiles/PropAtAge_APadult_FIMdata.csv")
+write.csv(prop_CK, "U:/PhD_projectfiles/Exported_R_Datafiles/PropAtAge_CKadult_FIMdata.csv")
+write.csv(prop_CH, "U:/PhD_projectfiles/Exported_R_Datafiles/PropAtAge_CHadult_FIMdata.csv")
+write.csv(prop_JX, "U:/PhD_projectfiles/Exported_R_Datafiles/PropAtAge_JXadult_FIMdata.csv")
+write.csv(prop_IR, "U:/PhD_projectfiles/Exported_R_Datafiles/PropAtAge_IRadult_FIMdata.csv")
 
