@@ -950,13 +950,7 @@ write.csv(Mean_CH_ad, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaM
 write.csv(Mean_TB_ad, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/TB_adult_index.csv")
 write.csv(Mean_CK_ad, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/CK_adult_index.csv")
 
-##### WORKING 8/1/17######
-# To Do: Convert numbers to spawning stock biomass
-# To do this,, determine age composition of adults. Apply proportion at age composition to overall predicted index
-# Apply weight schedule to the age proportion to determine total weight by age
-# Sum the weights to create a total SSB
 
-# I think I should apply this after everything is complete
 
 ##### APPLY AGE & WEIGHT SCHEDULE TO OBTAIN PREDICTED SSB OF ADULTS #######
 #obtain proportion at age schedule from the output files of ALK_analysis.R
@@ -1101,6 +1095,12 @@ for (i in 1:num.yr) {
 
 Pred_Biomass_IR_adult <- Biomass_IR_adult %>% mutate(sumbiomass = rowSums(Biomass_IR_adult))
 
+
+
+
+##### WORKING 8/4/2017 #####
+# completed age and weight schedules to produce predicted spawning biomass index
+# must now use the updated predicted YOY index, predicted adult index, predicted index of SSB in the SR analysis
 
 
 ###### FIT SR CURVES TO DETERMINE RESIDUALS #####
