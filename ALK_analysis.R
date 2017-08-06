@@ -32,8 +32,8 @@ library(fishmethods)
 library(dplyr)
 
 # set working directory#####
-#setwd("~/Desktop/PhD project/Projects/Seatrout/Data")
-setwd("U:/PhD_projectfiles/Raw_Data/Age_Length_Data")
+setwd("~/Desktop/PhD project/Projects/Seatrout/Data")
+#setwd("U:/PhD_projectfiles/Raw_Data/Age_Length_Data")
 
 #1. LOAD DATA ####
 #load the csv file
@@ -781,12 +781,12 @@ prop_IR <- as.data.frame(round(prop.table(age.n_IR),3))
 
 #Export proportions at adult age for the FIM catch to use in the Delta_Method script
 #For personal computer
-#write.csv(prop_TB, "~/Desktop/PhD project/Projects/Seatrout/Data/....../PropAtAge_TBadult_FIMdata.csv")
-#write.csv(prop_AP, "~/Desktop/PhD project/Projects/Seatrout/Data/....../PropAtAge_APadult_FIMdata.csv")
-#write.csv(prop_CK, "~/Desktop/PhD project/Projects/Seatrout/Data/....../PropAtAge_CKadult_FIMdata.csv")
-#write.csv(prop_CH, "~/Desktop/PhD project/Projects/Seatrout/Data/....../PropAtAge_CHadult_FIMdata.csv")
-#write.csv(prop_JX, "~/Desktop/PhD project/Projects/Seatrout/Data/....../PropAtAge_JXadult_FIMdata.csv")
-#write.csv(prop_IR, "~/Desktop/PhD project/Projects/Seatrout/Data/....../PropAtAge_IRadult_FIMdata.csv")
+write.csv(prop_TB, "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/PropAtAge_TBadult_FIMdata.csv")
+write.csv(prop_AP, "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/PropAtAge_APadult_FIMdata.csv")
+write.csv(prop_CK, "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/PropAtAge_CKadult_FIMdata.csv")
+write.csv(prop_CH, "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/PropAtAge_CHadult_FIMdata.csv")
+write.csv(prop_JX, "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/PropAtAge_JXadult_FIMdata.csv")
+write.csv(prop_IR, "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/PropAtAge_IRadult_FIMdata.csv")
 
 
 #For work computer
@@ -808,12 +808,12 @@ Weight_at_Age_IR_ad <- Agelength_IR %>% group_by(final_age) %>% summarize(n=leng
 
 #Export weight at adult age for the FIM catch to use in the Delta_Method script
 #For personal computer
-#write.csv(Weight_at_Age_AP_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/....../PropAtAge_APadult_FIMdata.csv")
-#write.csv(Weight_at_Age_CK_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/....../PropAtAge_CKadult_FIMdata.csv")
-#write.csv(Weight_at_Age_TB_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/....../PropAtAge_TBadult_FIMdata.csv")
-#write.csv(Weight_at_Age_CH_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/....../PropAtAge_CHadult_FIMdata.csv")
-#write.csv(Weight_at_Age_JX_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/....../PropAtAge_JXadult_FIMdata.csv")
-#write.csv(Weight_at_Age_IR_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/....../PropAtAge_IRadult_FIMdata.csv")
+write.csv(Weight_at_Age_AP_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/Weight_at_Age_APadult_FIMdata.csv")
+write.csv(Weight_at_Age_CK_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/Weight_at_Age_CKadult_FIMdata.csv")
+write.csv(Weight_at_Age_TB_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/Weight_at_Age_TBadult_FIMdata.csv")
+write.csv(Weight_at_Age_CH_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/Weight_at_Age_CHadult_FIMdata.csv")
+write.csv(Weight_at_Age_JX_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/Weight_at_Age_JXadult_FIMdata.csv")
+write.csv(Weight_at_Age_IR_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/Weight_at_Age_IRadult_FIMdata.csv")
 
 
 #For work computer
