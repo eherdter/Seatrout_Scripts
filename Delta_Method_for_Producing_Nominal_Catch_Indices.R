@@ -1093,6 +1093,7 @@ for (i in 1:num.yr) {
 }
 
 Pred_Biomass_IR_adult <- Pred_Biomass_IR_adult %>% mutate(sumbiomass = rowSums(Pred_Biomass_IR_adult))
+<<<<<<< HEAD
 
 ###### FIT SR CURVES TO DETERMINE RESIDUALS #####
 #Fit SR Curves to yoy:adult index, and yoy:adult biomass index
@@ -1115,6 +1116,30 @@ names(CH_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_
 JX_ind <- data.frame(cbind(Mean_JX$Mean, Mean_JX_ad$Mean, Pred_Biomass_JX_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
 names(JX_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
 
+=======
+
+###### FIT SR CURVES TO DETERMINE RESIDUALS #####
+#Fit SR Curves to yoy:adult index, and yoy:adult biomass index
+# First, make combined indices for YOY (Mean_AP) and Adults (Mean_AP_ad), and Adult biomass (Pred_Biomass_AP_adult)
+#I will trim the yoy data because the adult timeseries are shorter- only for TB, CH, IR, and CK
+
+AP_ind <- data.frame(cbind(Mean_AP$Mean, Mean_AP_ad$Mean, Pred_Biomass_AP_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
+names(AP_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
+plot(yoy~adult_bio, data=AP_ind)
+
+CK_ind <- data.frame(cbind(Mean_CK$Mean, Mean_CK_ad$Mean, Pred_Biomass_CK_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
+names(CK_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
+
+TB_ind <- data.frame(cbind(Mean_TB$Mean, Mean_TB_ad$Mean, Pred_Biomass_TB_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
+names(TB_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
+
+CH_ind <- data.frame(cbind(Mean_CH$Mean, Mean_CH_ad$Mean, Pred_Biomass_CH_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
+names(CH_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
+
+JX_ind <- data.frame(cbind(Mean_JX$Mean, Mean_JX_ad$Mean, Pred_Biomass_JX_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
+names(JX_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
+
+>>>>>>> c40718572ce8e0611dd01b81f320ee8ca68bd7bd
 IR_ind <- data.frame(cbind(Mean_IR$Mean, Mean_IR_ad$Mean, Pred_Biomass_IR_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
 names(IR_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
 
@@ -1123,6 +1148,7 @@ library(nlstools)
 #BEVERTON-HOLT, then density idependent, then immediately followed by a Ricker Model
 
 ### AP STOCK RECRUITMENT Fitting #####
+
 
 #STOP 8/6/17 #####dsfg
 
