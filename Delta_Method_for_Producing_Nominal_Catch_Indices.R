@@ -36,7 +36,7 @@
 
 ##### SET WORKING DIRECTORY_YOY ####
 #must change working directory for data when working on personal vs work computer
-#setwd("~/Desktop/PhD project/Projects/Seatrout/FWRI SCRATCH FOLDER/Elizabeth Herdter/SAS data sets/FIMData/NEWNov7")
+setwd("~/Desktop/PhD project/Projects/Seatrout/FWRI SCRATCH FOLDER/Elizabeth Herdter/SAS data sets/FIMData/NEWNov7")
 setwd("U:/PhD_projectfiles/Raw_Data/Seatrout_FIM_Data/FIMData/NEWNov7")
 
 ##### SET PACKAGES ######################
@@ -532,7 +532,7 @@ write.csv(Mean_CK, "U:/Elizabeth.Herdter/PhD_projectfiles/Data/Indices/DeltaMeth
 
 ##### SET WORKING DIRECTORY_ADULT ####
 setwd("U:/PhD_projectfiles/Raw_Data/Seatrout_FIM_Data/FIMData")
-#setwd("~/Desktop/PhD project/Projects/Seatrout/FWRI SCRATCH FOLDER/Elizabeth Herdter/SAS data sets/FIMData")
+setwd("~/Desktop/PhD project/Projects/Seatrout/FWRI SCRATCH FOLDER/Elizabeth Herdter/SAS data sets/FIMData")
 
 ##### IMPORT DATASETS_ADULT ####
 #
@@ -935,12 +935,12 @@ colnames(Mean_IR_ad) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year"
 
 ##### EXPORT PREDICTED INDEX (NUMBERS)_ADULT ######
 #export to csv _PERSONAL COMPUTER
-#write.csv(Mean_AP_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/AP_adult_index.csv")
-#write.csv(Mean_IR_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/IR_adult_index.csv")
-#write.csv(Mean_JX_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/JX_adult_index.csv")
-#write.csv(Mean_CH_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/CH_adult_index.csv")
-#write.csv(Mean_TB_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/TB_adult_index.csv")
-#write.csv(Mean_CK_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/CK_adult_index.csv")
+write.csv(Mean_AP_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/AP_adult_index.csv")
+write.csv(Mean_IR_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/IR_adult_index.csv")
+write.csv(Mean_JX_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/JX_adult_index.csv")
+write.csv(Mean_CH_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/CH_adult_index.csv")
+write.csv(Mean_TB_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/TB_adult_index.csv")
+write.csv(Mean_CK_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/CK_adult_index.csv")
 
 #export to csv _WORK
 write.csv(Mean_AP_ad, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/AP_adult_index.csv")
@@ -950,13 +950,12 @@ write.csv(Mean_CH_ad, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaM
 write.csv(Mean_TB_ad, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/TB_adult_index.csv")
 write.csv(Mean_CK_ad, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/CK_adult_index.csv")
 
-
-
 ##### APPLY AGE & WEIGHT SCHEDULE TO OBTAIN PREDICTED SSB OF ADULTS #######
 #obtain proportion at age schedule from the output files of ALK_analysis.R
 
 #setwd to get the age proportion data on my work computer
 setwd("U:/PhD_projectfiles/Exported_R_Datafiles")
+setwd("~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes")
 
 #Import the datafiles
 prop_AP <- read.csv("PropAtAge_APadult_FIMdata.csv", header=T)
@@ -1042,7 +1041,7 @@ for (i in 1:num.yr) {
   Pred_Biomass_AP_adult[i,] <- Pred_Numbers_at_age_AP_adult[i,]*AP_weight$mean_wt
 }
 
-Pred_Biomass_AP_adult <- Biomass_AP_adult %>% mutate(sumbiomass = rowSums(Biomass_AP_adult))
+Pred_Biomass_AP_adult <- Pred_Biomass_AP_adult %>% mutate(sumbiomass = rowSums(Pred_Biomass_AP_adult))
 
 #CK
 num.yr = length(Mean_CK_ad$Year) 
@@ -1052,7 +1051,7 @@ for (i in 1:num.yr) {
   Pred_Biomass_CK_adult[i,] <- Pred_Numbers_at_age_CK_adult[i,]*CK_weight$mean_wt
 }
 
-Pred_Biomass_CK_adult <- Biomass_CK_adult %>% mutate(sumbiomass = rowSums(Biomass_CK_adult))
+Pred_Biomass_CK_adult <- Pred_Biomass_CK_adult %>% mutate(sumbiomass = rowSums(Pred_Biomass_CK_adult))
 
 #TB
 num.yr = length(Mean_TB_ad$Year) 
@@ -1062,7 +1061,7 @@ for (i in 1:num.yr) {
   Pred_Biomass_TB_adult[i,] <- Pred_Numbers_at_age_TB_adult[i,]*TB_weight$mean_wt
 }
 
-Pred_Biomass_TB_adult <- Biomass_TB_adult %>% mutate(sumbiomass = rowSums(Biomass_TB_adult))
+Pred_Biomass_TB_adult <- Pred_Biomass_TB_adult %>% mutate(sumbiomass = rowSums(Pred_Biomass_TB_adult))
 
 #CH
 num.yr = length(Mean_CH_ad$Year) 
@@ -1072,7 +1071,7 @@ for (i in 1:num.yr) {
   Pred_Biomass_CH_adult[i,] <- Pred_Numbers_at_age_CH_adult[i,]*CH_weight$mean_wt
 }
 
-Pred_Biomass_CH_adult <- Biomass_CH_adult %>% mutate(sumbiomass = rowSums(Biomass_CH_adult))
+Pred_Biomass_CH_adult <- Pred_Biomass_CH_adult %>% mutate(sumbiomass = rowSums(Pred_Biomass_CH_adult))
 
 #JX
 num.yr = length(Mean_JX_ad$Year) 
@@ -1082,7 +1081,7 @@ for (i in 1:num.yr) {
   Pred_Biomass_JX_adult[i,] <- Pred_Numbers_at_age_JX_adult[i,]*JX_weight$mean_wt
 }
 
-Pred_Biomass_JX_adult <- Biomass_JX_adult %>% mutate(sumbiomass = rowSums(Biomass_JX_adult))
+Pred_Biomass_JX_adult <- Pred_Biomass_JX_adult %>% mutate(sumbiomass = rowSums(Pred_Biomass_JX_adult))
 
 
 #IR
@@ -1093,41 +1092,58 @@ for (i in 1:num.yr) {
   Pred_Biomass_IR_adult[i,] <- Pred_Numbers_at_age_IR_adult[i,]*IR_weight$mean_wt
 }
 
-Pred_Biomass_IR_adult <- Biomass_IR_adult %>% mutate(sumbiomass = rowSums(Biomass_IR_adult))
-
-
-
-
-##### WORKING 8/4/2017 #####
-# completed age and weight schedules to produce predicted spawning biomass index
-# must now use the updated predicted YOY index, predicted adult index, predicted index of SSB in the SR analysis
-
+Pred_Biomass_IR_adult <- Pred_Biomass_IR_adult %>% mutate(sumbiomass = rowSums(Pred_Biomass_IR_adult))
 
 ###### FIT SR CURVES TO DETERMINE RESIDUALS #####
+#Fit SR Curves to yoy:adult index, and yoy:adult biomass index
+# First, make combined indices for YOY (Mean_AP) and Adults (Mean_AP_ad), and Adult biomass (Pred_Biomass_AP_adult)
+#I will trim the yoy data because the adult timeseries are shorter- only for TB, CH, IR, and CK
+
+AP_ind <- data.frame(cbind(Mean_AP$Mean, Mean_AP_ad$Mean, Pred_Biomass_AP_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
+names(AP_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
+plot(yoy~adult_bio, data=AP_ind)
+
+CK_ind <- data.frame(cbind(Mean_CK$Mean, Mean_CK_ad$Mean, Pred_Biomass_CK_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
+names(CK_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
+
+TB_ind <- data.frame(cbind(Mean_TB$Mean, Mean_TB_ad$Mean, Pred_Biomass_TB_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
+names(TB_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
+
+CH_ind <- data.frame(cbind(Mean_CH$Mean, Mean_CH_ad$Mean, Pred_Biomass_CH_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
+names(CH_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
+
+JX_ind <- data.frame(cbind(Mean_JX$Mean, Mean_JX_ad$Mean, Pred_Biomass_JX_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
+names(JX_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
+
+IR_ind <- data.frame(cbind(Mean_IR$Mean, Mean_IR_ad$Mean, Pred_Biomass_IR_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
+names(IR_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
 
 library(FSA)
 library(nlstools)
 #BEVERTON-HOLT, then density idependent, then immediately followed by a Ricker Model
 
-#AP
+### AP STOCK RECRUITMENT Fitting #####
+
+#STOP 8/6/17 #####dsfg
 
 #bh
-bhs <-srStarts(yoy~adult, data=AP_bio, type="BevertonHolt", param=1)
+bhs <-srStarts(yoy~adult, data=AP_ind, type="BevertonHolt", param=1)
 unlist(bhs)
-svR_ap <- srStarts(yoy ~ adult, data=AP_bio, type="BevertonHolt")
-svR_ap <- list(a=15, b=18)
+svR_ap <- srStarts(yoy ~ adult, data=AP_ind, type="BevertonHolt")
+svR_ap <- list(a=-52, b=-65)
 bh <- srFuns("BevertonHolt")
-srBH_ap <- nls(logyoy~log(bh(adult,a,b)), data=AP_bio, start=svR_ap)
+srBH_ap <- nls(logyoy~log(bh(adult,a,b)), data=AP_ind, start=svR_ap)
 overview(srBH_ap)
+
 #density independent
 bh0 <- logyoy ~log(a*adult)
 bh0s <- bhs[1]
-bh0nls <- nls(bh0, data=AP_bio, start=bh0s, algorithm="port") #algorithm helps it not wander into negative territory
+bh0nls <- nls(bh0, data=AP_ind, start=bh0s, algorithm="port") #algorithm helps it not wander into negative territory
 
 anova(bh0nls, srBH_ap) #Beverton holt is better than density independent
 
 #plot bh and density independent
-plot(yoy~adult,data=AP_bio)
+plot(yoy~adult,data=AP_ind)
 curve((coef(srBH_ap)[1]*x)/(1+coef(srBH_ap)[2]*x),from=0,to=120,col="red",lwd=2,add=TRUE)
 curve(coef(bh0nls)[1]*x,from=0,to=120,col="blue",lwd=2,add=TRUE)
 legend("topleft",legend=c("density independent","density dependent"),col=c("blue","red"),lwd=2,cex=0.6)
@@ -1140,15 +1156,16 @@ plot(yoy~adult, data=AP_bio, xlim=xlmts)
 lines(pR~x, lwd=2)
 
 #ricker
-svR_ap <- srStarts(yoy ~ adult, data=AP_bio, type="Ricker")
-svR_ap <- list(a=1.64, b=0.45)
+svR_ap <- srStarts(yoy ~ adult, data=AP_ind, type="Ricker")
+unlist(svR_ap)
+svR_ap <- list(a=2.46, b=0.58)
 rk <- srFuns("Ricker")
-srrk_ap <- nls(logyoy~log(rk(adult,a,b)), data=AP_bio, start=svR_ap)
+srrk_ap <- nls(logyoy~log(rk(adult,a,b)), data=AP_ind, start=svR_ap)
 overview(srrk_ap)
 x=seq(0,5, length.out=999)
 pR <- rk(x, a=coef(srrk_ap))
-xlmts=range(c(x,AP_bio$adult))
-plot(yoy~adult, data=AP_bio, xlim=xlmts)
+xlmts=range(c(x,AP_ind$adult))
+plot(yoy~adult, data=AP_ind, xlim=xlmts)
 lines(pR~x, lwd=2)
 
 AIC(srBH_ap, srrk_ap)
@@ -1158,8 +1175,7 @@ AIC(srBH_ap, srrk_ap)
 write.csv(data.frame(residuals(srBH_ap)) %>% mutate(year = c(1998:2015)), "~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/ap_resid_BH.csv")
 write.csv(data.frame(residuals(srrk_ap)) %>% mutate(year = c(1998:2015)), "~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/ap_resid_RK.csv")
 
-
-#CH
+#CH STOCK RECRUITMENT FITTING #####
 svR_ch <- srStarts(yoy ~ adult, data=CH_bio, type="BevertonHolt")
 svR_ch <- list(a=-19.92, b=-21.60)
 bh <- srFuns("BevertonHolt")
@@ -1188,7 +1204,7 @@ AIC(srBH_ch, srrk_ch)
 write.csv(data.frame(residuals(srrk_ch)) %>% mutate(year = c(1996:2015)), "~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/ch_resid_RK.csv")
 write.csv(data.frame(residuals(srBH_ch)) %>% mutate(year = c(1996:2015)), "~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/ch_resid_BH.csv")
 
-#CK
+#CK STOCK RECRUITMENT FITTING #####
 svR_ck <- srStarts(yoy ~ adult, data=CK_bio, type="BevertonHolt")
 svR_ck <- list(a=0.45, b=0.04)
 bh <- srFuns("BevertonHolt")
@@ -1216,7 +1232,7 @@ write.csv(data.frame(residuals(srrk_ck)) %>% mutate(year = c(1997:2015)), "~/Des
 write.csv(data.frame(residuals(srBH_ck)) %>% mutate(year = c(1997:2015)), "~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/ck_resid_BH.csv")
 
 
-# TB
+# TB STOCK RECRUITMENT FITTING #####
 
 svR_tb <- srStarts(yoy ~ adult, data=TB_bio, type="BevertonHolt")
 svR_tb <- list(a=10.415, b=6.192)
@@ -1245,7 +1261,7 @@ write.csv(data.frame(residuals(srBH_tb)) %>% mutate(year= c(1996:2015)), "~/Desk
 write.csv(data.frame(residuals(srrk_tb)) %>% mutate(year= c(1996:2015)), "~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/tb_resid_RK.csv")
 
 
-# IR
+# IR STOCK RECRUITMENT CURVE FITTING #####
 
 svR_ir <- srStarts(yoy ~ adult, data=IR_bio, type="BevertonHolt")
 svR_ir <- list(a=-56.92, b=-57.60)
@@ -1273,7 +1289,7 @@ lines(pR~x, lwd=2)
 write.csv(data.frame(residuals(srBH_ir))  %>% mutate(year = c(1997:2015)), "~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/ir_resid_BH.csv")
 write.csv(data.frame(residuals(srrk_ir))  %>% mutate(year = c(1997:2015)), "~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/ir_resid_RK.csv")
 
-#JX
+#JX STOCK RECRUITMENT CURVE FITTING ####
 
 svR_jx <- srStarts(yoy ~ adult, data=JX_bio, type="BevertonHolt")
 svR_jx <- list(a=0.40, b=0.34)
