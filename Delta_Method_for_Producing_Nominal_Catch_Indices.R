@@ -1093,113 +1093,92 @@ for (i in 1:num.yr) {
 }
 
 Pred_Biomass_IR_adult <- Pred_Biomass_IR_adult %>% mutate(sumbiomass = rowSums(Pred_Biomass_IR_adult))
-<<<<<<< HEAD
 
 ###### FIT SR CURVES TO DETERMINE RESIDUALS #####
-#Fit SR Curves to yoy:adult index, and yoy:adult biomass index
+#Fit SR Curves to yoy:adult index
 # First, make combined indices for YOY (Mean_AP) and Adults (Mean_AP_ad), and Adult biomass (Pred_Biomass_AP_adult)
-#I will trim the yoy data because the adult timeseries are shorter- only for TB, CH, IR, and CK
+#I will trim the yoy data because the adult timeseries are shorter- only for CK, TB, CH, and IR
 
 AP_ind <- data.frame(cbind(Mean_AP$Mean, Mean_AP_ad$Mean, Pred_Biomass_AP_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
 names(AP_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
-plot(yoy~adult_bio, data=AP_ind)
+plot(yoy~adult, data=AP_ind)
+AP_ind <- AP_ind[-1,] #removed the first year because it had a very far outlier
 
-CK_ind <- data.frame(cbind(Mean_CK$Mean, Mean_CK_ad$Mean, Pred_Biomass_CK_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
+CK_ind <- data.frame(cbind(Mean_CK$Mean[2:20], Mean_CK_ad$Mean, Pred_Biomass_CK_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
 names(CK_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
 
-TB_ind <- data.frame(cbind(Mean_TB$Mean, Mean_TB_ad$Mean, Pred_Biomass_TB_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
+TB_ind <- data.frame(cbind(Mean_TB$Mean[8:27], Mean_TB_ad$Mean, Pred_Biomass_TB_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
 names(TB_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
 
-CH_ind <- data.frame(cbind(Mean_CH$Mean, Mean_CH_ad$Mean, Pred_Biomass_CH_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
+CH_ind <- data.frame(cbind(Mean_CH$Mean[8:27], Mean_CH_ad$Mean, Pred_Biomass_CH_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
 names(CH_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
 
 JX_ind <- data.frame(cbind(Mean_JX$Mean, Mean_JX_ad$Mean, Pred_Biomass_JX_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
 names(JX_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
 
-=======
-
-###### FIT SR CURVES TO DETERMINE RESIDUALS #####
-#Fit SR Curves to yoy:adult index, and yoy:adult biomass index
-# First, make combined indices for YOY (Mean_AP) and Adults (Mean_AP_ad), and Adult biomass (Pred_Biomass_AP_adult)
-#I will trim the yoy data because the adult timeseries are shorter- only for TB, CH, IR, and CK
-
-AP_ind <- data.frame(cbind(Mean_AP$Mean, Mean_AP_ad$Mean, Pred_Biomass_AP_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
-names(AP_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
-plot(yoy~adult_bio, data=AP_ind)
-
-CK_ind <- data.frame(cbind(Mean_CK$Mean, Mean_CK_ad$Mean, Pred_Biomass_CK_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
-names(CK_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
-
-TB_ind <- data.frame(cbind(Mean_TB$Mean, Mean_TB_ad$Mean, Pred_Biomass_TB_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
-names(TB_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
-
-CH_ind <- data.frame(cbind(Mean_CH$Mean, Mean_CH_ad$Mean, Pred_Biomass_CH_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
-names(CH_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
-
-JX_ind <- data.frame(cbind(Mean_JX$Mean, Mean_JX_ad$Mean, Pred_Biomass_JX_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
-names(JX_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
-
->>>>>>> c40718572ce8e0611dd01b81f320ee8ca68bd7bd
-IR_ind <- data.frame(cbind(Mean_IR$Mean, Mean_IR_ad$Mean, Pred_Biomass_IR_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
+IR_ind <- data.frame(cbind(Mean_IR$Mean[8:26], Mean_IR_ad$Mean, Pred_Biomass_IR_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
 names(IR_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
 
 library(FSA)
 library(nlstools)
 #BEVERTON-HOLT, then density idependent, then immediately followed by a Ricker Model
 
+
 ### AP STOCK RECRUITMENT Fitting #####
+####Ricker
+srStarts(yoy ~ adult, data=AP_ind, type="Ricker") #determine starting values 
+svR_ap <- list(a=2, b=0.5) #putting starting values into a named list for later use
+RK <- srFuns("Ricker") #define stock recruit function that ill be using 
+srRK_ap <- nls(logyoy~log(RK(adult,a,b)), data=AP_ind, start=svR_ap) #stock recruitment function with multiplicative errors is fit with nls 
+overview(srRK_ap) #produces parameter estimates, confidence intervals, Residual sums squares
 
+#visualize the model fit
+x=seq(0,5, length.out=999) #many S for predictions
+pR <- RK(x, a=coef(srRK_ap)) #predicted mean R for the values of S using the coefficients of the fitted model above (srRK_ap)
+xlmts=range(c(x,AP_ind$adult)) #make xlmts on the plot
+plot(yoy~adult, data=AP_ind, xlim=xlmts) #plot 
+lines(pR~x, lwd=2) #add the line of the predicted mean R
 
-#STOP 8/6/17 #####dsfg
-
-#bh
-bhs <-srStarts(yoy~adult, data=AP_ind, type="BevertonHolt", param=1)
-unlist(bhs)
-svR_ap <- srStarts(yoy ~ adult, data=AP_ind, type="BevertonHolt")
-svR_ap <- list(a=-52, b=-65)
-bh <- srFuns("BevertonHolt")
-srBH_ap <- nls(logyoy~log(bh(adult,a,b)), data=AP_ind, start=svR_ap)
+##### Beverton Holt 
+srStarts(yoy~adult, data=AP_ind, type="BevertonHolt")  #determine starting values
+svR_ap <- list(a=7, b=7)
+BH <- srFuns("BevertonHolt")
+srBH_ap <- nls(logyoy~log(BH(adult,a,b)), data=AP_ind, start=svR_ap)
 overview(srBH_ap)
 
-#density independent
-bh0 <- logyoy ~log(a*adult)
-bh0s <- bhs[1]
-bh0nls <- nls(bh0, data=AP_ind, start=bh0s, algorithm="port") #algorithm helps it not wander into negative territory
+#visualize the model fit
+x=seq(0,5, length.out=999) #many S for predictions
+pR <- BH(x, a=coef(srBH_ap)) #predicted mean R for the values of S using the coefficients of the fitted model above (srRK_ap)
+xlmts=range(c(x,AP_ind$adult)) #make xlmts on the plot
+plot(yoy~adult, data=AP_ind, xlim=xlmts) #plot 
+lines(pR~x, lwd=2) #add the line of the predicted mean R
 
-anova(bh0nls, srBH_ap) #Beverton holt is better than density independent
+##### Density Independent
+ind <- srFuns("independence")
+svI <- srStarts(yoy~adult, data=AP_ind, type= "independence")
+srI <- nls(logyoy~log(ind(adult,a)), data=AP_ind, start=svI)
 
-#plot bh and density independent
-plot(yoy~adult,data=AP_ind)
-curve((coef(srBH_ap)[1]*x)/(1+coef(srBH_ap)[2]*x),from=0,to=120,col="red",lwd=2,add=TRUE)
-curve(coef(bh0nls)[1]*x,from=0,to=120,col="blue",lwd=2,add=TRUE)
-legend("topleft",legend=c("density independent","density dependent"),col=c("blue","red"),lwd=2,cex=0.6)
+#test whether density independent are better than either 
+extraSS(srI, com=srRK_ap)
+extraSS(srI, com=srBH_ap)
+              
+#test whether models are better
+AIC(srBH_ap, srRK_ap)
 
-#plot bh
-x=seq(0,5, length.out=999)
-pR <- bh(x, a=coef(srBH_ap))
-xlmts=range(c(x,AP_bio$adult))
-plot(yoy~adult, data=AP_bio, xlim=xlmts)
-lines(pR~x, lwd=2)
-
-#ricker
-svR_ap <- srStarts(yoy ~ adult, data=AP_ind, type="Ricker")
-unlist(svR_ap)
-svR_ap <- list(a=2.46, b=0.58)
-rk <- srFuns("Ricker")
-srrk_ap <- nls(logyoy~log(rk(adult,a,b)), data=AP_ind, start=svR_ap)
-overview(srrk_ap)
-x=seq(0,5, length.out=999)
-pR <- rk(x, a=coef(srrk_ap))
-xlmts=range(c(x,AP_ind$adult))
-plot(yoy~adult, data=AP_ind, xlim=xlmts)
-lines(pR~x, lwd=2)
-
-AIC(srBH_ap, srrk_ap)
-
-# BH appears to be a better fit 
+#BH appears to be a better fit but the BH parameters werent significant so just export both 
 
 write.csv(data.frame(residuals(srBH_ap)) %>% mutate(year = c(1998:2015)), "~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/ap_resid_BH.csv")
 write.csv(data.frame(residuals(srrk_ap)) %>% mutate(year = c(1998:2015)), "~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/ap_resid_RK.csv")
+
+
+
+
+
+
+
+
+
+
 
 #CH STOCK RECRUITMENT FITTING #####
 svR_ch <- srStarts(yoy ~ adult, data=CH_bio, type="BevertonHolt")
@@ -1229,6 +1208,10 @@ AIC(srBH_ch, srrk_ch)
 # ricker appears to be a better fit 
 write.csv(data.frame(residuals(srrk_ch)) %>% mutate(year = c(1996:2015)), "~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/ch_resid_RK.csv")
 write.csv(data.frame(residuals(srBH_ch)) %>% mutate(year = c(1996:2015)), "~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/ch_resid_BH.csv")
+
+
+
+
 
 #CK STOCK RECRUITMENT FITTING #####
 svR_ck <- srStarts(yoy ~ adult, data=CK_bio, type="BevertonHolt")
@@ -1446,3 +1429,15 @@ names(IR_bio) <- c("adult", "yoy", "logyoy", "logadult")
 JX_bio <- data.frame(cbind(JX_ad$index, JX$index)) %>% mutate(logyoy=log(JX$index), logadult=log(JX_ad$index))
 names(JX_bio) <- c("adult", "yoy", "logyoy", "logadult")
 
+#plot bh and density independent
+plot(yoy~adult,data=AP_ind)
+curve((coef(srBH_ap)[1]*x)/(1+coef(srBH_ap)[2]*x),from=0,to=120,col="red",lwd=2,add=TRUE)
+curve(coef(bh0nls)[1]*x,from=0,to=120,col="blue",lwd=2,add=TRUE)
+legend("topleft",legend=c("density independent","density dependent"),col=c("blue","red"),lwd=2,cex=0.6)
+
+#plot bh
+x=seq(0,5, length.out=999)
+pR <- bh(x, a=coef(srBH_ap))
+xlmts=range(c(x,AP_bio$adult))
+plot(yoy~adult, data=AP_bio, xlim=xlmts)
+lines(pR~x, lwd=2)
