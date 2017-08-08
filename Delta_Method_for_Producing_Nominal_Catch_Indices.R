@@ -1106,18 +1106,24 @@ AP_ind <- AP_ind[-1,] #removed the first year because it had a very far outlier
 
 CK_ind <- data.frame(cbind(Mean_CK$Mean[2:20], Mean_CK_ad$Mean, Pred_Biomass_CK_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
 names(CK_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
+plot(yoy~adult, data=CK_ind)
+
 
 TB_ind <- data.frame(cbind(Mean_TB$Mean[8:27], Mean_TB_ad$Mean, Pred_Biomass_TB_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
 names(TB_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
+plot(yoy~adult, data=TB_ind)
 
 CH_ind <- data.frame(cbind(Mean_CH$Mean[8:27], Mean_CH_ad$Mean, Pred_Biomass_CH_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
 names(CH_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
+plot(yoy~adult, data=CH_ind)
 
 JX_ind <- data.frame(cbind(Mean_JX$Mean, Mean_JX_ad$Mean, Pred_Biomass_JX_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
 names(JX_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
+plot(yoy~adult, data=JX_ind)
 
 IR_ind <- data.frame(cbind(Mean_IR$Mean[8:26], Mean_IR_ad$Mean, Pred_Biomass_IR_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
 names(IR_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
+plot(yoy~adult, data=IR_ind)
 
 library(FSA)
 library(nlstools)
@@ -1167,8 +1173,8 @@ AIC(srBH_ap, srRK_ap)
 
 #BH appears to be a better fit but the BH parameters werent significant so just export both 
 
-write.csv(data.frame(residuals(srBH_ap)) %>% mutate(year = c(1998:2015)), "~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/ap_resid_BH.csv")
-write.csv(data.frame(residuals(srrk_ap)) %>% mutate(year = c(1998:2015)), "~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/ap_resid_RK.csv")
+write.csv(data.frame(residuals(srBH_ap)) %>% mutate(year = c(1999:2015)), "~/Desktop/PhD project/Seatrout/Data/Exported R Dataframes/ap_resid_BH.csv")
+write.csv(data.frame(residuals(srRK_ap)) %>% mutate(year = c(1999:2015)), "~/Desktop/PhD project/Seatrout/Data/Exported R Dataframes/ap_resid_RK.csv")
 
 
 
