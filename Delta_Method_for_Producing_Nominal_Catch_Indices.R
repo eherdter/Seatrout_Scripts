@@ -1102,7 +1102,6 @@ Pred_Biomass_IR_adult <- Pred_Biomass_IR_adult %>% mutate(sumbiomass = rowSums(P
 AP_ind <- data.frame(cbind(Mean_AP$Mean, Mean_AP_ad$Mean, Pred_Biomass_AP_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
 names(AP_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
 plot(yoy~adult, data=AP_ind)
-AP_ind <- AP_ind[-1,] #removed the first year because it had a very far outlier
 
 CK_ind <- data.frame(cbind(Mean_CK$Mean[2:20], Mean_CK_ad$Mean, Pred_Biomass_CK_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
 names(CK_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
@@ -1146,8 +1145,8 @@ plot(yoy~adult, data=AP_ind, xlim=xlmts) #plot
 lines(pR~x, lwd=2) #add the line of the predicted mean R
 
 ##### Beverton Holt 
-srStarts(yoy~adult, data=AP_ind, type="BevertonHolt")  #determine starting values
-svR_ap <- list(a=7, b=7)
+srStarts(yoy~adult, data=AP_ind, type="BevertonHolt", param=1)  #determine starting values
+svR_ap <- list(a=-52, b=-65)
 BH <- srFuns("BevertonHolt")
 srBH_ap <- nls(logyoy~log(BH(adult,a,b)), data=AP_ind, start=svR_ap)
 overview(srBH_ap)
@@ -1173,165 +1172,246 @@ AIC(srBH_ap, srRK_ap)
 
 #BH appears to be a better fit but the BH parameters werent significant so just export both 
 
-write.csv(data.frame(residuals(srBH_ap)) %>% mutate(year = c(1999:2015)), "~/Desktop/PhD project/Seatrout/Data/Exported R Dataframes/ap_resid_BH.csv")
-write.csv(data.frame(residuals(srRK_ap)) %>% mutate(year = c(1999:2015)), "~/Desktop/PhD project/Seatrout/Data/Exported R Dataframes/ap_resid_RK.csv")
-
-
-
-
-
-
-
-
-
+write.csv(data.frame(residuals(srBH_ap)) %>% mutate(year = c(1998:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_BH.csv")
+write.csv(data.frame(residuals(srRK_ap)) %>% mutate(year = c(1998:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_RK.csv")
 
 
 #CH STOCK RECRUITMENT FITTING #####
-svR_ch <- srStarts(yoy ~ adult, data=CH_bio, type="BevertonHolt")
-svR_ch <- list(a=-19.92, b=-21.60)
-bh <- srFuns("BevertonHolt")
-srBH_ch <- nls(logyoy~log(bh(adult,a,b)), data=CH_bio, start=svR_ch)
+####Ricker
+srStarts(yoy ~ adult, data=CH_ind, type="Ricker") #determine starting values 
+svR_ch <- list(a=5, b=2) #putting starting values into a named list for later use
+RK <- srFuns("Ricker") #define stock recruit function that ill be using 
+srRK_ch <- nls(logyoy~log(RK(adult,a,b)), data=CH_ind, start=svR_ch) #stock recruitment function with multiplicative errors is fit with nls 
+overview(srRK_ch) #produces parameter estimates, confidence intervals, Residual sums squares
+
+#visualize the model fit
+x=seq(0,5, length.out=999) #many S for predictions
+pR <- RK(x, a=coef(srRK_ch)) #predicted mean R for the values of S using the coefficients of the fitted model above (srRK_ap)
+xlmts=range(c(x,CH_ind$adult)) #make xlmts on the plot
+plot(yoy~adult, data=CH_ind, xlim=xlmts) #plot 
+lines(pR~x, lwd=2) #add the line of the predicted mean R
+
+##### Beverton Holt 
+srStarts(yoy~adult, data=CH_ind, type="BevertonHolt", param=1)  #determine starting values
+svR_ch <- list(a=-13, b=-19)
+BH <- srFuns("BevertonHolt")
+srBH_ch <- nls(logyoy~log(BH(adult,a,b)), data=CH_ind, start=svR_ch)
 overview(srBH_ch)
-x=seq(0,2, length.out=999)
-pR <- bh(x, a=coef(srBH_ch))
-xlmts=range(c(x,CH_bio$adult))
-plot(yoy~adult, data=CH_bio, xlim=xlmts)
-lines(pR~x, lwd=2)
+#not significant here 
 
-svR_ch <- srStarts(yoy ~ adult, data=CH_bio, type="Ricker")
-svR_ch <- list(a=5, b=2)
-rk <- srFuns("Ricker")
-srrk_ch <- nls(logyoy~log(rk(adult,a,b)), data=CH_bio, start=svR_ch)
-overview(srrk_ch)
-x=seq(0,2, length.out=999)
-pR <- rk(x, a=coef(srrk_ch))
-xlmts=range(c(x,CH_bio$adult))
-plot(yoy~adult, data=CH_bio, xlim=xlmts)
-lines(pR~x, lwd=2)
+#visualize the model fit
+x=seq(0,5, length.out=999) #many S for predictions
+pR <- BH(x, a=coef(srBH_ch)) #predicted mean R for the values of S using the coefficients of the fitted model above (srRK_ap)
+xlmts=range(c(x,CH_ind$adult)) #make xlmts on the plot
+plot(yoy~adult, data=CH_ind, xlim=xlmts) #plot 
+lines(pR~x, lwd=2) #add the line of the predicted mean R
+#weird
 
-AIC(srBH_ch, srrk_ch)
+##### Density Independent
+ind <- srFuns("independence")
+svI <- srStarts(yoy~adult, data=CH_ind, type= "independence")
+srI <- nls(logyoy~log(ind(adult,a)), data=CH_ind, start=svI)
 
-# ricker appears to be a better fit 
-write.csv(data.frame(residuals(srrk_ch)) %>% mutate(year = c(1996:2015)), "~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/ch_resid_RK.csv")
-write.csv(data.frame(residuals(srBH_ch)) %>% mutate(year = c(1996:2015)), "~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/ch_resid_BH.csv")
+#test whether density independent are better than either 
+extraSS(srI, com=srRK_ch)
+extraSS(srI, com=srBH_ch)
 
+#test whether models are better
+AIC(srBH_ch, srRK_ch)  #dont believe it
 
-
+write.csv(data.frame(residuals(srBH_ch)) %>% mutate(year = c(1996:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_BH.csv")
+write.csv(data.frame(residuals(srRK_ch)) %>% mutate(year = c(1996:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_RK.csv")
 
 
 #CK STOCK RECRUITMENT FITTING #####
-svR_ck <- srStarts(yoy ~ adult, data=CK_bio, type="BevertonHolt")
-svR_ck <- list(a=0.45, b=0.04)
-bh <- srFuns("BevertonHolt")
-srBH_ck <- nls(logyoy~log(bh(adult,a,b)), data=CK_bio, start=svR_ck)
-summary(srBH_ck)
-x=seq(0,4, length.out=999)
-pR <- bh(x, a=coef(srBH_ck))
-xlmts=range(c(x,CK_bio$adult))
-plot(yoy~adult, data=CK_bio, xlim=xlmts)
-lines(pR~x, lwd=2)
+####Ricker
+srStarts(yoy ~ adult, data=CK_ind, type="Ricker") #determine starting values 
+svR_ck <- list(a=0.43, b=-0.03) #putting starting values into a named list for later use
+RK <- srFuns("Ricker") #define stock recruit function that ill be using 
+srRK_ck <- nls(logyoy~log(RK(adult,a,b)), data=CK_ind, start=svR_ck) #stock recruitment function with multiplicative errors is fit with nls 
+overview(srRK_ck) #produces parameter estimates, confidence intervals, Residual sums squares
+#overall model not significant
 
-svR_ck <- srStarts(yoy ~ adult, data=CK_bio, type="Ricker")
-svR_ck <- list(a=0.52, b=0.04)
-rk <- srFuns("Ricker")
-srrk_ck <- nls(logyoy~log(rk(adult,a,b)), data=CK_bio, start=svR_ck)
-summary(srrk_ck)
-x=seq(0,4, length.out=999)
-pR <- rk(x, a=coef(srrk_ch))
-xlmts=range(c(x,CK_bio$adult))
-plot(yoy~adult, data=CK_bio, xlim=xlmts)
-lines(pR~x, lwd=2)
 
-#both seem similar at significance level but the Beverton-Holt seems to fit much better
-write.csv(data.frame(residuals(srrk_ck)) %>% mutate(year = c(1997:2015)), "~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/ck_resid_RK.csv")
-write.csv(data.frame(residuals(srBH_ck)) %>% mutate(year = c(1997:2015)), "~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/ck_resid_BH.csv")
+#visualize the model fit
+x=seq(0,5, length.out=999) #many S for predictions
+pR <- RK(x, a=coef(srRK_ck)) #predicted mean R for the values of S using the coefficients of the fitted model above (srRK_ap)
+xlmts=range(c(x,CK_ind$adult)) #make xlmts on the plot
+plot(yoy~adult, data=CK_ind, xlim=xlmts) #plot 
+lines(pR~x, lwd=2) #add the line of the predicted mean R
 
+##### Beverton Holt 
+srStarts(yoy~adult, data=CK_ind, type="BevertonHolt")  #determine starting values
+svR_ck <- list(a=0.5, b=0.73)
+BH <- srFuns("BevertonHolt")
+srBH_ck <- nls(logyoy~log(BH(adult,a,b)), data=CK_ind, start=svR_ck)
+overview(srBH_ck)
+#not significant here - wont even fit it  
+
+#visualize the model fit
+x=seq(0,5, length.out=999) #many S for predictions
+pR <- BH(x, a=coef(srBH_ch)) #predicted mean R for the values of S using the coefficients of the fitted model above (srRK_ap)
+xlmts=range(c(x,CH_ind$adult)) #make xlmts on the plot
+plot(yoy~adult, data=CH_ind, xlim=xlmts) #plot 
+lines(pR~x, lwd=2) #add the line of the predicted mean R
+#weird
+
+##### Density Independent
+ind <- srFuns("independence")
+svI <- srStarts(yoy~adult, data=CK_ind, type= "independence")
+srI <- nls(logyoy~log(ind(adult,a)), data=CK_ind, start=svI)
+
+#test whether density independent are better than either 
+extraSS(srI, com=srRK_ck) #a density independent is even better 
+extraSS(srI, com=srBH_ck)
+
+#test whether models are better
+AIC(srBH_ch, srRK_ch)  #dont believe it
+
+#both weren't even significant 
+write.csv(data.frame(residuals(srBH_ch)) %>% mutate(year = c(1997:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_BH.csv")
+write.csv(data.frame(residuals(srRK_ch)) %>% mutate(year = c(1997:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_RK.csv")
 
 # TB STOCK RECRUITMENT FITTING #####
+####Ricker
+srStarts(yoy ~ adult, data=TB_ind, type="Ricker") #determine starting values 
+svR_tb <- list(a=7.7, b=2.25) #putting starting values into a named list for later use
+RK <- srFuns("Ricker") #define stock recruit function that ill be using 
+srRK_tb <- nls(logyoy~log(RK(adult,a,b)), data=TB_ind, start=svR_tb) #stock recruitment function with multiplicative errors is fit with nls 
+overview(srRK_tb) #produces parameter estimates, confidence intervals, Residual sums squares
 
-svR_tb <- srStarts(yoy ~ adult, data=TB_bio, type="BevertonHolt")
-svR_tb <- list(a=10.415, b=6.192)
-bh <- srFuns("BevertonHolt")
-srBH_tb <- nls(logyoy~log(bh(adult,a,b)), data=TB_bio, start=svR_tb)
-summary(srBH_tb)
-x=seq(0,4, length.out=999)
-pR <- bh(x, a=coef(srBH_tb))
-xlmts=range(c(x,TB_bio$adult))
-plot(yoy~adult, data=TB_bio, xlim=xlmts)
-lines(pR~x, lwd=2)
+#visualize the model fit
+x=seq(0,5, length.out=999) #many S for predictions
+pR <- RK(x, a=coef(srRK_tb)) #predicted mean R for the values of S using the coefficients of the fitted model above (srRK_ap)
+xlmts=range(c(x,TB_ind$adult)) #make xlmts on the plot
+plot(yoy~adult, data=TB_ind, xlim=xlmts) #plot 
+lines(pR~x, lwd=2) #add the line of the predicted mean R
 
-svR_tb <- srStarts(yoy ~ adult, data=TB_bio, type="Ricker")
-svR_tb <- list(a=5, b=1)
-rk <- srFuns("Ricker")
-srrk_tb <- nls(logyoy~log(rk(adult,a,b)), data=TB_bio, start=svR_tb)
-summary(srrk_tb)
-x=seq(0,4, length.out=999)
-pR <- rk(x, a=coef(srrk_tb))
-xlmts=range(c(x,TB_bio$adult))
-plot(yoy~adult, data=TB_bio, xlim=xlmts)
-lines(pR~x, lwd=2)
+##### Beverton Holt 
+srStarts(yoy~adult, data=TB_ind, type="BevertonHolt")  #determine starting values
+svR_tb <- list(a=27, b=23)
+BH <- srFuns("BevertonHolt")
+srBH_tb <- nls(logyoy~log(BH(adult,a,b)), data=TB_ind, start=svR_tb)
+overview(srBH_tb)
+#not significant here 
 
-#ricker is better fit
-write.csv(data.frame(residuals(srBH_tb)) %>% mutate(year= c(1996:2015)), "~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/tb_resid_BH.csv")
-write.csv(data.frame(residuals(srrk_tb)) %>% mutate(year= c(1996:2015)), "~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/tb_resid_RK.csv")
+#visualize the model fit
+x=seq(0,5, length.out=999) #many S for predictions
+pR <- BH(x, a=coef(srBH_tb)) #predicted mean R for the values of S using the coefficients of the fitted model above (srRK_ap)
+xlmts=range(c(x,TB_ind$adult)) #make xlmts on the plot
+plot(yoy~adult, data=TB_ind, xlim=xlmts) #plot 
+lines(pR~x, lwd=2) #add the line of the predicted mean R
+
+
+##### Density Independent
+ind <- srFuns("independence")
+svI <- srStarts(yoy~adult, data=TB_ind, type= "independence")
+srI <- nls(logyoy~log(ind(adult,a)), data=TB_ind, start=svI)
+
+#test whether density independent are better than either 
+extraSS(srI, com=srRK_tb) #ricker is better
+extraSS(srI, com=srBH_tb) #bh is better but its not significant 
+
+#test whether models are better
+AIC(srBH_tb, srRK_tb)  #Ricker is better. But still isnt good. 
+
+#not great but exporting them anyway
+write.csv(data.frame(residuals(srBH_tb)) %>% mutate(year = c(1996:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_BH.csv")
+write.csv(data.frame(residuals(srRK_tb)) %>% mutate(year = c(1996:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_RK.csv")
 
 
 # IR STOCK RECRUITMENT CURVE FITTING #####
+####Ricker
+srStarts(yoy ~ adult, data=IR_ind, type="Ricker") #determine starting values 
+svR_ir <- list(a=2.8, b=1.01) #putting starting values into a named list for later use
+RK <- srFuns("Ricker") #define stock recruit function that ill be using 
+srRK_ir <- nls(logyoy~log(RK(adult,a,b)), data=IR_ind, start=svR_ir) #stock recruitment function with multiplicative errors is fit with nls 
+overview(srRK_ir) #produces parameter estimates, confidence intervals, Residual sums squares
 
-svR_ir <- srStarts(yoy ~ adult, data=IR_bio, type="BevertonHolt")
-svR_ir <- list(a=-56.92, b=-57.60)
-bh <- srFuns("BevertonHolt")
-srBH_ir <- nls(logyoy~log(bh(adult,a,b)), data=IR_bio, start=svR_ir)
-summary(srBH_ir)
-x=seq(0,4, length.out=999)
-pR <- bh(x, a=coef(srBH_ir))
-xlmts=range(c(x,IR_bio$adult))
-plot(yoy~adult, data=IR_bio, xlim=xlmts)
-lines(pR~x, lwd=2)
+#visualize the model fit
+x=seq(0,5, length.out=999) #many S for predictions
+pR <- RK(x, a=coef(srRK_ir)) #predicted mean R for the values of S using the coefficients of the fitted model above (srRK_ap)
+xlmts=range(c(x,IR_ind$adult)) #make xlmts on the plot
+plot(yoy~adult, data=IR_ind, xlim=xlmts) #plot 
+lines(pR~x, lwd=2) #add the line of the predicted mean R
 
-svR_ir <- srStarts(yoy ~ adult, data=IR_bio, type="Ricker")
-svR_ir <- list(a=4, b=1)
-rk <- srFuns("Ricker")
-srrk_ir <- nls(logyoy~log(rk(adult,a,b)), data=IR_bio, start=svR_ir)
-summary(srrk_ir)
-x=seq(0,4, length.out=999)
-pR <- rk(x, a=coef(srrk_ir))
-xlmts=range(c(x, IR_bio$adult))
-plot(yoy~adult, data=IR_bio, xlim=xlmts)
-lines(pR~x, lwd=2)
+##### Beverton Holt 
+srStarts(yoy~adult, data=IR_ind, type="BevertonHolt")  #determine starting values
+svR_ir <- list(a=4.9, b=4.3)
+BH <- srFuns("BevertonHolt")
+srBH_ir <- nls(logyoy~log(BH(adult,a,b)), data=IR_ind, start=svR_ir)
+overview(srBH_ir)
+#not significant here 
 
-#ricker is better fit
-write.csv(data.frame(residuals(srBH_ir))  %>% mutate(year = c(1997:2015)), "~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/ir_resid_BH.csv")
-write.csv(data.frame(residuals(srrk_ir))  %>% mutate(year = c(1997:2015)), "~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/ir_resid_RK.csv")
+#visualize the model fit
+x=seq(0,5, length.out=999) #many S for predictions
+pR <- BH(x, a=coef(srBH_ir)) #predicted mean R for the values of S using the coefficients of the fitted model above (srRK_ap)
+xlmts=range(c(x,IR_ind$adult)) #make xlmts on the plot
+plot(yoy~adult, data=IR_ind, xlim=xlmts) #plot 
+lines(pR~x, lwd=2) #add the line of the predicted mean R
+
+##### Density Independent
+ind <- srFuns("independence")
+svI <- srStarts(yoy~adult, data=IR_ind, type= "independence")
+srI <- nls(logyoy~log(ind(adult,a)), data=IR_ind, start=svI)
+
+#test whether density independent are better than either 
+extraSS(srI, com=srRK_ir) #ricker is better
+extraSS(srI, com=srBH_ir) #bh is better but its not significant 
+
+#test whether models are better
+AIC(srBH_tb, srRK_tb)  #Ricker is better. But still isnt good. 
+
+#not great but exporting them anyway
+write.csv(data.frame(residuals(srBH_ir)) %>% mutate(year = c(1997:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_BH.csv")
+write.csv(data.frame(residuals(srRK_ir)) %>% mutate(year = c(1997:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_RK.csv")
 
 #JX STOCK RECRUITMENT CURVE FITTING ####
+####Ricker
+srStarts(yoy ~ adult, data=JX_ind, type="Ricker") #determine starting values 
+svR_jx <- list(a=1.2, b=103) #putting starting values into a named list for later use
+RK <- srFuns("Ricker") #define stock recruit function that ill be using 
+srRK_jx <- nls(logyoy~log(RK(adult,a,b)), data=JX_ind, start=svR_jx) #stock recruitment function with multiplicative errors is fit with nls 
+overview(srRK_jx) #produces parameter estimates, confidence intervals, Residual sums squares
+#not significant here 
 
-svR_jx <- srStarts(yoy ~ adult, data=JX_bio, type="BevertonHolt")
-svR_jx <- list(a=0.40, b=0.34)
-bh <- srFuns("BevertonHolt")
-srBH_jx <- nls(logyoy~log(bh(adult,a,b)), data=JX_bio, start=svR_jx)
-summary(srBH_jx)
-x=seq(0,4, length.out=999)
-pR <- bh(x, a=coef(srBH_jx))
-xlmts=range(c(x,JX_bio$adult))
-plot(yoy~adult, data=JX_bio, xlim=xlmts)
-lines(pR~x, lwd=2)
+#visualize the model fit
+x=seq(0,5, length.out=999) #many S for predictions
+pR <- RK(x, a=coef(srRK_jx)) #predicted mean R for the values of S using the coefficients of the fitted model above (srRK_ap)
+xlmts=range(c(x,JX_ind$adult)) #make xlmts on the plot
+plot(yoy~adult, data=JX_ind, xlim=xlmts) #plot 
+lines(pR~x, lwd=2) #add the line of the predicted mean R
 
-svR_jx <- srStarts(yoy ~ adult, data=JX_bio, type="Ricker")
-svR_jx <- list(a=0.75, b=0.79)
-rk <- srFuns("Ricker")
-srrk_jx <- nls(logyoy~log(rk(adult,a,b)), data=JX_bio, start=svR_jx)
-summary(srrk_jx)
-x=seq(0,4, length.out=999)
-pR <- rk(x, a=coef(srrk_jx))
-xlmts=range(c(x, JX_bio$adult))
-plot(yoy~adult, data=JX_bio, xlim=xlmts)
-lines(pR~x, lwd=2)
+##### Beverton Holt 
+srStarts(yoy~adult,data=JX_ind, type="BevertonHolt")  #determine starting values
+svR_jx <- list(a=0.63, b=40)
+BH <- srFuns("BevertonHolt")
+srBH_jx <- nls(logyoy~log(BH(adult,a,b)), data=JX_ind, start=svR_jx)
+overview(srBH_jx)
+#not significant here 
 
-#ricker marinally better
-write.csv(data.frame(residuals(srBH_jx)) %>% mutate(year = c(2001:2015)), "~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/jx_resid_BH.csv")
-write.csv(data.frame(residuals(srrk_jx)) %>% mutate(year = c(2001:2015)), "~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/jx_resid_RK.csv")
+#visualize the model fit
+x=seq(0,5, length.out=999) #many S for predictions
+pR <- BH(x, a=coef(srBH_jx)) #predicted mean R for the values of S using the coefficients of the fitted model above (srRK_ap)
+xlmts=range(c(x,JX_ind$adult)) #make xlmts on the plot
+plot(yoy~adult, data=JX_ind, xlim=xlmts) #plot 
+lines(pR~x, lwd=2) #add the line of the predicted mean R
 
+##### Density Independent
+ind <- srFuns("independence")
+svI <- srStarts(yoy~adult, data=JX_ind, type= "independence")
+srI <- nls(logyoy~log(ind(adult,a)), data=JX_ind, start=svI)
+
+#test whether density independent are better than either 
+extraSS(srI, com=srRK_jx) #independent is better
+extraSS(srI, com=srBH_jx) #independent is better
+
+#test whether models are better
+AIC(srBH_jx, srRK_jx)  #Ricker is better. But still isnt good. 
+
+#not great but exporting them anyway
+write.csv(data.frame(residuals(srBH_jx)) %>% mutate(year = c(2001:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_BH.csv")
+write.csv(data.frame(residuals(srRK_jx)) %>% mutate(year = c(2001:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_RK.csv")
 
 
 
