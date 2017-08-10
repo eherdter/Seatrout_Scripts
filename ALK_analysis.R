@@ -31,7 +31,7 @@ library(scales)
 library(fishmethods)
 library(dplyr)
 
-# set working directory#####
+# SET WORKING DIRECTORY #####
 setwd("~/Desktop/PhD project/Projects/Seatrout/Data")
 setwd("U:/PhD_projectfiles/Raw_Data/Age_Length_Data")
 
@@ -118,134 +118,63 @@ Combined_sum <- summarize(group_by(All, sex,bay), mean_tl=mean(tl), sd_tl=sd(tl)
 Combined_sum_year <- summarize(group_by(All,bay ), min_year=min(year), max_year=max(year))
 
 #summarize each to get sex ratios etc. 
-TB_sum <- summarise(Agelength_TB,mean_age=mean(final_age), median_age=median(final_age),sd_age= sd(final_age), se_age=sd_age/sqrt(length(final_age)), mean_tl = mean(tl),min_tl=min(tl), max_tl=max(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(final_age))), prop_F=nrow(subset(Agelength_TB, sex=="F"))/length(final_age),prop_M=nrow(subset(Agelength_TB, sex=="M"))/length(final_age), N_F=nrow(subset(Agelength_TB, sex=="F")), N_M=nrow(subset(Agelength_TB, sex=="M")))
-AP_sum <- summarise(Agelength_AP,mean_age=mean(final_age), median_age=median(final_age),sd_age= sd(final_age), se_age=sd_age/sqrt(length(final_age)), mean_tl = mean(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(final_age))), prop_F=nrow(subset(Agelength_AP, sex=="F"))/length(final_age),prop_M=nrow(subset(Agelength_AP, sex=="M"))/length(final_age), N_F=nrow(subset(Agelength_AP, sex=="F")), N_M=nrow(subset(Agelength_AP, sex=="M")))
-CH_sum <- summarise(Agelength_CH,mean_age=mean(final_age), median_age=median(final_age),sd_age= sd(final_age), se_age=sd_age/sqrt(length(final_age)), mean_tl = mean(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(final_age))), prop_F=nrow(subset(Agelength_CH, sex=="F"))/length(final_age),prop_M=nrow(subset(Agelength_CH, sex=="M"))/length(final_age), N_F=nrow(subset(Agelength_CH, sex=="F")), N_M=nrow(subset(Agelength_CH, sex=="M")))
-CK_sum <- summarise(Agelength_CK,mean_age=mean(final_age), median_age=median(final_age),sd_age= sd(final_age), se_age=sd_age/sqrt(length(final_age)), mean_tl = mean(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(final_age))), prop_F=nrow(subset(Agelength_CK, sex=="F"))/length(final_age),prop_M=nrow(subset(Agelength_CK, sex=="M"))/length(final_age), N_F=nrow(subset(Agelength_CK, sex=="F")), N_M=nrow(subset(Agelength_CK, sex=="M")))
-IR_sum <- summarise(Agelength_IR,mean_age=mean(final_age), median_age=median(final_age),sd_age= sd(final_age), se_age=sd_age/sqrt(length(final_age)), mean_tl = mean(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(final_age))), prop_F=nrow(subset(Agelength_IR, sex=="F"))/length(final_age),prop_M=nrow(subset(Agelength_IR, sex=="M"))/length(final_age), N_F=nrow(subset(Agelength_IR, sex=="F")), N_M=nrow(subset(Agelength_IR, sex=="M")))
-JX_sum <- summarise(Agelength_JX,mean_age=mean(final_age), median_age=median(final_age),sd_age= sd(final_age), se_age=sd_age/sqrt(length(final_age)), mean_tl = mean(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(final_age))), prop_F=nrow(subset(Agelength_JX, sex=="F"))/length(final_age),prop_M=nrow(subset(Agelength_JX, sex=="M"))/length(final_age), N_F=nrow(subset(Agelength_JX, sex=="F")), N_M=nrow(subset(Agelength_JX, sex=="M")))
+TB_sum <- summarise(Agelength_TB,mean_age=mean(final_age), median_age=median(final_age),sd_age= sd(final_age), se_age=sd_age/sqrt(length(final_age)), mean_tl = mean(tl), min_tl=min(tl), max_tl=max(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(final_age))), prop_F=nrow(subset(Agelength_TB, sex=="F"))/length(final_age),prop_M=nrow(subset(Agelength_TB, sex=="M"))/length(final_age), N_F=nrow(subset(Agelength_TB, sex=="F")), N_M=nrow(subset(Agelength_TB, sex=="M")), totN =N_F+N_M)
+AP_sum <- summarise(Agelength_AP,mean_age=mean(final_age), median_age=median(final_age),sd_age= sd(final_age), se_age=sd_age/sqrt(length(final_age)), mean_tl = mean(tl), min_tl=min(tl), max_tl=max(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(final_age))), prop_F=nrow(subset(Agelength_AP, sex=="F"))/length(final_age),prop_M=nrow(subset(Agelength_AP, sex=="M"))/length(final_age), N_F=nrow(subset(Agelength_AP, sex=="F")), N_M=nrow(subset(Agelength_AP, sex=="M")), totN =N_F+N_M)
+CH_sum <- summarise(Agelength_CH,mean_age=mean(final_age), median_age=median(final_age),sd_age= sd(final_age), se_age=sd_age/sqrt(length(final_age)), mean_tl = mean(tl), min_tl=min(tl), max_tl=max(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(final_age))), prop_F=nrow(subset(Agelength_CH, sex=="F"))/length(final_age),prop_M=nrow(subset(Agelength_CH, sex=="M"))/length(final_age), N_F=nrow(subset(Agelength_CH, sex=="F")), N_M=nrow(subset(Agelength_CH, sex=="M")), totN =N_F+N_M)
+CK_sum <- summarise(Agelength_CK,mean_age=mean(final_age), median_age=median(final_age),sd_age= sd(final_age), se_age=sd_age/sqrt(length(final_age)), mean_tl = mean(tl), min_tl=min(tl), max_tl=max(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(final_age))), prop_F=nrow(subset(Agelength_CK, sex=="F"))/length(final_age),prop_M=nrow(subset(Agelength_CK, sex=="M"))/length(final_age), N_F=nrow(subset(Agelength_CK, sex=="F")), N_M=nrow(subset(Agelength_CK, sex=="M")), totN =N_F+N_M)
+IR_sum <- summarise(Agelength_IR,mean_age=mean(final_age), median_age=median(final_age),sd_age= sd(final_age), se_age=sd_age/sqrt(length(final_age)), mean_tl = mean(tl), min_tl=min(tl), max_tl=max(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(final_age))), prop_F=nrow(subset(Agelength_IR, sex=="F"))/length(final_age),prop_M=nrow(subset(Agelength_IR, sex=="M"))/length(final_age), N_F=nrow(subset(Agelength_IR, sex=="F")), N_M=nrow(subset(Agelength_IR, sex=="M")), totN =N_F+N_M)
+JX_sum <- summarise(Agelength_JX,mean_age=mean(final_age), median_age=median(final_age),sd_age= sd(final_age), se_age=sd_age/sqrt(length(final_age)), mean_tl = mean(tl), min_tl=min(tl), max_tl=max(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(final_age))), prop_F=nrow(subset(Agelength_JX, sex=="F"))/length(final_age),prop_M=nrow(subset(Agelength_JX, sex=="M"))/length(final_age), N_F=nrow(subset(Agelength_JX, sex=="F")), N_M=nrow(subset(Agelength_JX, sex=="M")), totN =N_F+N_M)
 All_sum <- rbind(TB_sum, AP_sum, CH_sum, CK_sum, IR_sum, JX_sum) %>% mutate(bay=c("TB", "AP", "CH", "CK", "IR", "JX"))
+rownames(All_sum) <- c("TB", "AP", "CH", "CK", "IR", "JX")
+
+
+#CHI SQ TEST To test differencs in final age between bays #####
+#non-parameteric like anova is below so it doesnt assume normality of the age distribution
+#can do a test of variance to determine whether can use anova
+#anova assumes homogenous variances
+#e.g. var.test(Agelength_TB$tl, Agelength_IR$tl)
+
+
+ALL_to7 <- All %>% subset(final_age<8)
+(age_freq <- xtabs(~bay+final_age, data=ALL_to7))
+
+chisq.test(age_freq[1:2,]) #TB to AP, 22.15, 0.001
+chisq.test(age_freq[1:3,]) #TB to CK, 205.3, 0.001
+chisq.test(age_freq[1:4,]) #TB to CH, 229.3, <0.001
+chisq.test(age_freq[1:5,]) #TB to IR, 252.5, <0.001
+chisq.test(age_freq[1:6,]) #TB to JX, 476.62, <0.001
+chisq.test(age_freq[2:3,]) #AP to CK, 113.36, <0.001
+chisq.test(age_freq[2:4,]) #AP to CH, 160.4, <0.001
+chisq.test(age_freq[2:5,]) #AP to IR, 205.71, <0.001
+chisq.test(age_freq[2:6,]) #AP to JX, 403.1, <0.001
+chisq.test(age_freq[3:4,]) #CK to CH, 108.62, <0.001
+chisq.test(age_freq[3:5,]) #CK to IR, 168
+chisq.test(age_freq[3:6,]) #CK to JX. 366, 0.7647
+chisq.test(age_freq[4:5,]) #CH to IR, NOT SIGNIFICANTLY DIFFERENT
+chisq.test(age_freq[4:6,]) #CH to JX, 251.56
+chisq.test(age_freq[5:6,]) #IR to JX
+
+#Adjusting p-values for the multople comparisons
+ps_age<- c(chisq.test(age_freq[1:2,])$p.value,
+           chisq.test(age_freq[1:3,])$p.value,
+           chisq.test(age_freq[1:4,])$p.value,
+           chisq.test(age_freq[1:5,])$p.value,
+           chisq.test(age_freq[1:6,])$p.value,
+           chisq.test(age_freq[2:3,])$p.value,
+           chisq.test(age_freq[2:4,])$p.value,
+           chisq.test(age_freq[2:5,])$p.value,
+           chisq.test(age_freq[2:6,])$p.value,
+           chisq.test(age_freq[3:4,])$p.value,
+           chisq.test(age_freq[3:5,])$p.value,
+           chisq.test(age_freq[3:6,])$p.value,
+           chisq.test(age_freq[4:5,])$p.value,
+           chisq.test(age_freq[4:6,])$p.value,
+           chisq.test(age_freq[5:6,])$p.value)
+
+pdf <- as.data.frame(p.adjust(ps_age))
 
 
 
-
-
-# ONE WAY ANOVA to determine if there are significant differences among estuary-specific mean lengths ####
-##################################
-#determine if there is significnat difference in female length among estuaries
-All_F <- subset(All, sex=="F")
-plot(tl~bay, data=All_F)
-results=aov(tl~bay, data=All_F)
-summary(results)
-
-# Df  Sum Sq Mean Sq F value Pr(>F)    
-# bay             5   33109    6622   89.58 <2e-16 ***
-#   Residuals   19505 1441763      74   
-
-# Multiple comparisons with pairwise.t.test to compute pair wise comparisons between group means with corrections for multiple testing to determine how the means of each differ. 
-TukeyHSD(results, conf.level=0.95)
-
-#determine if there is significnat difference in male length among estuaries
-All_M <- subset(All, sex=="M")
-plot(tl~bay, data=All_M)
-results=aov(tl~bay, data=All_M)
-summary(results)
-
-# Df Sum Sq Mean Sq F value Pr(>F)    
-# bay            5   8881  1776.3   40.77 <2e-16 ***
-#   Residuals   7762 338222    43.6                   
-# ---
-TukeyHSD(results, conf.level=0.95)
-
-# ANOVA determine if there is significnat difference in female age among estuaries ####
-All_F <- subset(All, sex=="F")
-plot(final_age~bay, data=All_F)
-results=aov(final_age~bay, data=All_F)
-summary(results)
-
-# Df Sum Sq Mean Sq F value Pr(>F)    
-# bay             5   1223  244.53   150.6 <2e-16 ***
-#   Residuals   19505  31664    1.62     
-
-TukeyHSD(results, conf.level=0.95)
-
-# ANOVA determine if there is significnat difference in male age among estuaries####
-All_M <- subset(All, sex=="M")
-plot(final_age~bay, data=All_M)
-results=aov(final_age~bay, data=All_M)
-summary(results)
-
-# Df Sum Sq Mean Sq F value Pr(>F)    
-# bay            5    400   80.08   45.81 <2e-16 ***
-#   Residuals   7762  13568    1.75    
-
-TukeyHSD(results, conf.level=0.95)
-
-# ANOVA determine whether there is a significant difference in male and female tl (not estuary specific) ####
-#this should actually be a t-test because thats basically what it is. Comparing two means
-All_MF <- droplevels(subset(All, sex=="F" | sex=="M"))
-plot(tl~sex, data=All_MF)
-result= aov(tl~ sex, data=All_MF)
-summary(result)
-TukeyHSD(result,conf.level=0.95)
-
-# ANOVA determine whethere there is a significant difference in male and female TOTAL LENGTH for each estuary ####
-Agelength_TB_M <- subset(Agelength_TB, sex=="M")
-Agelength_TB_F <- subset(Agelength_TB, sex=="F")
-t.test(Agelength_TB_M$tl, Agelength_TB_F$tl)
-
-Agelength_AP_M <- subset(Agelength_AP, sex=="M")
-Agelength_AP_F <- subset(Agelength_AP, sex=="F")
-t.test(Agelength_AP_M$tl, Agelength_AP_F$tl)
-
-Agelength_CK_M <- subset(Agelength_CK, sex=="M")
-Agelength_CK_F <- subset(Agelength_CK, sex=="F")
-t.test(Agelength_CK_M$tl, Agelength_CK_F$tl)
-
-Agelength_CH_M <- subset(Agelength_CH, sex=="M")
-Agelength_CH_F <- subset(Agelength_CH, sex=="F")
-t.test(Agelength_CH_M$tl, Agelength_CH_F$tl)
-
-Agelength_IR_M <- subset(Agelength_IR, sex=="M")
-Agelength_IR_F <- subset(Agelength_IR, sex=="F")
-t.test(Agelength_IR_M$tl, Agelength_IR_F$tl)
-
-Agelength_JX_M <- subset(Agelength_JX, sex=="M")
-Agelength_JX_F <- subset(Agelength_JX, sex=="F")
-t.test(Agelength_JX_M$tl, Agelength_JX_F$tl)
-
-
-# ANOVA determine whethere there is a significant difference in male and female AGE for each estuary ####
-Agelength_TB_M <- subset(Agelength_TB, sex=="M")
-Agelength_TB_F <- subset(Agelength_TB, sex=="F")
-t.test(Agelength_TB_M$final_age, Agelength_TB_F$final_age)
-
-Agelength_AP_M <- subset(Agelength_AP, sex=="M")
-Agelength_AP_F <- subset(Agelength_AP, sex=="F")
-t.test(Agelength_AP_M$final_age, Agelength_AP_F$final_age)
-
-Agelength_CK_M <- subset(Agelength_CK, sex=="M")
-Agelength_CK_F <- subset(Agelength_CK, sex=="F")
-t.test(Agelength_CK_M$final_age, Agelength_CK_F$final_age)
-
-Agelength_CH_M <- subset(Agelength_CH, sex=="M")
-Agelength_CH_F <- subset(Agelength_CH, sex=="F")
-t.test(Agelength_CH_M$final_age, Agelength_CH_F$final_age)
-
-Agelength_IR_M <- subset(Agelength_IR, sex=="M")
-Agelength_IR_F <- subset(Agelength_IR, sex=="F")
-t.test(Agelength_IR_M$final_age, Agelength_IR_F$final_age)
-
-Agelength_JX_M <- subset(Agelength_JX, sex=="M")
-Agelength_JX_F <- subset(Agelength_JX, sex=="F")
-t.test(Agelength_JX_M$final_age, Agelength_JX_F$final_age)
-
-
-
-plot(final_age ~ sex +bay, data=All_MF)
-result= aov(final_age ~ sex, data=All_MF)
-summary(results)
-TukeyHSD(results,  conf.level=0.95)
 
 # MAKE ALKS ####
 # Make table with observed total numbers at length by age 
@@ -385,7 +314,7 @@ age_AP <- ggplot(Agelength_AP, aes(x=final_age))+
 
 age_CK <- ggplot(Agelength_CK, aes(x=final_age))+ 
   geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-.5, fill="white", color="black")+    # plotting in percent frequency
-  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.4))+  ## plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.45))+  ## plotting in percent frequency
   scale_x_continuous(name="Age (years)", limits=c(0,11), breaks=seq(1,10,1), labels=c(1,2,3,4,5,6,7,8,9,"10+"))+
   theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
         panel.background=element_rect(colour="black",fill="white"), 
@@ -424,7 +353,7 @@ age_CH <- ggplot(Agelength_CH, aes(x=final_age))+
 
 age_JX <- ggplot(Agelength_JX, aes(x=final_age))+ 
   geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-.5, fill="white", color="black")+    # plotting in percent frequency
-  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.4))+  ## plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.45))+  ## plotting in percent frequency
   scale_x_continuous(name="Age (years)", limits=c(0,11), breaks=seq(1,10,1), labels=c(1,2,3,4,5,6,7,8,9,"10+"))+
   theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
         panel.background=element_rect(colour="black",fill="white"), 
@@ -447,6 +376,135 @@ age_IR <- ggplot(Agelength_IR, aes(x=final_age))+
         axis.title.y=element_text(size=24, family="Times New Roman"),
         plot.title=element_text(size=14))+
   annotate("text", x=10, y=.35, label="IR", size=10, family="Times New Roman")
+
+
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+  
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  
+  numPlots = length(plots)
+  
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                     ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+  
+  if (numPlots==1) {
+    print(plots[[1]])
+    
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+
+multiplot()
+
+## MULTIPLOT LENGTH HISTOGRAMS #####
+
+length_AP <- ggplot(Agelength_AP, aes(x=tl))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.10), breaks=seq(0,.10, .02))+  ## plotting in percent frequency
+  scale_x_continuous(name="Length (cm)", limits=c(0,80), breaks=seq(0,80,20))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24, family="Times New Roman"), #changing  colour of x axisaxis.text.y=element_text(colour="black"), #changing colour of y acis
+        axis.text.y=element_text(colour="black", size=24, family="Times New Roman"), #changing colour of y acis
+        axis.title.x=element_text(size=24, family="Times New Roman"),
+        axis.title.y=element_text(size=24, family="Times New Roman"),
+        plot.title=element_text(size=14))+
+  annotate("text", x=65, y= .08, label="AP", size=10, family="Times New Roman")
+
+length_CK <- ggplot(Agelength_CK, aes(x=tl))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.10), breaks=seq(0,.10, .02))+  ## plotting in percent frequency
+  scale_x_continuous(name="Length (cm)", limits=c(0,80), breaks=seq(0,80,20))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24, family="Times New Roman"), #changing  colour of x axisaxis.text.y=element_text(colour="black"), #changing colour of y acis
+        axis.text.y=element_text(colour="black", size=24, family="Times New Roman"), #changing colour of y acis
+        axis.title.x=element_text(size=24, family="Times New Roman"),
+        axis.title.y=element_text(size=24, family="Times New Roman"),
+        plot.title=element_text(size=14))+
+  annotate("text", x=65, y= .08, label="CK", size=10, family="Times New Roman")
+
+length_TB <- ggplot(Agelength_TB, aes(x=tl))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.10), breaks=seq(0,.10, .02))+  ## plotting in percent frequency
+  scale_x_continuous(name="Length (cm)", limits=c(0,80), breaks=seq(0,80,20))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24, family="Times New Roman"), #changing  colour of x axisaxis.text.y=element_text(colour="blaTB"), #changing colour of y acis
+        axis.text.y=element_text(colour="black", size=24, family="Times New Roman"), #changing colour of y acis
+        axis.title.x=element_text(size=24, family="Times New Roman"),
+        axis.title.y=element_text(size=24, family="Times New Roman"),
+        plot.title=element_text(size=14))+
+  annotate("text", x=65, y= .08, label="TB", size=10, family="Times New Roman")
+
+length_CH <- ggplot(Agelength_CH, aes(x=tl))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.10), breaks=seq(0,.10, .02))+  ## plotting in percent frequency
+  scale_x_continuous(name="Length (cm)", limits=c(0,80), breaks=seq(0,80,20))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24, family="Times New Roman"), #changing  colour of x axisaxis.text.y=element_text(colour="blaCH"), #changing colour of y acis
+        axis.text.y=element_text(colour="black", size=24, family="Times New Roman"), #changing colour of y acis
+        axis.title.x=element_text(size=24, family="Times New Roman"),
+        axis.title.y=element_text(size=24, family="Times New Roman"),
+        plot.title=element_text(size=14))+
+  annotate("text", x=65, y= .08, label="CH", size=10, family="Times New Roman")
+
+length_JX <- ggplot(Agelength_JX, aes(x=tl))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.10), breaks=seq(0,.10, .02))+  ## plotting in percent frequency
+  scale_x_continuous(name="Length (cm)", limits=c(0,80), breaks=seq(0,80,20))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24, family="Times New Roman"), #JXanging  colour of x axisaxis.text.y=element_text(colour="blaJX"), #JXanging colour of y acis
+        axis.text.y=element_text(colour="black", size=24, family="Times New Roman"), #JXanging colour of y acis
+        axis.title.x=element_text(size=24, family="Times New Roman"),
+        axis.title.y=element_text(size=24, family="Times New Roman"),
+        plot.title=element_text(size=14))+
+  annotate("text", x=65, y= .08, label="JX", size=10, family="Times New Roman")
+
+length_IR <- ggplot(Agelength_IR, aes(x=tl))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.10), breaks=seq(0,.10, .02))+  ## plotting in percent frequency
+  scale_x_continuous(name="Length (cm)", limits=c(0,80), breaks=seq(0,80,20))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24, family="Times New Roman"), #IRanging  colour of x axisaxis.text.y=element_text(colour="blaIR"), #IRanging colour of y acis
+        axis.text.y=element_text(colour="black", size=24, family="Times New Roman"), #IRanging colour of y acis
+        axis.title.x=element_text(size=24, family="Times New Roman"),
+        axis.title.y=element_text(size=24, family="Times New Roman"),
+        plot.title=element_text(size=14))+
+  annotate("text", x=65, y= .08, label="IR", size=10, family="Times New Roman")
+
+
+
+
+
+
+
+
+
 
 
 # Plot of individual lengths at age with mean lengths at age superimpose ##### 
@@ -749,8 +807,6 @@ mod2 <- multinom(final_age~lcat2*bay,data=Agelength_JXIR, maxit=500) #more compl
 
 anova(mod1, mod2)
 
-# ONE WAY ANOVA to determine if there are significant differences among estuary-specific mean lengths#####
-
 #11. DETERMINE AGE PROPORTION OF ADULTS #####
 #of all FIM subset... select sl > = 200 mm which is what was chosen to determine reproductively mature adults
 # "Distribution of ages described by either the proportion of fish at age (Pi) or the number of fish at each age (Ni)" Ogle 96
@@ -824,4 +880,135 @@ write.csv(Weight_at_Age_TB_ad, "U:/PhD_projectfiles/Exported_R_Datafiles/Weight_
 write.csv(Weight_at_Age_CH_ad, "U:/PhD_projectfiles/Exported_R_Datafiles/Weight_at_Age_CH_ad_FIMdata.csv")
 write.csv(Weight_at_Age_JX_ad, "U:/PhD_projectfiles/Exported_R_Datafiles/Weight_at_Age_JX_ad_FIMdata.csv")
 write.csv(Weight_at_Age_IR_ad, "U:/PhD_projectfiles/Exported_R_Datafiles/Weight_at_Age_IR_ad_FIMdata.csv")
+
+
+# OLD ANOVAS #####
+# ONE WAY ANOVA to determine if there are significant differences among estuary-specific mean lengths ####
+
+#deterine if there is significant difference in overall age among estuaries
+
+#determine if there is significnat difference in female length among estuaries
+All_F <- subset(All, sex=="F")
+plot(tl~bay, data=All_F)
+results=aov(tl~bay, data=All_F)
+summary(results)
+
+# Df  Sum Sq Mean Sq F value Pr(>F)    
+# bay             5   33109    6622   89.58 <2e-16 ***
+#   Residuals   19505 1441763      74   
+
+# Multiple comparisons with pairwise.t.test to compute pair wise comparisons between group means with corrections for multiple testing to determine how the means of each differ. 
+TukeyHSD(results, conf.level=0.95)
+
+#determine if there is significnat difference in male length among estuaries
+All_M <- subset(All, sex=="M")
+plot(tl~bay, data=All_M)
+results=aov(tl~bay, data=All_M)
+summary(results)
+
+# Df Sum Sq Mean Sq F value Pr(>F)    
+# bay            5   8881  1776.3   40.77 <2e-16 ***
+#   Residuals   7762 338222    43.6                   
+# ---
+TukeyHSD(results, conf.level=0.95)
+
+
+#ANOVA determine if there is signficant difference in all age among estuaries ####
+plot(final_age~bay, data=All)
+results=aov(final_age~bay, data=All)
+summary(results)
+
+TukeyHSD(results, conf.level=0.95)
+
+
+# ANOVA determine if there is significnat difference in female age among estuaries ####
+All_F <- subset(All, sex=="F")
+plot(final_age~bay, data=All_F)
+results=aov(final_age~bay, data=All_F)
+summary(results)
+
+# Df Sum Sq Mean Sq F value Pr(>F)    
+# bay             5   1223  244.53   150.6 <2e-16 ***
+#   Residuals   19505  31664    1.62     
+
+TukeyHSD(results, conf.level=0.95)
+
+# ANOVA determine if there is significnat difference in male age among estuaries####
+All_M <- subset(All, sex=="M")
+plot(final_age~bay, data=All_M)
+results=aov(final_age~bay, data=All_M)
+summary(results)
+
+# Df Sum Sq Mean Sq F value Pr(>F)    
+# bay            5    400   80.08   45.81 <2e-16 ***
+#   Residuals   7762  13568    1.75    
+
+TukeyHSD(results, conf.level=0.95)
+
+# ANOVA determine whether there is a significant difference in male and female tl (not estuary specific) ####
+#this should actually be a t-test because thats basically what it is. Comparing two means
+All_MF <- droplevels(subset(All, sex=="F" | sex=="M"))
+plot(tl~sex, data=All_MF)
+result= aov(tl~ sex, data=All_MF)
+summary(result)
+TukeyHSD(result,conf.level=0.95)
+
+# ANOVA determine whethere there is a significant difference in male and female TOTAL LENGTH for each estuary ####
+Agelength_TB_M <- subset(Agelength_TB, sex=="M")
+Agelength_TB_F <- subset(Agelength_TB, sex=="F")
+t.test(Agelength_TB_M$tl, Agelength_TB_F$tl)
+
+Agelength_AP_M <- subset(Agelength_AP, sex=="M")
+Agelength_AP_F <- subset(Agelength_AP, sex=="F")
+t.test(Agelength_AP_M$tl, Agelength_AP_F$tl)
+
+Agelength_CK_M <- subset(Agelength_CK, sex=="M")
+Agelength_CK_F <- subset(Agelength_CK, sex=="F")
+t.test(Agelength_CK_M$tl, Agelength_CK_F$tl)
+
+Agelength_CH_M <- subset(Agelength_CH, sex=="M")
+Agelength_CH_F <- subset(Agelength_CH, sex=="F")
+t.test(Agelength_CH_M$tl, Agelength_CH_F$tl)
+
+Agelength_IR_M <- subset(Agelength_IR, sex=="M")
+Agelength_IR_F <- subset(Agelength_IR, sex=="F")
+t.test(Agelength_IR_M$tl, Agelength_IR_F$tl)
+
+Agelength_JX_M <- subset(Agelength_JX, sex=="M")
+Agelength_JX_F <- subset(Agelength_JX, sex=="F")
+t.test(Agelength_JX_M$tl, Agelength_JX_F$tl)
+
+
+# ANOVA determine whethere there is a significant difference in male and female AGE for each estuary ####
+Agelength_TB_M <- subset(Agelength_TB, sex=="M")
+Agelength_TB_F <- subset(Agelength_TB, sex=="F")
+t.test(Agelength_TB_M$final_age, Agelength_TB_F$final_age)
+
+Agelength_AP_M <- subset(Agelength_AP, sex=="M")
+Agelength_AP_F <- subset(Agelength_AP, sex=="F")
+t.test(Agelength_AP_M$final_age, Agelength_AP_F$final_age)
+
+Agelength_CK_M <- subset(Agelength_CK, sex=="M")
+Agelength_CK_F <- subset(Agelength_CK, sex=="F")
+t.test(Agelength_CK_M$final_age, Agelength_CK_F$final_age)
+
+Agelength_CH_M <- subset(Agelength_CH, sex=="M")
+Agelength_CH_F <- subset(Agelength_CH, sex=="F")
+t.test(Agelength_CH_M$final_age, Agelength_CH_F$final_age)
+
+Agelength_IR_M <- subset(Agelength_IR, sex=="M")
+Agelength_IR_F <- subset(Agelength_IR, sex=="F")
+t.test(Agelength_IR_M$final_age, Agelength_IR_F$final_age)
+
+Agelength_JX_M <- subset(Agelength_JX, sex=="M")
+Agelength_JX_F <- subset(Agelength_JX, sex=="F")
+t.test(Agelength_JX_M$final_age, Agelength_JX_F$final_age)
+
+
+
+plot(final_age ~ sex +bay, data=All_MF)
+result= aov(final_age ~ sex, data=All_MF)
+summary(results)
+TukeyHSD(results,  conf.level=0.95)
+
 
