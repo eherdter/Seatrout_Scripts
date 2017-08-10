@@ -173,7 +173,9 @@ ps_age<- c(chisq.test(age_freq[1:2,])$p.value,
 
 pdf <- as.data.frame(p.adjust(ps_age))
 
+#WORKING #####
 
+#CHI SQ TEST To test differencs in Total Length between bays #####
 
 
 # MAKE ALKS ####
