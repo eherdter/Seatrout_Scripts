@@ -33,7 +33,7 @@ library(dplyr)
 
 # set working directory#####
 setwd("~/Desktop/PhD project/Projects/Seatrout/Data")
-#setwd("U:/PhD_projectfiles/Raw_Data/Age_Length_Data")
+setwd("U:/PhD_projectfiles/Raw_Data/Age_Length_Data")
 
 #1. LOAD DATA ####
 #load the csv file
@@ -48,7 +48,7 @@ setwd("~/Desktop/PhD project/Projects/Seatrout/Data")
 
 test <- read.csv("ALK_Bay_and_weight.csv", header=T)
 
-Agelength_TB<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="TB" & tl>14 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10, sl=sl/10, lcat2 =lencat(tl, w=1)) #, as.fact=TRUE))- can include this when determing ALK below but the smoothed ALK needs to be the nonfactored version of the length categorization variable. 
+Agelength_TB<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="TB" & tl>14 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10, sl=sl/10, lcat2 =lencat(tl, w=2)) #, as.fact=TRUE))- can include this when determing ALK below but the smoothed ALK needs to be the nonfactored version of the length categorization variable. 
 Agelength_TB$sex[which(Agelength_TB$sex == "m")] = "M"
 Agelength_TB$sex <- droplevels(Agelength_TB$sex)
 
@@ -58,21 +58,21 @@ Agelength_TB$DateNew = as.POSIXct(strptime(Agelength_TB$date, format="%d-%B-%y",
 Agelength_TB = mutate(Agelength_TB, year = strftime(DateNew, format="%Y")) %>% select(-date, -DateNew)
 Agelength_TB$year = as.factor(Agelength_TB$year) 
 
-Agelength_AP<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="AP" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10, sl=sl/10, lcat2 =lencat(tl, w=1)) #, as.fact=TRUE))
+Agelength_AP<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="AP" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10, sl=sl/10, lcat2 =lencat(tl, w=2)) #, as.fact=TRUE))
 
 Agelength_AP$date=as.character(Agelength_AP$date)
 Agelength_AP$DateNew = as.POSIXct(strptime(Agelength_AP$date, format="%d-%B-%y", tz="")) 
 Agelength_AP = mutate(Agelength_AP, year = strftime(DateNew, format="%Y")) %>%select(-date, -DateNew)
 Agelength_AP$year = as.factor(Agelength_AP$year) 
 
-Agelength_CK<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="CK" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10, sl=sl/10,lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
+Agelength_CK<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="CK" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10, sl=sl/10,lcat2 =lencat(tl, w=2)) # as.fact=TRUE))
 
 Agelength_CK$date=as.character(Agelength_CK$date)
 Agelength_CK$DateNew = as.POSIXct(strptime(Agelength_CK$date, format="%d-%B-%y", tz="")) 
 Agelength_CK = mutate(Agelength_CK, year = strftime(DateNew, format="%Y")) %>%select(-date, -DateNew)
 Agelength_CK$year = as.factor(Agelength_CK$year) 
 
-Agelength_CH<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="CH" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
+Agelength_CH<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="CH" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=2)) # as.fact=TRUE))
 Agelength_CH$sex[which(Agelength_CH$sex == "f")] = "F"
 Agelength_CH$sex <- droplevels(Agelength_CH$sex)
 
@@ -81,14 +81,14 @@ Agelength_CH$DateNew = as.POSIXct(strptime(Agelength_CH$date, format="%d-%B-%y",
 Agelength_CH = mutate(Agelength_CH, year = strftime(DateNew, format="%Y")) %>%select(-date, -DateNew)
 Agelength_CH$year = as.factor(Agelength_CH$year) 
 
-Agelength_IR<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="IR" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
+Agelength_IR<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="IR" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=2)) # as.fact=TRUE))
 
 Agelength_IR$date=as.character(Agelength_IR$date)
 Agelength_IR$DateNew = as.POSIXct(strptime(Agelength_IR$date, format="%d-%B-%y", tz="")) 
 Agelength_IR = mutate(Agelength_IR, year = strftime(DateNew, format="%Y")) %>%select(-date, -DateNew)
 Agelength_IR$year = as.factor(Agelength_IR$year) 
 
-Agelength_JX<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="JX" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=1)) # as.fact=TRUE))
+Agelength_JX<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="JX" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=2)) # as.fact=TRUE))
 
 Agelength_JX$date=as.character(Agelength_JX$date)
 Agelength_JX$DateNew = as.POSIXct(strptime(Agelength_JX$date, format="%d-%B-%y", tz="")) 
@@ -285,33 +285,33 @@ colSums(rawfreq_JX)
 # to keep the observed plot with just the proportions from the observed data. Therefore, I added in the zero proportion data by writing and editing
 # a csv file which I then read below. 
 
-as.data.frame.matrix((prop.table(rawfreq_TB, margin=1))) %>% write.csv("alk_TB.csv")
-alk_TB <- read.csv("alk_TB_edit.csv", row.names=1)
+as.data.frame.matrix((prop.table(rawfreq_TB, margin=1))) %>% write.csv("U:/PhD_projectfiles/Exported_R_Datafiles/alk_TB.csv")
+alk_TB <- read.csv("U:/PhD_projectfiles/Exported_R_Datafiles/alk_TB_edit.csv", row.names=1)
 names(alk_TB) <- c(1,2,3,4,5,6,7,8,9)
 round(alk_TB,3)
 
-as.data.frame.matrix((prop.table(rawfreq_CH, margin=1))) %>% write.csv("alk_CH.csv")
-alk_CH <- read.csv("alk_CH_edit.csv", row.names=1)
+as.data.frame.matrix((prop.table(rawfreq_CH, margin=1))) %>% write.csv("U:/PhD_projectfiles/Exported_R_Datafiles/alk_CH.csv")
+alk_CH <- read.csv("U:/PhD_projectfiles/Exported_R_Datafiles/alk_CH_edit.csv", row.names=1)
 names(alk_CH) <- c(1,2,3,4,5,6,7,8,9)
 round(alk_CH,3)
 
-as.data.frame.matrix((prop.table(rawfreq_CK, margin=1))) %>% write.csv("alk_CK.csv")
-alk_CK <- read.csv("alk_CK_edit.csv", row.names=1)
+as.data.frame.matrix((prop.table(rawfreq_CK, margin=1))) %>% write.csv("U:/PhD_projectfiles/Exported_R_Datafiles/alk_CK.csv")
+alk_CK <- read.csv("U:/PhD_projectfiles/Exported_R_Datafiles/alk_CK_edit.csv", row.names=1)
 names(alk_CK) <- c(1,2,3,4,5,6,7,8)
 round(alk_CK,3)
 
-as.data.frame.matrix((prop.table(rawfreq_AP, margin=1))) %>% write.csv("alk_AP.csv")
-alk_AP <- read.csv("alk_AP_edit.csv", row.names=1)
+as.data.frame.matrix((prop.table(rawfreq_AP, margin=1))) %>% write.csv("U:/PhD_projectfiles/Exported_R_Datafiles/alk_AP.csv")
+alk_AP <- read.csv("U:/PhD_projectfiles/Exported_R_Datafiles/alk_AP_edit.csv", row.names=1)
 names(alk_AP) <- c(1,2,3,4,5,6,7,8,9,10)
 round(alk_AP,3)
 
-as.data.frame.matrix((prop.table(rawfreq_JX, margin=1))) %>% write.csv("alk_JX.csv")
-alk_JX <- read.csv("alk_JX_edit.csv", row.names=1)
+as.data.frame.matrix((prop.table(rawfreq_JX, margin=1))) %>% write.csv("U:/PhD_projectfiles/Exported_R_Datafiles/alk_JX.csv")
+alk_JX <- read.csv("U:/PhD_projectfiles/Exported_R_Datafiles/alk_JX_edit.csv", row.names=1)
 names(alk_JX) <- c(1,2,3,4,5,6,7,8)
 round(alk_JX,3)
 
-as.data.frame.matrix((prop.table(rawfreq_IR, margin=1))) %>% write.csv("alk_IR.csv")
-alk_IR <- read.csv("alk_IR_edit.csv", row.names=1)
+as.data.frame.matrix((prop.table(rawfreq_IR, margin=1))) %>% write.csv("U:/PhD_projectfiles/Exported_R_Datafiles/alk_IR.csv")
+alk_IR <- read.csv("U:/PhD_projectfiles/Exported_R_Datafiles/alk_IR_edit.csv", row.names=1)
 names(alk_IR) <- c(1,2,3,4,5,6,7,8,9)
 round(alk_IR,3)
 
@@ -587,18 +587,19 @@ smoJX <- alkPlot(alksmo.jx, type="barplot", xlab="Total Length (cm)", pal="rainb
 #AMONG GROUP STATISTICAL COMPARISONS #####
 #page 102 in Ogle
 
-Agelength_ALL<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH" | bay=="IR" |bay=="AP" | bay=="JX"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+Agelength_ALL<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH" | bay=="IR" |bay=="AP" | bay=="JX"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_ALL, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_ALL, maxit=500) #more complex model
 
 #likelihood ratio test is computed with anova
 test <- anova(mod1, mod2)
+#DF=16, CHi stat=485.22, Pvalue=0.001
 
 #Drop Bays to test hypothesis of bay influence
       #Null Hypothesis- there is no significant difference in alk between groups
 
   #removing IR
-Agelength_minIR<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH" | bay=="AP" | bay=="JX"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+Agelength_minIR<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH" | bay=="AP" | bay=="JX"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_minIR, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_minIR, maxit=500) #more complex model
 
@@ -606,7 +607,7 @@ anova(mod1, mod2)
   #still significantly different
 
   #now remove JX also
-Agelength_minIRJX<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH" | bay=="AP"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+Agelength_minIRJX<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH" | bay=="AP"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_minIRJX, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_minIRJX, maxit=500) #more complex model
 
@@ -614,14 +615,14 @@ anova(mod1, mod2)
   #still significantly different
 
   #now remove AP also
-Agelength_minIRJXAP<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+Agelength_minIRJXAP<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_minIRJXAP, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_minIRJXAP, maxit=500) #more complex model
 
 anova(mod1, mod2)
 
 #now remove CH also
-Agelength_minIRJXAPCH<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+Agelength_minIRJXAPCH<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_minIRJXAPCH, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_minIRJXAPCH, maxit=500) #more complex model
 
