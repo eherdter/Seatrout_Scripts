@@ -22,7 +22,9 @@ library(Hmisc) #for correlation
 library(ggplot2)
 library(astsa)
 library(MARSS) #for DFA
+
 setwd("~/Desktop/Github Repo/Seatrout/Data/Indices/DeltaMethod Indices")
+setwd("U:/PhD_projectfiles/Exported_R_Datafiles/Indices/DeltaMethod_Indices")
 
 ##### 1. IMPORT INDICES #################################
 # IMPORT INDICES
@@ -30,75 +32,72 @@ setwd("~/Desktop/Github Repo/Seatrout/Data/Indices/DeltaMethod Indices")
 # and select the year, assign bay name,
 # scale each index (z score, 0 mean 1 unit variance)
 
-AP<- subset(read.csv("AP_yoy_index.csv", header=T), select=c(year, index)) %>% mutate(bay= rep("AP",18)) 
-  names(AP) <- c("year", "index", "est") #assign names
-  AP$est <- as.factor(AP$est) #turn bay into a factor
- AP$index<-  as.numeric(scale(AP$index, scale=TRUE)) #z-score (mean= 0, var=1), as.numeric is important for full_join command below. doesnt like it when it isnt a true numeric
+AP<- subset(read.csv("AP_yoy_index.csv", header=T), select=c(Year, Mean)) %>% mutate(Est= rep("AP",18)) 
+  names(AP) <- c("Year", "Mean", "Est") #assign names, est as in estuary not estimate
+  AP$Est <- as.factor(AP$Est) #turn bay into a factor
+ AP$Mean_scaled<-  as.numeric(scale(AP$Mean, scale=TRUE)) #z-score (mean= 0, var=1), as.numeric is important for full_join command below. doesnt like it when it isnt a true numeric
   # ap does not have a riv component because of so many 1 or 0 positive trips in the FIM data. The csv is available but its mostly NaNs
 
-CH<- subset(read.csv("CH_yoy_index.csv", header=T), select=c(year, index)) %>% mutate(bay= rep("CH",27)) 
-  names(CH) <- c("year", "index", "est")
-  CH$est <- as.factor(CH$est) 
-  CH$index <- as.numeric(scale(CH$index, scale=TRUE)) 
-  
-# #ch_riv<- subset(read.csv("CH_yoy_index.csv", header=T), select=c(year, index)) %>% mutate(bay= rep("CHR",27))
-#   names(ch_riv) <- c("year", "index", "est")
-#   ch_riv$est <- as.factor(ch_riv$est)
-#   ch_riv$index <- as.numeric(scale(ch_riv$index, scale=TRUE))
+ CK<- subset(read.csv("CK_yoy_index.csv", header=T), select=c(Year, Mean)) %>% mutate(Est= rep("CK",20)) 
+ names(CK) <- c("Year", "Mean", "Est") #assign names, est as in estuary not estimate
+ CK$Est <- as.factor(CK$Est) #turn bay into a factor
+ CK$Mean_scaled<-  as.numeric(scale(CK$Mean, scale=TRUE)) #z-score (mean= 0, var=1), as.numeric is important for full_join command below. doesnt like it when it isnt a true numeric
+ 
+ TB<- subset(read.csv("TB_yoy_index.csv", header=T), select=c(Year, Mean)) %>% mutate(Est= rep("TB",27)) 
+ names(TB) <- c("Year", "Mean", "Est") #assign names, est as in estuary not estimate
+ TB$Est <- as.factor(TB$Est) #turn bay into a factor
+ TB$Mean_scaled<-  as.numeric(scale(TB$Mean, scale=TRUE)) #z-score (mean= 0, var=1), as.numeric is important for full_join command below. doesnt like it when it isnt a true numeric
+ 
 
-CK<- subset(read.csv("CK_yoy_index.csv", header=T), select=c(year, index)) %>% mutate(bay= rep("CK",20))
-  names(CK) <- c("year", "index", "est")
-  CK$est <- as.factor(CK$est)
-  CK$index <- as.numeric(scale(CK$index , scale=TRUE))
-  # Riv is same as AP above
-  
-IR<- subset(read.csv("IR_yoy_index.csv", header=T), select=c(year, index)) %>% mutate(bay= rep("IR",26))
-  names(IR) <- c("year", "index", "est")
-  IR$est <- as.factor(IR$est)
-  IR$index <- as.numeric(scale(IR$index , scale=TRUE))
+ CH<- subset(read.csv("CH_yoy_index.csv", header=T), select=c(Year, Mean)) %>% mutate(Est= rep("CH",27)) 
+ names(CH) <- c("Year", "Mean", "Est") #assign names, est as in estuary not estimate
+ CH$Est <- as.factor(CH$Est) #turn bay into a factor
+ CH$Mean_scaled<-  as.numeric(scale(CH$Mean, scale=TRUE)) #z-score (mean= 0, var=1), as.numeric is important for full_join command below. doesnt like it when it isnt a true numeric
+ 
+ IR<- subset(read.csv("IR_yoy_index.csv", header=T), select=c(Year, Mean)) %>% mutate(Est= rep("IR",26)) 
+ names(IR) <- c("Year", "Mean", "Est") #assign names, est as in estuary not estimate
+ IR$Est <- as.factor(IR$Est) #turn bay into a factor
+ IR$Mean_scaled<-  as.numeric(scale(IR$Mean, scale=TRUE)) #z-score (mean= 0, var=1), as.numeric is important for full_join command below. doesnt like it when it isnt a true numeric
+ 
 
-TB<- subset(read.csv("TB_yoy_index.csv", header=T), select=c(year, index))%>% mutate(bay= rep("TB",27))
-  names(TB) <- c("year", "index", "est")
-  TB$est <- as.factor(TB$est)
-  TB$index <- as.numeric(scale(TB$index , scale=TRUE))
-  
-# tb_riv<- subset(read.csv("index_tbriv_yoy.csv", header=T), select=c(year, Mean))%>% mutate(bay= rep("TBR",27))
-#   names(tb_riv) <- c("year", "mean", "est")
-#   tb_riv$est <- as.factor(tb_riv$est)
-#   tb_riv$mean <- as.numeric(scale(tb_riv$mean , scale=TRUE))
-  
-  
-JX<- subset(read.csv("JX_yoy_index.csv", header=T), select=c(year, index))%>% mutate(bay= rep("JX",15))
-  names(JX) <- c("year", "index", "est")
-  JX$est <- as.factor(JX$est)
-  JX$index <- as.numeric(scale(JX$index , scale=TRUE))
-  
+ JX<- subset(read.csv("JX_yoy_index.csv", header=T), select=c(Year, Mean)) %>% mutate(Est= rep("JX",15)) 
+ names(JX) <- c("Year", "Mean", "Est") #assign names, est as in estuary not estimate
+ JX$Est <- as.factor(JX$Est) #turn bay into a factor
+ JX$Mean_scaled<-  as.numeric(scale(JX$Mean, scale=TRUE)) #z-score (mean= 0, var=1), as.numeric is important for full_join command below. doesnt like it when it isnt a true numeric
+ 
+
 All <- rbind(AP,CH,CK,IR,JX, TB)
 
 ##### 2. PLOT TIMES SERIES DATA ######
-# PLOT TIME SERIES DATA
+# PLOT TIME SERIES DATA 
 
 # plot either the standardized or non standardized time series on the same plot
 # might do this with ggplot
 library(ggplot2)
 
-recruitment <- ggplot(All, aes(x=year, y=index, group=est)) + #color=est
-        geom_line(aes(linetype=est), size =.5)+ # make line types based on the different labels- this will be our workaround because in a few stps we will specify the first label (obserseved) be a blank line (therefore a scatter plot)
-        #geom_line(aes(color=bay))+
-      geom_point(aes(shape=est), size=2) + #, color=bay))+ # groups the points together correctly and then gives them a unique shape them differently based on the line type 
-      ylab("Scaled YOY abundance index") +
+ggplot(All, aes(x=Year, y=Mean_scaled, group=Est)) + #color=est
+        #geom_line(aes(linetype=Est), size =.5)+ # make line types based on the different labels- this will be our workaround because in a few stps we will specify the first label (obserseved) be a blank line (therefore a scatter plot)
+        geom_line(aes(color=Est), size=0.5)+
+      geom_point(aes(color=Est), size=2) + #, color=bay))+ # groups the points together correctly and then gives them a unique shape them differently based on the line type 
+      ylab("LSMean estimate- YOY per haul- Scaled") +
       xlab("Year")+ 
-  scale_y_continuous(limits=c(-2,3))+
+  scale_y_continuous(limits=c(-2,4.5))+
+  scale_x_continuous(limits=c(1989, 2015), breaks=seq(1989, 2015, 2))+
   scale_colour_discrete(name="Location")+
-  theme(panel.grid.minor=element_blank(),panel.grid.major=element_blank(), 
+  theme(panel.grid.minor=element_blank(), 
+        panel.grid.major=element_blank(), 
         panel.background=element_rect(colour="black", fill="white"),
         axis.title.x =element_text(colour="black"),
         axis.text.x = element_text(colour="black"),
         axis.title.y =element_text(colour="black"),
         axis.text.y = element_text(colour="black"),
-        axis.text.x=element_text(colour="black"), #changing  colour of x axis
-        axis.text.y=element_text(colour="black"), #changing colour of y acis
         plot.title=element_text(size=14))
+
+
+#plot each index separately but have to turn year into numeric
+AP$Year <- as.numeric(AP$Year)
+
+plot(Mean~Year, data=AP, type="l")
 
 #### 8. TEST INDICES FOR LINEAR TRENDS #####
 
