@@ -132,8 +132,28 @@ rownames(All_sum) <- c("TB", "AP", "CH", "CK", "IR", "JX")
 #non-parameteric like anova is below so it doesnt assume normality of the age distribution
 #can do a test of variance to determine whether can use anova
 #anova assumes homogenous variances
-#e.g. var.test(Agelength_TB$tl, Agelength_IR$tl)
+#test for variances
+#H0= ratio of variances is equal to 1
+#Ha = ratio of variances is not equal to 1
 
+var.test(Agelength_TB$final_age, Agelength_AP$final_age) #equal variances
+var.test(Agelength_TB$final_age, Agelength_CK$final_age)
+var.test(Agelength_TB$final_age, Agelength_CH$final_age)
+var.test(Agelength_TB$final_age, Agelength_IR$final_age) 
+var.test(Agelength_TB$final_age, Agelength_JX$final_age)
+var.test(Agelength_AP$final_age, Agelength_CK$final_age)
+var.test(Agelength_AP$final_age, Agelength_CH$final_age) 
+var.test(Agelength_AP$final_age, Agelength_IR$final_age)
+var.test(Agelength_AP$final_age, Agelength_JX$final_age) #equal variances
+var.test(Agelength_CK$final_age, Agelength_CH$final_age)
+var.test(Agelength_CK$final_age, Agelength_IR$final_age)
+var.test(Agelength_CK$final_age, Agelength_JX$final_age)
+var.test(Agelength_CH$final_age, Agelength_IR$final_age)
+var.test(Agelength_CH$final_age, Agelength_JX$final_age)
+var.test(Agelength_IR$final_age, Agelength_JX$final_age)
+
+
+#mostly all variances are unequal so use a chi squared test
 
 ALL_to7 <- All %>% subset(final_age<8)
 (age_freq <- xtabs(~bay+final_age, data=ALL_to7))
@@ -173,9 +193,52 @@ ps_age<- c(chisq.test(age_freq[1:2,])$p.value,
 
 pdf <- as.data.frame(p.adjust(ps_age))
 
-#WORKING #####
-
 #CHI SQ TEST To test differencs in Total Length between bays #####
+#test for equal variances
+var.test(Agelength_TB$tl, Agelength_AP$tl)
+var.test(Agelength_TB$tl, Agelength_CK$tl)
+var.test(Agelength_TB$tl, Agelength_CH$tl)
+var.test(Agelength_TB$tl, Agelength_IR$tl) #equal variances
+var.test(Agelength_TB$tl, Agelength_JX$tl)
+var.test(Agelength_AP$tl, Agelength_CK$tl)
+var.test(Agelength_AP$tl, Agelength_CH$tl) #equal variances
+var.test(Agelength_AP$tl, Agelength_IR$tl)
+var.test(Agelength_AP$tl, Agelength_JX$tl)
+var.test(Agelength_CK$tl, Agelength_CH$tl)
+var.test(Agelength_CK$tl, Agelength_IR$tl)
+var.test(Agelength_CK$tl, Agelength_JX$tl)
+var.test(Agelength_CH$tl, Agelength_IR$tl)
+var.test(Agelength_CH$tl, Agelength_JX$tl)
+var.test(Agelength_IR$tl, Agelength_JX$tl)
+
+#unequal variances so will use chi.squared again
+
+All_len_freq_30to64 <- All %>% subset(lcat2>=32 & lcat2<= 60)
+(len_freq <- xtabs(~bay+lcat2, data=All_len_freq_30to64))
+
+chisq.test(len_freq[1:2,]) #TB to AP, 80.36, 0.001
+chisq.test(len_freq[1:3,]) #TB to CK, 101.02, 0.001
+chisq.test(len_freq[1:4,]) #TB to CH, 153.5, <0.001
+chisq.test(len_freq[1:5,]) #TB to IR,
+chisq.test(len_freq[1:6,]) #TB to JX, 
+chisq.test(len_freq[2:3,]) #AP to CK,
+chisq.test(len_freq[2:4,]) #AP to CH,
+chisq.test(len_freq[2:5,]) #AP to IR, 
+chisq.test(len_freq[2:6,]) #AP to JX, 
+chisq.test(len_freq[3:4,]) #CK to CH, #NSD
+chisq.test(len_freq[3:5,]) #CK to IR,
+chisq.test(len_freq[3:6,]) #CK to JX. 
+chisq.test(len_freq[4:5,]) #CH to IR, 
+chisq.test(len_freq[4:6,]) #CH to JX,
+chisq.test(len_freq[5:6,]) #IR to JX
+
+
+
+
+
+
+
+
 
 
 # MAKE ALKS ####
