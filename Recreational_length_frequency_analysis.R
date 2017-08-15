@@ -29,6 +29,7 @@ library(scales)
 
 # set working directory
 setwd("~/Desktop/PhD project/Projects/Seatrout/Data")
+setwd("U:/PhD_projectfiles/Raw_Data/Age_Length_Data")
 
 # **************Length frequency distributions of MRFSS and MRIP
 
@@ -83,7 +84,7 @@ IR <- rbind(mrfss_IR, mrip_IR)
 
 All= rbind(AP, TB, CK, CH, JX, IR)
 All$bay <- as.factor(All$bay)
-All_sum <- summarise(group_by(All, bay), mean_tl = mean(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(tl))))
+All_sum <- summarise(group_by(All, bay), N = length(tl), mean_tl = mean(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(tl))))
 
 
 N = nrow(AP) +nrow(TB) +nrow(CK) +nrow(CH) +nrow(JX) +nrow(IR)
@@ -363,7 +364,7 @@ length_IR <- ggplot(IR, aes(x=tl))+
 
 
 # ONE WAY ANOVA to determine if there are significant differences among estuary-specific mean lengths ####
-#determine if there is significnat difference in female length among estuaries
+#determine if there is significnat difference in  length among estuaries
 
 plot(tl~bay, data=All)
 results=aov(tl~bay, data=All)
