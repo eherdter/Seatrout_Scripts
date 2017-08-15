@@ -28,7 +28,7 @@ library(ggplot2)
 library(scales)
 
 # set working directory
-setwd("~/Desktop/Github Repo/Seatrout/Data")
+setwd("~/Desktop/PhD project/Projects/Seatrout/Data")
 
 # **************Length frequency distributions of MRFSS and MRIP
 
