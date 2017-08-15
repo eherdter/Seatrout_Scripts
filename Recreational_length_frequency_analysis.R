@@ -24,6 +24,8 @@ library(plotrix)
 library(haven)
 library(Matching)
 library(dplyr)
+library(ggplot2)
+library(scales)
 
 # set working directory
 setwd("~/Desktop/Github Repo/Seatrout/Data")
@@ -279,6 +281,86 @@ ps_ALL<- c(chisq.test(ALL_lf[1:2,])$p.value, #Ap to CH
             chisq.test(ALL_lf[5:6,])$p.value) #JX to TB
 
 p.adjust(ps_ALL)
+
+#MULTIPLOT LENGTH HISTOGRAMS #####
+length_AP <- ggplot(AP, aes(x=tl))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.15), breaks=seq(0,.15, .03))+  ## plotting in percent frequency
+  scale_x_continuous(name="Length (cm)", limits=c(30,65), breaks=seq(30,65,5))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24), #changing  colour of x axisaxis.text.y=element_text(colour="black"), #changing colour of y acis
+        axis.text.y=element_text(colour="black", size=24), #changing colour of y acis
+        axis.title.x=element_text(size=24),
+        axis.title.y=element_text(size=24),
+        plot.title=element_text(size=14))+
+  annotate("text", x=60, y= .13, label="AP", size=10)
+
+length_CK <- ggplot(CK, aes(x=tl))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.15), breaks=seq(0,.15, .03))+  ## plotting in percent frequency
+  scale_x_continuous(name="Length (cm)", limits=c(30,65), breaks=seq(30,65,5))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24), #changing  colour of x axisaxis.text.y=element_text(colour="black"), #changing colour of y acis
+        axis.text.y=element_text(colour="black", size=24), #changing colour of y acis
+        axis.title.x=element_text(size=24),
+        axis.title.y=element_text(size=24),
+        plot.title=element_text(size=14))+
+  annotate("text", x=60, y= .13, label="CK", size=10)
+
+length_TB <- ggplot(TB, aes(x=tl))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.15), breaks=seq(0,.15, .03))+  ## plotting in percent frequency
+  scale_x_continuous(name="Length (cm)", limits=c(30,65), breaks=seq(30,65,5))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24), #changing  colour of x axisaxis.text.y=element_text(colour="black"), #changing colour of y acis
+        axis.text.y=element_text(colour="black", size=24), #changing colour of y acis
+        axis.title.x=element_text(size=24),
+        axis.title.y=element_text(size=24),
+        plot.title=element_text(size=14))+
+  annotate("text", x=60, y= .13, label="TB", size=10)
+
+length_CH <- ggplot(CH, aes(x=tl))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.15), breaks=seq(0,.15, .03))+  ## plotting in percent frequency
+  scale_x_continuous(name="Length (cm)", limits=c(30,65), breaks=seq(30,65,5))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24), #changing  colour of x axisaxis.text.y=element_text(colour="black"), #changing colour of y acis
+        axis.text.y=element_text(colour="black", size=24), #changing colour of y acis
+        axis.title.x=element_text(size=24),
+        axis.title.y=element_text(size=24),
+        plot.title=element_text(size=14))+
+  annotate("text", x=60, y= .13, label="CH", size=10)
+
+length_JX <- ggplot(JX, aes(x=tl))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.15), breaks=seq(0,.15, .03))+  ## plotting in percent frequency
+  scale_x_continuous(name="Length (cm)", limits=c(30,65), breaks=seq(30,65,5))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24), #changing  colour of x axisaxis.text.y=element_text(colour="black"), #changing colour of y acis
+        axis.text.y=element_text(colour="black", size=24), #changing colour of y acis
+        axis.title.x=element_text(size=24),
+        axis.title.y=element_text(size=24),
+        plot.title=element_text(size=14))+
+  annotate("text", x=60, y= .13, label="JX", size=10)
+
+length_IR <- ggplot(IR, aes(x=tl))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,0.15), breaks=seq(0,0.15, .03))+  ## plotting in percent frequency
+  scale_x_continuous(name="Length (cm)", limits=c(30,65), breaks=seq(30,65,5))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24), #changing  colour of x axisaxis.text.y=element_text(colour="black"), #changing colour of y acis
+        axis.text.y=element_text(colour="black", size=24), #changing colour of y acis
+        axis.title.x=element_text(size=24),
+        axis.title.y=element_text(size=24),
+        plot.title=element_text(size=14))+
+  annotate("text", x=60, y= .13, label="IR", size=10)
+
 
 # ONE WAY ANOVA to determine if there are significant differences among estuary-specific mean lengths ####
 #determine if there is significnat difference in female length among estuaries
