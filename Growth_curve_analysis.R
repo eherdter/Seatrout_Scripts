@@ -15,6 +15,7 @@ library(nlstools)
 
 #set working directory ####
 setwd("~/Desktop/PhD project/Projects/Seatrout/Data")
+setwd("U:/PhD_projectfiles/Raw_Data/Age_Length_Data")
 
 #load the age 0 length data from the McMichael peters study ####
 # change some variables and add some dummy variables so the dataframe will match to the Agelength_Bay loaded next 
@@ -33,12 +34,12 @@ age0 <- subset(age0, select=-c(TL..mm.))
 # IRpend age0 dataframe with NA bay
 # then turn the NA bay into the specific bay that would match for each
 
-Agelength_TB<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="TB" & tl>14, select=c(specimennumber, bay, tl, final_age, Date))) %>% filter(!is.na(final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("TB", 10151)) #, as.fact=TRUE))- can include this when determing ALK below but the smoothed ALK needs to be the nonfactored version of the length categorization variable. 
-Agelength_AP<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="AP" & tl>0, select=c(specimennumber, bay, tl, final_age, Date))) %>% filter(!is.na(final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("AP", 3306)) #, as.fact=TRUE))
-Agelength_CK<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="CK" & tl>0, select=c(specimennumber, bay, tl, final_age, Date))) %>% filter(!is.na(final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("CK", 1402)) # as.fact=TRUE))
-Agelength_CH<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="CH" & tl>0, select=c(specimennumber, bay, tl, final_age, Date))) %>% filter(!is.na(final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("CH", 3682))# as.fact=TRUE))
-Agelength_IR<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="IR" & tl>0, select=c(specimennumber, bay, tl, final_age, Date))) %>% filter(!is.na(final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("IR", 9345))# as.fact=TRUE))
-Agelength_JX<- droplevels(subset(as.data.frame(read.csv("ALK with Bay.csv", header=T)), bay=="JX" & tl>0, select=c(specimennumber, bay, tl, final_age, Date))) %>% filter(!is.na(final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("JX", 1224))# as.fact=TRUE))
+Agelength_TB<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="TB" & tl>14, select=c(specimennumber, bay, tl, final_age, Date))) %>% filter(!is.na(final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("TB", 10151)) #, as.fact=TRUE))- can include this when determing ALK below but the smoothed ALK needs to be the nonfactored version of the length categorization variable. 
+Agelength_AP<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="AP" & tl>0, select=c(specimennumber, bay, tl, final_age, Date))) %>% filter(!is.na(final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("AP", 3306)) #, as.fact=TRUE))
+Agelength_CK<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="CK" & tl>0, select=c(specimennumber, bay, tl, final_age, Date))) %>% filter(!is.na(final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("CK", 1402)) # as.fact=TRUE))
+Agelength_CH<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="CH" & tl>0, select=c(specimennumber, bay, tl, final_age, Date))) %>% filter(!is.na(final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("CH", 3682))# as.fact=TRUE))
+Agelength_IR<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="IR" & tl>0, select=c(specimennumber, bay, tl, final_age, Date))) %>% filter(!is.na(final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("IR", 9345))# as.fact=TRUE))
+Agelength_JX<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="JX" & tl>0, select=c(specimennumber, bay, tl, final_age, Date))) %>% filter(!is.na(final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("JX", 1224))# as.fact=TRUE))
 
 
 
