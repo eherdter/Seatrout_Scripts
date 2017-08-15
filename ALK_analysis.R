@@ -950,6 +950,11 @@ write.csv(Weight_at_Age_IR_ad, "U:/PhD_projectfiles/Exported_R_Datafiles/Weight_
 # OLD ANOVAS #####
 # ONE WAY ANOVA to determine if there are significant differences among estuary-specific mean lengths ####
 
+
+plot(tl~bay, data=All)
+results=aov(tl~bay, data=All)
+summary(results)
+TukeyHSD(results, conf.level=0.95)
 #deterine if there is significant difference in overall age among estuaries
 
 #determine if there is significnat difference in female length among estuaries
