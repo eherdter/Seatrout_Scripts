@@ -23,6 +23,7 @@ library(dplyr)
 library(plotrix)
 library(haven)
 library(Matching)
+library(dplyr)
 
 # set working directory
 setwd("~/Desktop/Github Repo/Seatrout/Data")
@@ -35,6 +36,7 @@ mrip <- read_sas("mrip_lens_20042015.sas7bdat")
 
 # subset each estuary using the Country of Encounter codes
 # From the definitions defined by FWRI
+#FIPS county codes
 # County_Bay_assignments.xlsx in GitHub>Seatrout>Data
 
 #load data
@@ -42,17 +44,17 @@ mrip <- read_sas("mrip_lens_20042015.sas7bdat")
 # convert fork length to tl using the equation TLmm = 1.00467 * FL + 0.04850 from the SAS mrfss leng_freq
 # chose data from 2000 on because of major regulatory changes 
 
-mrfss_AP <- subset(read_sas("mrfss_lens_8115.sas7bdat"), CNTY %in% c(5,33,37,45,65,77,91,113,123,129,131,133) & YEAR>=2000) %>% mutate(tl = (1.00467*flmm+0.04850)/10) %>% filter(!is.na(tl)) %>% mutate(bay=rep("AP",9033)) 
+mrfss_AP <- subset(read_sas("mrfss_lens_8115.sas7bdat"), CNTY %in% c(5,33,37,45,65,77,91,113,123,129,131,133) & YEAR>=2000 & YEAR <= 2003) %>% mutate(tl = (1.00467*flmm+0.04850)/10) %>% filter(!is.na(tl)) %>% mutate(bay=rep("AP",2234)) 
   mrfss_AP <- subset(mrfss_AP, select=c(tl, bay))
-mrfss_TB <- subset(read_sas("mrfss_lens_8115.sas7bdat"), CNTY %in% c(53,101,57,103,81) & YEAR>=2000) %>% mutate(tl = (1.00467*flmm+0.04850)/10) %>% filter(!is.na(tl)) %>% mutate(bay=rep("TB",8684))
+mrfss_TB <- subset(read_sas("mrfss_lens_8115.sas7bdat"), CNTY %in% c(53,101,57,103,81) & YEAR>=2000 & YEAR<= 2003) %>% mutate(tl = (1.00467*flmm+0.04850)/10) %>% filter(!is.na(tl)) %>% mutate(bay=rep("TB",1741))
   mrfss_TB <- subset(mrfss_TB, select=c(tl, bay))
-mrfss_CH <- subset(read_sas("mrfss_lens_8115.sas7bdat"), CNTY %in% c(27,115,7,15,71,21,87,51) & YEAR>=2000) %>% mutate(tl = (1.00467*flmm+0.04850)/10) %>% filter(!is.na(tl))%>% mutate(bay=rep("CH",4767))
+mrfss_CH <- subset(read_sas("mrfss_lens_8115.sas7bdat"), CNTY %in% c(27,115,7,15,71,21,87,51) & YEAR>=2000 & YEAR<= 2003) %>% mutate(tl = (1.00467*flmm+0.04850)/10) %>% filter(!is.na(tl))%>% mutate(bay=rep("CH",1085))
   mrfss_CH <- subset(mrfss_CH, select=c(tl, bay))
-mrfss_CK <- subset(read_sas("mrfss_lens_8115.sas7bdat"), CNTY %in% c(75,29,17,1) & YEAR>=2000) %>% mutate(tl = (1.00467*flmm+0.04850)/10) %>% filter(!is.na(tl))%>% mutate(bay=rep("CK",6414))
+mrfss_CK <- subset(read_sas("mrfss_lens_8115.sas7bdat"), CNTY %in% c(75,29,17,1) & YEAR>=2000 & YEAR<= 2003) %>% mutate(tl = (1.00467*flmm+0.04850)/10) %>% filter(!is.na(tl))%>% mutate(bay=rep("CK",1225))
   mrfss_CK <- subset(mrfss_CK, select=c(tl, bay))
-mrfss_JX <- subset(read_sas("mrfss_lens_8115.sas7bdat"), CNTY %in% c(19,31,35,89,107,109) & YEAR>=2000) %>% mutate(tl = (1.00467*flmm+0.04850)/10) %>% filter(!is.na(tl))%>% mutate(bay=rep("JX",1374))
+mrfss_JX <- subset(read_sas("mrfss_lens_8115.sas7bdat"), CNTY %in% c(19,31,35,89,107,109) & YEAR>=2000 & YEAR<= 2003) %>% mutate(tl = (1.00467*flmm+0.04850)/10) %>% filter(!is.na(tl))%>% mutate(bay=rep("JX",291))
   mrfss_JX <- subset(mrfss_JX, select=c(tl, bay))
-mrfss_IR <- subset(read_sas("mrfss_lens_8115.sas7bdat"), CNTY %in% c(9,11,25,61,85,99,111,127) & YEAR>=2000) %>% mutate(tl = (1.00467*flmm+0.04850)/10) %>% filter(!is.na(tl))%>% mutate(bay=rep("IR",2813))
+mrfss_IR <- subset(read_sas("mrfss_lens_8115.sas7bdat"), CNTY %in% c(9,11,25,61,85,99,111,127) & YEAR>=2000 & YEAR <=2003) %>% mutate(tl = (1.00467*flmm+0.04850)/10) %>% filter(!is.na(tl))%>% mutate(bay=rep("IR",812))
   mrfss_IR <- subset(mrfss_IR, select=c(tl, bay))
   
 mrip_AP <- subset(read_sas("mrip_lens_20042015.sas7bdat"), CNTY %in% c(5,33,37,45,65,77,91,113,123,129,131,133)) %>% mutate(tl = (1.00467*LNGTH+0.04850)/10) %>% filter(!is.na(tl)) %>% mutate(bay=rep("AP",9265))
@@ -83,16 +85,6 @@ All_sum <- summarise(group_by(All, bay), mean_tl = mean(tl), sd_tl= sd(tl), se_t
 
 
 N = nrow(AP) +nrow(TB) +nrow(CK) +nrow(CH) +nrow(JX) +nrow(IR)
-
-########################################
-# ONE WAY ANOVA to determine if there are significant differences among estuary-specific mean lengths
-##################################
-#determine if there is significnat difference in female length among estuaries
-
-plot(tl~bay, data=All)
-results=aov(tl~bay, data=All)
-summary(results)
-TukeyHSD(results, conf.level=0.95)
 
 
 ######################
@@ -199,8 +191,8 @@ ks_ALL <-c(ks.boot(TB$tl, CK$tl, nboots=1000)$ks.boot.pvalue,
 p.adjust(ks_ALL)
 
 
-###########################
-# Now with Chi-Square Test
+
+# Chi-Square Test #####
 ###########################
 # used to test for differences in length frequencies among different groups (among, times, locations or gears)
 # chi square will generally fail where the contingency table contains zeroes or very small frequencies 
@@ -270,23 +262,30 @@ ALL$bay <- as.factor(ALL$bay)
 (ALL_lf <- xtabs(~bay+lcat5, data=ALL))
 
 #multiple comparisons are conducted by isolating pairs of groups, accumulating p-values for each pair and then adjusting the p values for multiple comparisons
-ps_ALL<- c(chisq.test(ALL_lf[1:2,])$p.value,
-            chisq.test(ALL_lf[1:3,])$p.value,
-            chisq.test(ALL_lf[1:4,])$p.value,
-            chisq.test(ALL_lf[1:5,])$p.value,
-            chisq.test(ALL_lf[1:6,])$p.value,
-            chisq.test(ALL_lf[2:3,])$p.value,
-            chisq.test(ALL_lf[2:4,])$p.value,
-            chisq.test(ALL_lf[2:5,])$p.value,
-            chisq.test(ALL_lf[2:6,])$p.value,
-            chisq.test(ALL_lf[3:4,])$p.value,
-            chisq.test(ALL_lf[3:5,])$p.value,
-            chisq.test(ALL_lf[3:6,])$p.value,
-            chisq.test(ALL_lf[4:5,])$p.value,
-            chisq.test(ALL_lf[4:6,])$p.value,
-            chisq.test(ALL_lf[5:6,])$p.value)
+ps_ALL<- c(chisq.test(ALL_lf[1:2,])$p.value, #Ap to CH
+            chisq.test(ALL_lf[1:3,])$p.value, #AP to CK
+            chisq.test(ALL_lf[1:4,])$p.value, #AP to IR
+            chisq.test(ALL_lf[1:5,])$p.value, #AP to JX
+            chisq.test(ALL_lf[1:6,])$p.value, #AP to TB
+            chisq.test(ALL_lf[2:3,])$p.value, #CH to CK
+            chisq.test(ALL_lf[2:4,])$p.value, #CH to IR
+            chisq.test(ALL_lf[2:5,])$p.value, #CH to JX
+            chisq.test(ALL_lf[2:6,])$p.value, #CH to TB
+            chisq.test(ALL_lf[3:4,])$p.value, #CK to IR
+            chisq.test(ALL_lf[3:5,])$p.value, #CK to JX
+            chisq.test(ALL_lf[3:6,])$p.value, #CK to TB
+            chisq.test(ALL_lf[4:5,])$p.value, #IR to JX
+            chisq.test(ALL_lf[4:6,])$p.value, #IR to TB
+            chisq.test(ALL_lf[5:6,])$p.value) #JX to TB
 
 p.adjust(ps_ALL)
 
+# ONE WAY ANOVA to determine if there are significant differences among estuary-specific mean lengths ####
+#determine if there is significnat difference in female length among estuaries
+
+plot(tl~bay, data=All)
+results=aov(tl~bay, data=All)
+summary(results)
+TukeyHSD(results, conf.level=0.95)
 
 
