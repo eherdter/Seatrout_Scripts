@@ -22,7 +22,9 @@ library(Hmisc) #for correlation
 library(ggplot2)
 library(astsa)
 library(MARSS) #for DFA
-setwd("~/Desktop/Github Repo/Seatrout/Data/Indices/DeltaMethod Indices")
+
+setwd("~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices")
+setwd("U:/PhD_projectfiles/Exported_R_Datafiles/Indices/DeltaMethod_Indices")
 
 ##### 1. IMPORT INDICES #################################
 # IMPORT INDICES
@@ -30,77 +32,88 @@ setwd("~/Desktop/Github Repo/Seatrout/Data/Indices/DeltaMethod Indices")
 # and select the year, assign bay name,
 # scale each index (z score, 0 mean 1 unit variance)
 
-AP<- subset(read.csv("AP_yoy_index.csv", header=T), select=c(year, index)) %>% mutate(bay= rep("AP",18)) 
-  names(AP) <- c("year", "index", "est") #assign names
-  AP$est <- as.factor(AP$est) #turn bay into a factor
- AP$index<-  as.numeric(scale(AP$index, scale=TRUE)) #z-score (mean= 0, var=1), as.numeric is important for full_join command below. doesnt like it when it isnt a true numeric
+AP<- subset(read.csv("AP_yoy_index.csv", header=T), Year>1998, select=c(Year, Mean)) %>% mutate(Est= rep("AP",17)) #1997 seems like a crazy outlier so I removed it becuse it was affecting the scaled mean values 
+  names(AP) <- c("Year", "Mean", "Est") #assign names, est as in estuary not estimate
+  AP$Est <- as.factor(AP$Est) #turn bay into a factor
+ AP$Mean_scaled<-  as.numeric(scale(AP$Mean, scale=TRUE)) #z-score (mean= 0, var=1), as.numeric is important for full_join command below. doesnt like it when it isnt a true numeric
   # ap does not have a riv component because of so many 1 or 0 positive trips in the FIM data. The csv is available but its mostly NaNs
 
-CH<- subset(read.csv("CH_yoy_index.csv", header=T), select=c(year, index)) %>% mutate(bay= rep("CH",27)) 
-  names(CH) <- c("year", "index", "est")
-  CH$est <- as.factor(CH$est) 
-  CH$index <- as.numeric(scale(CH$index, scale=TRUE)) 
-  
-# #ch_riv<- subset(read.csv("CH_yoy_index.csv", header=T), select=c(year, index)) %>% mutate(bay= rep("CHR",27))
-#   names(ch_riv) <- c("year", "index", "est")
-#   ch_riv$est <- as.factor(ch_riv$est)
-#   ch_riv$index <- as.numeric(scale(ch_riv$index, scale=TRUE))
+ CK<- subset(read.csv("CK_yoy_index.csv", header=T), select=c(Year, Mean)) %>% mutate(Est= rep("CK",20)) 
+ names(CK) <- c("Year", "Mean", "Est") #assign names, est as in estuary not estimate
+ CK$Est <- as.factor(CK$Est) #turn bay into a factor
+ CK$Mean_scaled<-  as.numeric(scale(CK$Mean, scale=TRUE)) #z-score (mean= 0, var=1), as.numeric is important for full_join command below. doesnt like it when it isnt a true numeric
+ 
+ TB<- subset(read.csv("TB_yoy_index.csv", header=T), select=c(Year, Mean)) %>% mutate(Est= rep("TB",27)) 
+ names(TB) <- c("Year", "Mean", "Est") #assign names, est as in estuary not estimate
+ TB$Est <- as.factor(TB$Est) #turn bay into a factor
+ TB$Mean_scaled<-  as.numeric(scale(TB$Mean, scale=TRUE)) #z-score (mean= 0, var=1), as.numeric is important for full_join command below. doesnt like it when it isnt a true numeric
+ 
 
-CK<- subset(read.csv("CK_yoy_index.csv", header=T), select=c(year, index)) %>% mutate(bay= rep("CK",20))
-  names(CK) <- c("year", "index", "est")
-  CK$est <- as.factor(CK$est)
-  CK$index <- as.numeric(scale(CK$index , scale=TRUE))
-  # Riv is same as AP above
-  
-IR<- subset(read.csv("IR_yoy_index.csv", header=T), select=c(year, index)) %>% mutate(bay= rep("IR",26))
-  names(IR) <- c("year", "index", "est")
-  IR$est <- as.factor(IR$est)
-  IR$index <- as.numeric(scale(IR$index , scale=TRUE))
+ CH<- subset(read.csv("CH_yoy_index.csv", header=T), select=c(Year, Mean)) %>% mutate(Est= rep("CH",27)) 
+ names(CH) <- c("Year", "Mean", "Est") #assign names, est as in estuary not estimate
+ CH$Est <- as.factor(CH$Est) #turn bay into a factor
+ CH$Mean_scaled<-  as.numeric(scale(CH$Mean, scale=TRUE)) #z-score (mean= 0, var=1), as.numeric is important for full_join command below. doesnt like it when it isnt a true numeric
+ 
+ IR<- subset(read.csv("IR_yoy_index.csv", header=T), select=c(Year, Mean)) %>% mutate(Est= rep("IR",26)) 
+ names(IR) <- c("Year", "Mean", "Est") #assign names, est as in estuary not estimate
+ IR$Est <- as.factor(IR$Est) #turn bay into a factor
+ IR$Mean_scaled<-  as.numeric(scale(IR$Mean, scale=TRUE)) #z-score (mean= 0, var=1), as.numeric is important for full_join command below. doesnt like it when it isnt a true numeric
+ 
 
-TB<- subset(read.csv("TB_yoy_index.csv", header=T), select=c(year, index))%>% mutate(bay= rep("TB",27))
-  names(TB) <- c("year", "index", "est")
-  TB$est <- as.factor(TB$est)
-  TB$index <- as.numeric(scale(TB$index , scale=TRUE))
-  
-# tb_riv<- subset(read.csv("index_tbriv_yoy.csv", header=T), select=c(year, Mean))%>% mutate(bay= rep("TBR",27))
-#   names(tb_riv) <- c("year", "mean", "est")
-#   tb_riv$est <- as.factor(tb_riv$est)
-#   tb_riv$mean <- as.numeric(scale(tb_riv$mean , scale=TRUE))
-  
-  
-JX<- subset(read.csv("JX_yoy_index.csv", header=T), select=c(year, index))%>% mutate(bay= rep("JX",15))
-  names(JX) <- c("year", "index", "est")
-  JX$est <- as.factor(JX$est)
-  JX$index <- as.numeric(scale(JX$index , scale=TRUE))
-  
+ JX<- subset(read.csv("JX_yoy_index.csv", header=T), select=c(Year, Mean)) %>% mutate(Est= rep("JX",15)) 
+ names(JX) <- c("Year", "Mean", "Est") #assign names, est as in estuary not estimate
+ JX$Est <- as.factor(JX$Est) #turn bay into a factor
+ JX$Mean_scaled<-  as.numeric(scale(JX$Mean, scale=TRUE)) #z-score (mean= 0, var=1), as.numeric is important for full_join command below. doesnt like it when it isnt a true numeric
+ 
+
 All <- rbind(AP,CH,CK,IR,JX, TB)
 
 ##### 2. PLOT TIMES SERIES DATA ######
-# PLOT TIME SERIES DATA
+# PLOT TIME SERIES DATA 
 
 # plot either the standardized or non standardized time series on the same plot
 # might do this with ggplot
 library(ggplot2)
 
-recruitment <- ggplot(All, aes(x=year, y=index, group=est)) + #color=est
-        geom_line(aes(linetype=est), size =.5)+ # make line types based on the different labels- this will be our workaround because in a few stps we will specify the first label (obserseved) be a blank line (therefore a scatter plot)
-        #geom_line(aes(color=bay))+
-      geom_point(aes(shape=est), size=2) + #, color=bay))+ # groups the points together correctly and then gives them a unique shape them differently based on the line type 
-      ylab("Scaled YOY abundance index") +
+ggplot(All, aes(x=Year, y=Mean_scaled, group=Est)) + #color=est
+        #geom_line(aes(linetype=Est), size =.5)+ # make line types based on the different labels- this will be our workaround because in a few stps we will specify the first label (obserseved) be a blank line (therefore a scatter plot)
+        geom_line(aes(color=Est), size=0.5)+
+      geom_point(aes(color=Est), size=2) + #, color=bay))+ # groups the points together correctly and then gives them a unique shape them differently based on the line type 
+      ylab("LSMean estimate- YOY per haul- Scaled") +
       xlab("Year")+ 
-  scale_y_continuous(limits=c(-2,3))+
+  scale_y_continuous(limits=c(-2.5,4.5))+
+  scale_x_continuous(limits=c(1989, 2015), breaks=seq(1989, 2015, 2))+
   scale_colour_discrete(name="Location")+
-  theme(panel.grid.minor=element_blank(),panel.grid.major=element_blank(), 
+  theme(panel.grid.minor=element_blank(), 
+        panel.grid.major=element_blank(), 
         panel.background=element_rect(colour="black", fill="white"),
         axis.title.x =element_text(colour="black"),
         axis.text.x = element_text(colour="black"),
         axis.title.y =element_text(colour="black"),
         axis.text.y = element_text(colour="black"),
-        axis.text.x=element_text(colour="black"), #changing  colour of x axis
-        axis.text.y=element_text(colour="black"), #changing colour of y acis
         plot.title=element_text(size=14))
 
+
+#plot each index separately but have to turn year into numeric
+AP$Year <- as.numeric(AP$Year)
+
+plot(Mean~Year, data=AP, type="l")
+plot(Mean~Year, data=CK, type='l')
+plot(Mean~Year, data=TB, type='l')
+plot(Mean~Year, data=CH, type='l')
+plot(Mean~Year, data=JX, type='l')
+plot(Mean~Year, data=IR, type='l')
+
 #### 8. TEST INDICES FOR LINEAR TRENDS #####
+
+summary(lm(Mean ~ Year, data=AP))
+summary(lm(Mean ~ Year, data=CK))
+summary(lm(Mean ~ Year, data=TB))
+summary(lm(Mean ~ Year, data=CH))
+summary(lm(Mean ~ Year, data=JX))
+summary(lm(Mean ~ Year, data=IR))
+#some have slight linear trends but the adjusted R squared values are really small <0.25 
+
 
 ##### 3. LAGGED SCATTERPLOTS OF EACH TIMESERIES#######
 #LAGGED SCATTERPLOTS of each time series
@@ -128,12 +141,12 @@ lag1.plot(TB, 4, corr=TRUE) #autocorrelation at 1st and 2nd lag
 lag1.plot(JX, 4, corr=TRUE)
 
 #1B. ACF and correlograms
-acf2(AP$index)
-acf2(CH$index)
-acf2(CK$index)
-acf2(IR$index)
-acf2(TB$index)
-acf2(JX$index)
+acf2(AP$Mean)
+acf2(CH$Mean)
+acf2(CK$Mean)
+acf2(IR$Mean)
+acf2(TB$Mean)
+acf2(JX$Mean)
 
 
 #little evidence of interseries correlation so can use standard significance test for pairwise correlations
@@ -144,29 +157,29 @@ acf2(JX$index)
 
 # To not end up with a bunch of "est" columns I will just make some new dfs that do not contain the est columns
 
-ap_min <- subset(AP, select=(-est)) 
-ch_min <- subset(CH, select=(-est))
-ck_min <- subset(CK, select=(-est))
-ir_min <- subset(IR, select=(-est))
-tb_min <- subset(TB, select=(-est))
-jx_min <- subset(JX, select=(-est))
+ap_min <- subset(AP, select=(-Est)) 
+ch_min <- subset(CH, select=(-Est))
+ck_min <- subset(CK, select=(-Est))
+ir_min <- subset(IR, select=(-Est))
+tb_min <- subset(TB, select=(-Est))
+jx_min <- subset(JX, select=(-Est))
 
 # Make dataframe with just indices by year
 
 # For some reason full_join stops working after 4 dataframes at which point it starts duplicating things so 
 # I just made two and joined them together
 
-ind1 <- full_join(ap_min, ch_min, by='year') %>% 
-            full_join(.,ck_min, by='year' ) 
-names(ind1) <- c("year", "AP", "CH", "CK")
+ind1 <- full_join(ap_min, ch_min, by='Year') %>% 
+            full_join(.,ck_min, by='Year' ) 
+names(ind1) <- c("Year", "AP","AP_Scaled" , "CH", "CH_Scaled", "CK", "CK_Scaled")
 
-ind2 <-  full_join(tb_min,ir_min, by='year' ) %>%
-            full_join(.,jx_min, by='year' ) 
-names(ind2) <- c("year","IR", "TB", "JX" )
+ind2 <-  full_join(tb_min,ir_min, by='Year' ) %>%
+            full_join(.,jx_min, by='Year' ) 
+names(ind2) <- c("Year","TB","TB_Scaled", "IR", "IR_Scaled", "JX", "JX_Scaled" )
 
-ind_year <- full_join(ind1, ind2, by='year')
+ind_Year <- full_join(ind1, ind2, by='Year')
 
-mat<- as.matrix(arrange(ind_year, year)) #arrange the data,frame by year and then turn into a matrix
+mat<- as.matrix(arrange(ind_Year, Year)) #arrange the data,frame by year and then turn into a matrix
 mattest=mat[,-1] #remove the first column which is the year to just have a matrix of scaled indices
 
 
@@ -178,7 +191,7 @@ rho_mat <- corr_mat$r #rho values
 n_mat <- corr_mat$n #number of samples used to compute correlation
 P_mat <- corr_mat$P #P values
 
-P_mat_adjust <- as.data.frame(p.adjust(P_mat)) #adjust the p-values for multiple comparisons
+P_mat_adjust <- as.data.frame(p.adjust(P_mat)) #adjust the p-values for multiple comparisons but is this the right thing to do???
 
 #unwrap each matrix
 library(gdata)
