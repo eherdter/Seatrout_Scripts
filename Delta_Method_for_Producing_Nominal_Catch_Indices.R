@@ -517,12 +517,12 @@ colnames(Mean_IR) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
 
 
 #export to csv _WORK COMPUTER
-write.csv(Mean_AP, "U:/Elizabeth.Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/AP_yoy_index.csv")
-write.csv(Mean_IR, "U:/Elizabeth.Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/IR_yoy_index.csv")
-write.csv(Mean_JX, "U:/Elizabeth.Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/JX_yoy_index.csv")
-write.csv(Mean_CH, "U:/Elizabeth.Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/CH_yoy_index.csv")
-write.csv(Mean_TB, "U:/Elizabeth.Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/TB_yoy_index.csv")
-write.csv(Mean_CK, "U:/Elizabeth.Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/CK_yoy_index.csv")
+write.csv(Mean_AP, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/DeltaMethod_Indices/AP_yoy_index.csv")
+write.csv(Mean_IR, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/DeltaMethod_Indices/IR_yoy_index.csv")
+write.csv(Mean_JX, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/DeltaMethod_Indices/JX_yoy_index.csv")
+write.csv(Mean_CH, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/DeltaMethod_Indices/CH_yoy_index.csv")
+write.csv(Mean_TB, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/DeltaMethod_Indices/TB_yoy_index.csv")
+write.csv(Mean_CK, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/DeltaMethod_Indices/CK_yoy_index.csv")
 
 ##### ADULT SECTION ####
 # Now that the YOY index is done... I need to load the adult data because I need this to predict
