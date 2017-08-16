@@ -67,6 +67,9 @@ AP<- subset(read.csv("AP_yoy_index.csv", header=T), Year>1998, select=c(Year, Me
  
 
 All <- rbind(AP,CH,CK,IR,JX, TB)
+All_NW <- rbind(AP, CK)
+All_SW <- rbind(TB, CH)
+All_East <- rbind(IR, JX)
 
 ##### 2. PLOT TIMES SERIES DATA ######
 # PLOT TIME SERIES DATA 
@@ -92,6 +95,92 @@ ggplot(All, aes(x=Year, y=Mean_scaled, group=Est)) + #color=est
         axis.title.y =element_text(colour="black"),
         axis.text.y = element_text(colour="black"),
         plot.title=element_text(size=14))
+
+
+
+ggplot(All_NW, aes(x=Year, y=Mean, group=Est)) + #color=est
+  #geom_line(aes(linetype=Est), size =.5)+ # make line types based on the different labels- this will be our workaround because in a few stps we will specify the first label (obserseved) be a blank line (therefore a scatter plot)
+  geom_line(aes(color=Est), size=1)+
+  geom_point(aes(color=Est), size=2.5) + #, color=bay))+ # groups the points together correctly and then gives them a unique shape them differently based on the line type 
+  ylab("LSMean  #/haul") +
+  xlab("Year")+ 
+  scale_y_continuous(limits=c(-0.5,2), breaks=seq(-0.5,2, 0.5))+
+  scale_x_continuous(limits=c(1995, 2015), breaks=seq(1996, 2015, 3))+
+  scale_colour_discrete(name="Location")+
+  theme(panel.grid.minor=element_blank(), 
+        panel.grid.major=element_blank(), 
+        panel.background=element_rect(colour="black", fill="white"),
+        axis.title.x =element_text(colour="black", size=20),
+        axis.text.x = element_text(colour="black", size=18),
+        axis.title.y =element_text(colour="black", size=20),
+        axis.text.y = element_text(colour="black", size=18),
+        plot.title=element_text(size=14),
+        legend.title=element_text(size=14),
+        legend.text=element_text(size=14))
+
+ggplot(All_SW, aes(x=Year, y=Mean, group=Est)) + #color=est
+  #geom_line(aes(linetype=Est), size =.5)+ # make line types based on the different labels- this will be our workaround because in a few stps we will specify the first label (obserseved) be a blank line (therefore a scatter plot)
+  geom_line(aes(color=Est), size=1)+
+  geom_point(aes(color=Est), size=2.5) + #, color=bay))+ # groups the points together correctly and then gives them a unique shape them differently based on the line type 
+  ylab("LSMean  #/haul") +
+  xlab("Year")+ 
+  scale_y_continuous(limits=c(0,3.5), breaks=seq(0,3.5, 0.5))+
+  scale_x_continuous(limits=c(1989, 2015), breaks=seq(1989, 2015, 4))+
+  scale_colour_discrete(name="Location")+
+  theme(panel.grid.minor=element_blank(), 
+        panel.grid.major=element_blank(), 
+        panel.background=element_rect(colour="black", fill="white"),
+        axis.title.x =element_text(colour="black", size=20),
+        axis.text.x = element_text(colour="black", size=18),
+        axis.title.y =element_text(colour="black", size=20),
+        axis.text.y = element_text(colour="black", size=18),
+        plot.title=element_text(size=14),
+        legend.title=element_text(size=14),
+        legend.text=element_text(size=14))
+
+ggplot(IR, aes(x=Year, y=Mean, group=Est)) + #color=est
+  #geom_line(aes(linetype=Est), size =.5)+ # make line types based on the different labels- this will be our workaround because in a few stps we will specify the first label (obserseved) be a blank line (therefore a scatter plot)
+  geom_line(aes(color=Est), size=1)+
+  geom_point(aes(color=Est), size=2.5) + #, color=bay))+ # groups the points together correctly and then gives them a unique shape them differently based on the line type 
+  ylab("LSMean #/haul") +
+  xlab("Year")+ 
+  scale_y_continuous(limits=c(0,3), breaks=seq(0,3, 0.5))+
+  scale_x_continuous(limits=c(1989, 2015), breaks=seq(1989, 2018, 4))+
+  scale_colour_discrete(name="Location")+
+  theme(panel.grid.minor=element_blank(), 
+        panel.grid.major=element_blank(), 
+        panel.background=element_rect(colour="black", fill="white"),
+        axis.title.x =element_text(colour="black", size=20),
+        axis.text.x = element_text(colour="black", size=18),
+        axis.title.y =element_text(colour="black", size=20),
+        axis.text.y = element_text(colour="black", size=18),
+        plot.title=element_text(size=14),
+        legend.title=element_text(size=14),
+        legend.text=element_text(size=14))
+
+
+ggplot(JX, aes(x=Year, y=Mean, group=Est)) + #color=est
+  #geom_line(aes(linetype=Est), size =.5)+ # make line types based on the different labels- this will be our workaround because in a few stps we will specify the first label (obserseved) be a blank line (therefore a scatter plot)
+  geom_line(aes(color=Est), size=1)+
+  geom_point(aes(color=Est), size=2.5) + #, color=bay))+ # groups the points together correctly and then gives them a unique shape them differently based on the line type 
+  ylab("LSMean  #/haul") +
+  xlab("Year")+ 
+  scale_y_continuous(limits=c(-0.01,0.02), breaks=seq(-0.01,0.02, 0.005))+
+  scale_x_continuous(limits=c(2000, 2015), breaks=seq(2000, 2015, 3))+
+  scale_colour_discrete(name="Location")+
+  theme(panel.grid.minor=element_blank(), 
+        panel.grid.major=element_blank(), 
+        panel.background=element_rect(colour="black", fill="white"),
+        axis.title.x =element_text(colour="black", size=20),
+        axis.text.x = element_text(colour="black", size=18),
+        axis.title.y =element_text(colour="black", size=20),
+        axis.text.y = element_text(colour="black", size=18),
+        plot.title=element_text(size=14),
+        legend.title=element_text(size=14),
+        legend.text=element_text(size=14))
+
+
+
 
 
 #plot each index separately but have to turn year into numeric
