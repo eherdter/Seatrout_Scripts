@@ -19,10 +19,10 @@ setwd("U:/PhD_projectfiles/Raw_Data/Age_Length_Data")
 
 #load the age 0 length data from the McMichael peters study ####
 # change some variables and add some dummy variables so the dataframe will match to the Agelength_Bay loaded next 
-age0 <- read.csv("Age_length_mcmichael_peters.csv", header=TRUE) %>% mutate(tl=TL..mm./10, lcat2 =lencat(tl, w=1), specimennumber = rep(NA, 149), bay=rep(NA, 149), Date=rep(NA, 149)) %>% rename(final_age=Otolith.age..years.) 
+age0 <- read.csv("Age_length_mcmichael_peters.csv", header=TRUE) %>% mutate(tl=TL..mm./10, lcat2 =lencat(tl, w=1), bay=rep(NA, 149), date=rep(NA, 149)) %>% rename(final_age=Otolith.age..years.) 
 age0 <- subset(age0, select=-c(TL..mm.))
 
-#load the csv file
+#load the csv file #####
 # subset by which bay I want
 # make sure I have just the "aged sample"
 # turn mm to cm
@@ -34,18 +34,24 @@ age0 <- subset(age0, select=-c(TL..mm.))
 # IRpend age0 dataframe with NA bay
 # then turn the NA bay into the specific bay that would match for each
 
-Agelength_TB<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="TB" & tl>14, select=c(specimennumber, bay, tl, final_age, Date))) %>% filter(!is.na(final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("TB", 10151)) #, as.fact=TRUE))- can include this when determing ALK below but the smoothed ALK needs to be the nonfactored version of the length categorization variable. 
-Agelength_AP<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="AP" & tl>0, select=c(specimennumber, bay, tl, final_age, Date))) %>% filter(!is.na(final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("AP", 3306)) #, as.fact=TRUE))
-Agelength_CK<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="CK" & tl>0, select=c(specimennumber, bay, tl, final_age, Date))) %>% filter(!is.na(final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("CK", 1402)) # as.fact=TRUE))
-Agelength_CH<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="CH" & tl>0, select=c(specimennumber, bay, tl, final_age, Date))) %>% filter(!is.na(final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("CH", 3682))# as.fact=TRUE))
-Agelength_IR<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="IR" & tl>0, select=c(specimennumber, bay, tl, final_age, Date))) %>% filter(!is.na(final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("IR", 9345))# as.fact=TRUE))
-Agelength_JX<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="JX" & tl>0, select=c(specimennumber, bay, tl, final_age, Date))) %>% filter(!is.na(final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("JX", 1224))# as.fact=TRUE))
+Agelength_TB<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="TB" & tl>14 & program=='FIM', select=c( bay, tl, final_age, date))) %>% filter(!is.na(final_age)) %>% 
+          mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("TB", 2168)) #, as.fact=TRUE))- can include this when determing ALK below but the smoothed ALK needs to be the nonfactored version of the length categorization variable. 
+Agelength_AP<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="AP" & tl>0 & program == 'FIM', select=c( bay, tl, final_age, date))) %>% filter(!is.na(final_age)) %>% 
+          mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("AP", 1515)) #, as.fact=TRUE))
+Agelength_CK<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="CK" & tl>0 & program=='FIM', select=c( bay, tl, final_age, date))) %>% filter(!is.na(final_age)) %>% 
+          mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("CK", 1158)) # as.fact=TRUE))
+Agelength_CH<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="CH" & tl>0 & program=='FIM', select=c( bay, tl, final_age, date))) %>% filter(!is.na(final_age)) %>% 
+          mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("CH", 1380))# as.fact=TRUE))
+Agelength_IR<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="IR" & tl>0 & program=='FIM', select=c( bay, tl, final_age, date))) %>% filter(!is.na(final_age)) %>% 
+          mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("IR", 3043))# as.fact=TRUE))
+Agelength_JX<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="JX" & tl>0 & program=='FIM', select=c( bay, tl, final_age, date))) %>% filter(!is.na(final_age)) %>% 
+          mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("JX", 1085))# as.fact=TRUE))
 
 
 
 
 # DETERMINE GROWTH PARAMETERS FOR EACH ESTUARY ####
-########################################################
+
 
 # Define function - more flexible when working with a single group of individuals (one estuary)
 
@@ -61,9 +67,9 @@ bootTB <- nlsBoot(fitTB)
 confint(bootTB) #, plot=TRUE)
 
 # 95% LCI    95% UCI
-# Linf 51.6946058 53.2442601
-# K     0.3605172  0.4017859
-# t0   -1.2764007 -1.1097925
+# Linf 45.3305524 47.3152843
+# K     0.5649566  0.6675422
+# t0   -0.6417029 -0.5026602
 
 #Visualize the model fit
 # - plot the best-fit VBGF with confidence intervals on top of the observed data
@@ -88,9 +94,9 @@ bootAP <- nlsBoot(fitAP)
 confint(bootAP) #, plot=TRUE)
 
 # 95% LCI    95% UCI
-# Linf 45.7793531 46.8241912
-# K     0.8960905  1.0050156
-# t0   -0.3088619 -0.2363552
+# Linf 50.5370318 53.4374288
+# K     0.5179205  0.6170628
+# t0   -0.4593537 -0.3389652
 
 x <- seq(0,9, length.out=100) # ages for prediction
 AP_pred <- vbTyp(x, Linf=coef(fitAP)) #predicted lengths
@@ -107,9 +113,9 @@ bootCK <- nlsBoot(fitCK)
 confint(bootCK) #, plot=TRUE)
 
 # 95% LCI    95% UCI
-# Linf 50.7272826 54.3839631
-# K     0.4637576  0.5833411
-# t0   -0.6572329 -0.4930606
+# Linf 49.2435157 54.1656694
+# K     0.4723081  0.6276932
+# t0   -0.6442767 -0.4577431
 
 x <- seq(0,9, length.out=100) # ages for prediction
 CK_pred <- vbTyp(x, Linf=coef(fitCK)) #predicted lengths
@@ -125,9 +131,9 @@ bootCH <- nlsBoot(fitCH)
 confint(bootCH) #, plot=TRUE)
 
 # 95% LCI    95% UCI
-# Linf 44.9099417 46.0548986
-# K     0.7437704  0.8422404
-# t0   -0.3842474 -0.2768528
+# Linf 43.3497080 45.2817667
+# K     0.7406442  0.8930349
+# t0   -0.3203599 -0.2089275
 
 x <- seq(0,9, length.out=100) # ages for prediction
 CH_pred <- vbTyp(x, Linf=coef(fitCH)) #predicted lengths
@@ -141,11 +147,11 @@ fitIR <- nls(tl~vbTyp(final_age, Linf, K, t0), data=Agelength_IR, start=starting
 coef(fitIR)
 bootIR <- nlsBoot(fitIR)
 confint(bootIR) #, plot=TRUE)
-
+# 
 # 95% LCI    95% UCI
-# Linf 57.7000010 60.1145785
-# K     0.3289741  0.3759782
-# t0   -1.0141367 -0.8289982
+# Linf 54.2941867 58.4007511
+# K     0.3284347  0.4035553
+# t0   -0.8796486 -0.6684325
 
 x <- seq(0,9, length.out=100) # ages for prediction
 IR_pred <- vbTyp(x, Linf=coef(fitIR)) #predicted lengths
@@ -161,9 +167,9 @@ bootJX <- nlsBoot(fitJX)
 confint(bootJX) #, plot=TRUE)
 
 # 95% LCI    95% UCI
-# Linf 43.4891047 47.2441419
-# K     0.5845976  0.7564375
-# t0   -0.5016745 -0.3470104
+# Linf 43.0470322 47.0805813
+# K     0.5751090  0.7640616
+# t0   -0.4987555 -0.3327195
 
 
 x <- seq(0,9, length.out=100) # ages for prediction
@@ -194,7 +200,7 @@ library(ggplot2)
 
 VonB_Comparative <- ggplot(data= pred_all, aes(x=x, y=pred, group=bay))+  
   geom_line() + #aes(linetype=bay), size =.5)+ # make line types based on the different labels- this will be our workaround because in a few stps we will specify the first label (obserseved) be a blank line (therefore a scatter plot)
-  geom_line(aes(color=bay))+
+  geom_line(aes(color=bay), size=1.5)+
   #geom_point(aes(shape=bay), size=2) + #, color=bay))+ # groups the points together correctly and then gives them a unique shape them differently based on the line type 
   #scale_shape_manual(values=c(0,1,2, 3, 4, 5,6,7,8 ))+
   #scale_linetype_manual(values=c('solid', 'dashed', 'dotted'))+
@@ -208,12 +214,12 @@ VonB_Comparative <- ggplot(data= pred_all, aes(x=x, y=pred, group=bay))+
         legend.background=element_rect(fill='white', size=.5),
         legend.position=c(.70,.38),
         legend.key.size= unit(3, "cm"),
-        axis.title.y = element_text(family= "Times New Roman",colour="black", size=20), # changing font of y axis title
-        axis.title.x = element_text(family="Times New Roman", colour="black", size=20),
-        axis.text.x=element_text(family= "Times New Roman", colour="black", size=16), #changing  colour and font of x axis text
-        axis.text.y=element_text(family= "Times New Roman", colour="black", size=16), #changing colour and font of y axis
+        axis.title.y = element_text(colour="black", size=20), # changing font of y axis title
+        axis.title.x = element_text(colour="black", size=20),
+        axis.text.x=element_text(colour="black", size=16), #changing  colour and font of x axis text
+        axis.text.y=element_text(colour="black", size=16), #changing colour and font of y axis
         #plot.title=element_text(size=14), # changing size of plot title)+
-        legend.text=element_text(family= "Times New Roman", size=18),
+        legend.text=element_text( size=18),
         legend.key.height=unit(25,"point")) # changes vertical spacing of the legend text
 #ggtitle("Comparative von Bertalanffy Growth Models")
 
