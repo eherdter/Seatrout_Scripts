@@ -1,4 +1,5 @@
-# Script for figuring out the medoids in all zones so they can be used as distance references
+# ABOUT #####
+ #Script for figuring out the medoids in all zones so they can be used as distance references
 # 6/1/2016 - Edited script for 
 # 1. Determining medoids of each estuary so they can be used as great circle (GC) distance references
 # 2. ESTIMATE SPATIAL DECAY WITH NLS MODEL for both recruitment indices and RESIDUALS
@@ -6,7 +7,11 @@
 # 4. Produces a CSV file with all of the lats and longs
 
 
+#SET WORKING DIRECTORY #####
 setwd("~/Desktop/Github Repo/Seatrout/FWRI SCRATCH FOLDER/Elizabeth Herdter/SAS data sets/FIMData/NEWNov7")
+setwd("U:/PhD_projectfiles/Raw_Data/Seatrout_FIM_Data/FIMData")
+
+#LOAD PACKAGES #####
 library(haven) #for loading SAS data
 library(cluster) #for finding medoid
 library(geosphere) # for calculating great circle distances between each medoid
@@ -14,10 +19,10 @@ library(ggplot2) #for plotting
 library(nlstools) #for fitting nls models
 library(dplyr)
 
-################################
+#LOAD DATA #####
 # SELECT DATA for YOY 
 # same way as in Delta Method for Producing Nominal Indices.R
-########################################
+
 ap = subset(read_sas("ap_yoy_cn_c.sas7bdat"), month %in% c(6,7,8,9,10,11))
 apl = read_sas("ap_yoy_cn_l.sas7bdat")
 
@@ -45,10 +50,7 @@ ir_all=ir
 jx_all=jx
 
 
-########################################
-# MEDOID CALCULATION
-#########################################
-
+# MEDOID CALCULATION #####
 
 ### Figuring out whether to use the mediod or the mean. The mediod is an actual point in the data set whereas the mean is a number not included. 
 AP_LL <- subset(ap_all, select=c("Longitude", "Latitude")) 
@@ -79,62 +81,60 @@ TB_LL <-na.omit(subset(tb_all, select=c("Longitude", "Latitude")))
 JX_LL <-subset(jx_all, select=c("Longitude", "Latitude"))
   JXMed <- pam(JX_LL,1)$medoids
 
-########################################################
-## CALCULATING GREAT CIRCLE DISTANCES
-#########################################################
 
+#CALCULATING GREAT CIRCLE DISTANCES #####
+#must align with the way correlations are labeled in the Rho_P_vector.csv below because we are just cbinding these distances below
 AP_compars = rbind(distGeo(APMed, CHMed, a=6378137, f=1/298.257223563),
                         distGeo(APMed, CKMed, a=6378137, f=1/298.257223563),
-                        distGeo(APMed, IRMed, a=6378137, f=1/298.257223563),
                         distGeo(APMed, TBMed, a=6378137, f=1/298.257223563),
+                        distGeo(APMed, IRMed, a=6378137, f=1/298.257223563),
                         distGeo(APMed, JXMed, a=6378137, f=1/298.257223563))
 
 CH_compars = rbind(distGeo(CHMed, CKMed, a=6378137, f=1/298.257223563),
-                   distGeo(CHMed, IRMed, a=6378137, f=1/298.257223563),
                    distGeo(CHMed, TBMed, a=6378137, f=1/298.257223563),
+                   distGeo(CHMed, IRMed, a=6378137, f=1/298.257223563),
                    distGeo(CHMed, JXMed, a=6378137, f=1/298.257223563))
 
 
-CK_compars = rbind(distGeo(CKMed, IRMed, a=6378137, f=1/298.257223563),
-                   distGeo(CKMed, TBMed, a=6378137, f=1/298.257223563),
+CK_compars = rbind(distGeo(CKMed, TBMed, a=6378137, f=1/298.257223563),
+                   distGeo(CKMed, IRMed, a=6378137, f=1/298.257223563),
                    distGeo(CKMed, JXMed, a=6378137, f=1/298.257223563))
 
 
-IR_compars = rbind(distGeo(IRMed, TBMed, a=6378137, f=1/298.257223563),
-                    distGeo(IRMed, JXMed, a=6378137, f=1/298.257223563))
+TB_compars = rbind(distGeo(TBMed, IRMed, a=6378137, f=1/298.257223563),
+                    distGeo(TBMed, JXMed, a=6378137, f=1/298.257223563))
 
-TB_compars = distGeo(TBMed, JXMed, a=6378137, f=1/298.257223563)
+IR_compars = distGeo(IRMed, JXMed, a=6378137, f=1/298.257223563)
 
 
 
 #join distances together. make sure they are in the correct order so that they can bind together with the csv imported below. 
 distances <- rbind(AP_compars, CH_compars, CK_compars, IR_compars, TB_compars)
-rownames(distances) <- c("AP_CH", "AP_CK", "AP_IR", "AP_TB", "AP_JX", 
-                         "CH_CK", "CH_IR", "CH_TB", "CH_JX",
-                         "CK_IR", "CK_TB", "CK_JX",
-                         "IR_TB", "IR_JX",
-                         "TB_JX")
+rownames(distances) <- c("AP_CH", "AP_CK", "AP_TB", "AP_IR", "AP_JX", 
+                         "CH_CK", "CH_TB", "CH_IR", "CH_JX",
+                         "CK_TB", "CK_IR", "CK_JX",
+                         "TB_IR", "TB_JX",
+                         "IR_JX")
 
 #bring in the rho_P_vector and combinind with the distances
-rho_P_vector <- read.csv('~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/rho_P_vector.csv')
-rho_P_vector_residuals_RK <- read.csv('~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/rho_P_vector_residuals_RK.csv')
-rho_P_vector_residuals_BH <- read.csv('~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/rho_P_vector_residuals_BH.csv')
+rho_P_vector <- read.csv('U:/PhD_projectfiles/Exported_R_Datafiles/rho_P_vector.csv', header=T)
+#rho_P_vector_residuals_RK <- read.csv('~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/rho_P_vector_residuals_RK.csv')
+#rho_P_vector_residuals_BH <- read.csv('~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/rho_P_vector_residuals_BH.csv')
 
 
 #combine rho and distances vectors and then turn distance into kilometers, name x and y for plotting convention below
 t<-cbind(rho_P_vector, distances) %>% mutate(distancesKM=distances/1000) %>% arrange(distancesKM) %>% rename(y=rho, x=distancesKM)
-r<-cbind(rho_P_vector_residuals_RK, distances) %>% mutate(distancesKM=distances/1000) %>% arrange(distancesKM) %>% rename(y=rho, x=distancesKM)
-b<-cbind(rho_P_vector_residuals_BH, distances) %>% mutate(distancesKM=distances/1000) %>% arrange(distancesKM) %>% rename(y=rho, x=distancesKM)
+#r<-cbind(rho_P_vector_residuals_RK, distances) %>% mutate(distancesKM=distances/1000) %>% arrange(distancesKM) %>% rename(y=rho, x=distancesKM)
+#b<-cbind(rho_P_vector_residuals_BH, distances) %>% mutate(distancesKM=distances/1000) %>% arrange(distancesKM) %>% rename(y=rho, x=distancesKM)
 
 
-write.csv(t,'~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/rho_vs_distance.csv' )
-write.csv(r,'~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/rho_resid_RK_vs_distance.csv' )
-write.csv(b,'~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/rho_resid_BH_vs_distance.csv' )
+write.csv(t,'U:/PhD_projectfiles/Exported_R_Datafiles/rho_vs_distance.csv' )
+#write.csv(r,'~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/rho_resid_RK_vs_distance.csv' )
+#write.csv(b,'~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/rho_resid_BH_vs_distance.csv' )
 r_min = r[-13,]  #testing out what happens if we remove the outlier that is CH-JX
 
 
-############################################
-#ESTIMATE SPATIAL DECAY WITH NLS MODEL
+#ESTIMATE SPATIAL DECAY WITH NLS  MODEl #####
 #1. Fix p0= 1, just exclude it from the equation
 #2. Estimate p0 
 #Pyper et al. 2001
@@ -142,8 +142,8 @@ r_min = r[-13,]  #testing out what happens if we remove the outlier that is CH-J
 #P(d)= p0e(-d/v)- constrain p0 to 1
 #P(d)=p0e(-d/v) - estimate P0
 #v (e-folding scale) where e-folding scale tells distance 
-#############################################
-setwd('~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes')
+
+setwd('U:/PhD_projectfiles/Exported_R_Datafiles')
 t <- read.csv('~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/rho_vs_distance.csv', header=T)
 
 # WITH RECRUITMENT INDICES
@@ -171,7 +171,7 @@ anova(m1, m2)
 # In our case the p value is not significant so we don't need to estimate p0- we can constrain it to 1
 
 
-#WITH RESIDUAL TIMESERIES
+# SPATIAL DECAY WITH RESIDUAL TIMESERIES #####
 #RK
 p0 = 1
 v = 125
@@ -220,26 +220,29 @@ anova(m5, m6)
 # In our case the p value is not significant so we don't need to estimate p0- we can constrain it to 1
 
 
-#################################
-#PLOT CORRELATION BY DISTANCE
-#################################
+
+#PLOT CORRELATION BY DISTANCE #####
+
 #Plot correlation by distance and add the fitted curve to the plot(here p0 is estimated. see below for explanation)
 #http://stackoverflow.com/questions/25030653/fitting-with-ggplot2-geom-smooth-and-nls
 # NOTE: within geom_smooth  it does not recognize variable names; they must be named x and y; weight must be in an aesthetic in ggplot
 
 rhobydis <- ggplot(data=t, aes(x=x, y=y))+geom_point()+ 
-  geom_smooth(method="nls",formula=y ~exp(-(x/v)), method.args=list(start=c(v=150)), aes(weight=N), se=FALSE, color="black", size=0.5)+                                           
+  geom_smooth(method="nls",formula=y ~exp(-(x/v)), method.args=list(start=c(v=150)), aes(weight=N), se=FALSE, color="black", size=1)+                                           
   ylab("Correlation") +
-  xlab("Distance (km)")+ 
-  geom_vline(xintercept = 174, linetype="dotted")+
+  xlab(" Great Circle Distance (km)")+ 
+  geom_vline(xintercept = 92.55, linetype="dotted", size=1.5, color="red")+
   scale_x_continuous(limits=c(75,500))+
   theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(),  
         panel.background=element_rect(fill='white', colour='black'),                                                    
-        axis.text.x=element_text(colour="black"), #changing  colour of x axis
-        axis.text.y=element_text(colour="black"), #changing colour of y axis
+        axis.text.x=element_text(colour="black", size=14), #changing  colour of x axis
+        axis.title.x=element_text(size=16),
+        axis.title.y=element_text(size=16),
+        axis.text.y=element_text(colour="black", size=14), #changing colour of y axis
         plot.title=element_text(size=14), # changing size of plot title)+
-        legend.text=element_text(size=10))+
-  annotate("text", x=90, y=-0.35, label="(A)", size=5, family="Times New Roman")
+        legend.text=element_text(size=14))
+#+
+#  annotate("text", x=90, y=-0.35, label="(A)", size=5, family="Times New Roman")
 
 
 
@@ -249,7 +252,7 @@ t_fitted <- cbind(t, yfitted)
 plot(y ~x, data=t)
 
 
-#### PLOT CORRELATION BY DISTANCE WITH RESIDUAL RHOs
+#PLOT CORRELATION BY DISTANCE WITH RESIDUAL RHOs #####
 
 
 resid_RK_rhobydis <- ggplot(data=r, aes(x=x, y=y))+geom_point()+ 
@@ -283,9 +286,9 @@ resid_BH_rhobydis <- ggplot(data=b, aes(x=x, y=y))+geom_point()+
 
 
 multi <- multiplot(rhobydis, resid_RK_rhobydis, resid_BH_rhobydis, cols=1)
-#############################################
-# PRODUCE LAT AND LONG DATA FOR YOY AND ADULT
-#############################################
+
+
+# PRODUCE LAT AND LONG DATA FOR ADULT #####
 
 #yoy
 yoy_LL=rbind(AP_LL, CH_LL, CK_LL, TB_LL, IR_LL, JX_LL) %>% mutate(group=rep("yoy", 48179) )
