@@ -17,11 +17,11 @@
 # library(dplyr) NOTE: loading dplyr conflicts with the lag1.plot in astsa. DO NOT LOAD before using ASTSA.
 # or load it and then unload it
 library(cluster)
-library(dplyr)
 library(Hmisc) #for correlation
 library(ggplot2)
 library(astsa)
 library(MARSS) #for DFA
+library(dplyr)
 
 setwd("~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices")
 setwd("U:/PhD_projectfiles/Exported_R_Datafiles/Indices/DeltaMethod_Indices")
@@ -275,12 +275,23 @@ mattest=mat[,-1] #remove the first column which is the year to just have a matri
 # Now pearson correlation with rcorr from hmisc
 #rcorr- missing values are deleted in pairs rather than deleting all rows of x having any missing variables
 
-corr_mat <- rcorr(mattest, type="pearson")
-rho_mat <- corr_mat$r #rho values
-n_mat <- corr_mat$n #number of samples used to compute correlation
-P_mat <- corr_mat$P #P values
+corr_mat_ALL <- rcorr(mattest, type="pearson")
+rho_mat_ALL <- as.data.frame(corr_mat_ALL$r) #rho values
+n_mat_ALL <- as.data.frame(corr_mat_ALL$n) #number of samples used to compute correlation
+P_mat_ALL <- as.data.frame(corr_mat_ALL$P) #P values
 
-P_mat_adjust <- as.data.frame(p.adjust(P_mat)) #adjust the p-values for multiple comparisons but is this the right thing to do???
+#P_mat_adjust_ALL <- as.data.frame(p.adjust(P_mat_ALL)) #adjust the p-values for multiple comparisons but is this the right thing to do???
+
+#select the non scaled ones
+rho_mat <- (as.data.frame(rho_mat_ALL %>% select(1,3,5,7,9,11)))[c(1,3,5,7,9,11),] #select columns and rows 
+n_mat <- (as.data.frame(n_mat_ALL %>% select(1,3,5,7,9,11)))[c(1,3,5,7,9,11),]
+P_mat <- (P_mat_ALL %>% select(1,3,5,7,9,11))[c(1,3,5,7,9,11),]
+
+#select scaled ones
+rho_mat_scl <- (as.data.frame(rho_mat_ALL %>% select(2,4,6,8,10,12)))[c(2,4,6,8,10,12),] #select columns and rows 
+n_mat_scl <- (as.data.frame(n_mat_ALL %>% select(2,4,6,8,10,12)))[c(2,4,6,8,10,12),]
+
+
 
 #unwrap each matrix
 library(gdata)
@@ -290,17 +301,16 @@ p_vec   <- as.data.frame(lowerTriangle(P_mat, diag=FALSE, byrow=FALSE))
 #produce sample number (impt for fitting the nls function and weighting by sample number in Medoid_GC_NLSfit_plot.R)
 n_mat <- as.data.frame(lowerTriangle(n_mat, diag=FALSE, byrow=FALSE)) 
 rho_P_vec <- cbind(rho_vec, p_vec, n_mat)
-rownames <- c("AP_CH", "AP_CK", "AP_IR", "AP_TB", "AP_JX", 
-              "CH_CK", "CH_IR", "CH_TB", "CH_JX",
-              "CK_IR", "CK_TB", "CK_JX",
-              "IR_TB", "IR_JX",
-              "TB_JX")
+ronam <- c( "AP_CH","AP_CK",  "AP_TB",  "AP_IR", "AP_JX", 
+              "CH_CK", "CH_TB", "CH_IR", "CH_JX",
+              "CK_TB", "CK_IR", "CK_JX",
+              "TB_IR", "TB_JX", "IR_JX")
 
-row.names(rho_P_vec)<- rownames
+row.names(rho_P_vec)<- ronam
 data.frame(rho_P_vec)
 colnames(rho_P_vec)<-  c("rho", "P", "N")
 ## export the rho_dataset to be used by Medoid_GC_NLSfit_plot.R when comparing great circle distances to rho
-write.csv(rho_P_vec, "~/Desktop/Github Repo/Seatrout/Data/Exported R Dataframes/Rho_P_vector.csv")
+write.csv(rho_P_vec, "U:/PhD_projectfiles/Exported_R_Datafiles/Rho_P_vector.csv")
 
 
 ### 5. CLUSTER ANALYSIS####
