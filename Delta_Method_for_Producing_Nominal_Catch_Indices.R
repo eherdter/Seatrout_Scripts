@@ -134,19 +134,19 @@ full[,c(2,5:9)] <- lapply(full[,c(2,5:9)], factor)
 full.pos<- full %>% subset(number>0)
 full.bin <- full %>% mutate(number=ifelse(number>0,1,0))
 
-ap.pos <- full.pos %>% subset(bay =='AP')
-ck.pos <- full.pos %>% subset(bay =='CK')
-tb.pos <- full.pos %>% subset(bay =='TB')
-ch.pos <- full.pos %>% subset(bay =='CH')
-jx.pos <- full.pos %>% subset(bay =='JX')
-ir.pos <- full.pos %>% subset(bay =='IR')
+ap.pos <- full.pos %>% subset(bay =='AP') %>% droplevels(ap.pos$bay)
+ck.pos <- full.pos %>% subset(bay =='CK')%>% droplevels(ck.pos$bay)
+tb.pos <- full.pos %>% subset(bay =='TB')%>% droplevels(tb.pos$bay)
+ch.pos <- full.pos %>% subset(bay =='CH')%>% droplevels(ch.pos$bay)
+jx.pos <- full.pos %>% subset(bay =='JX')%>% droplevels(jx.pos$bay)
+ir.pos <- full.pos %>% subset(bay =='IR')%>% droplevels(ir.pos$bay)
 
-ap.bin <- full.bin %>% subset(bay =='AP')
-ck.bin <- full.bin %>% subset(bay =='CK')
-tb.bin <- full.bin %>% subset(bay =='TB')
-ch.bin <- full.bin %>% subset(bay =='CH')
-jx.bin <- full.bin %>% subset(bay =='JX')
-ir.bin <- full.bin %>% subset(bay =='IR')
+ap.bin <- full.bin %>% subset(bay =='AP') %>% droplevels(ap.bin$bay)
+ck.bin <- full.bin %>% subset(bay =='CK')%>% droplevels(ck.bin$bay)
+tb.bin <- full.bin %>% subset(bay =='TB')%>% droplevels(tb.bin$bay)
+ch.bin <- full.bin %>% subset(bay =='CH')%>% droplevels(ch.bin$bay)
+jx.bin <- full.bin %>% subset(bay =='JX')%>% droplevels(jx.bin$bay)
+ir.bin <- full.bin %>% subset(bay =='IR')%>% droplevels(ir.bin$bay)
 
 #check histograms to determine mean 
 hist(ap.pos$number)
@@ -155,6 +155,49 @@ hist(tb.pos$number)
 hist(ch.pos$number)
 hist(jx.pos$number)
 hist(ir.pos$number)
+
+# check tables to see if categorical variables are filled and aggregate as needed
+with(ap.pos,tapply(number, list(year,month),sum))
+ap.pos$month[ap.pos$month<7]=7
+ap.pos$month[ap.pos$month>10]=10
+ap.pos$month <- as.factor(as.character(ap.pos$month))
+
+with(ap.pos,tapply(number, list(year,veg),sum))
+with(ap.pos,tapply(number, list(year,bottom),sum))
+
+with(ap.pos,tapply(number, list(year,shore),sum))
+ap.pos <- subset(ap.pos, shore !=  "Mangrove") %>% droplevels(ap.pos$shore)
+
+
+
+with(ck.pos,tapply(number, list(year,month),sum))
+ck.pos$month[ck.pos$month<6]=6
+with(ck.pos,tapply(number, list(year,veg),sum))
+with(ck.pos,tapply(number, list(year,bottom),sum))
+#drop unknown
+with(ck.pos,tapply(number, list(year,shore),sum))
+#drop terrestrial and join structure 
+
+
+with(tb.pos,tapply(number, list(year,month),sum))
+with(tb.pos,tapply(number, list(year,veg),sum))
+with(tb.pos,tapply(number, list(year,bottom),sum))
+with(tb.pos,tapply(number, list(year,shore),sum))
+
+with(ch.pos,tapply(number, list(year,month),sum))
+with(ch.pos,tapply(number, list(year,veg),sum))
+with(ch.pos,tapply(number, list(year,bottom),sum))
+with(ch.pos,tapply(number, list(year,shore),sum))
+
+with(jx.pos,tapply(number, list(year,month),sum))
+with(jx.pos,tapply(number, list(year,veg),sum))
+with(jx.pos,tapply(number, list(year,bottom),sum))
+with(jx.pos,tapply(number, list(year,shore),sum))
+
+with(ir.pos,tapply(number, list(year,month),sum))
+with(ir.pos,tapply(number, list(year,veg),sum))
+with(ir.pos,tapply(number, list(year,bottom),sum))
+with(ir.pos,tapply(number, list(year,shore),sum))
 
 
 ##### VISUALIZE THE DATA_YOY ########
@@ -182,9 +225,9 @@ plot(ap.pos$veg, ap.pos$number, vlab="veg", ylab="number")
 #    you can run different model options and compare model validation plots to decide which fit best. 
 # 2. Check for overdispersion first assumming not zero truncated because I dont know how do it when taking acount of zero truncated. 
 # 3. If there is overdispersion then try quasi Poisson
-# 4. Also, try to account for zero truncated data using zero truncated methods. Here, we'd want to do zero truncated Negative binomial because 
+# 4. Also, try to account for zero truncated data for the positive set using zero truncated methods. Here, we'd want to do zero truncated Negative binomial because 
 #    there is overdispersion and there is no such thing as a zero truncated quasi Poisson. 
-
+# 5. Try lognormal model for positives, too. 
 
 # 1. Build the full models for the positive and binomial datasets.  
 #positive
@@ -220,16 +263,25 @@ Full_ch.pos <- glm(number ~ year +month+veg+bottom+shore, data=ch.pos, family=qu
 Full_jx.pos <- glm(number ~ year +month+veg+bottom+shore, data=jx.pos, family=quasipoisson)
 Full_ir.pos <- glm(number ~ year +month+veg+bottom+shore, data=ir.pos, family=quasipoisson)
 
+# 4. Account for overdispersion AND zero-truncated data using the zero-truncated negative binomial model for positive data (Zuur pg 268)
+#load VGAM package that can deal with overdispersion
 
+library(VGAM)
+ap.pos_ZT <- vglm(number ~ year +month+veg+bottom+shore, family=posnegbinomial,option=na.omit, control=vglm.control(maxit=100), data=ap.pos) #this model will not converge within 100 it
+ck.pos_ZT <- vglm(number ~ year +month+veg+bottom+shore, data=ck.pos, family=posnegbinomial, control=vglm.control(maxit=100)) #also will not converge within 100 it
+tb.pos_ZT <- vglm(number ~ year +month+veg+bottom+shore, data=tb.pos, family=posnegbinomial, control=vglm.control(maxit=100))
+ch.pos_ZT <- vglm(number ~ year +month+veg+bottom+shore, data=ch.pos, family=posnegbinomial, control=vglm.control(maxit=100))
+jx.pos_ZT <- vglm(number ~ year +month+veg+bottom+shore, data=jx.pos, family=posnegbinomial, control=vglm.control(maxit=100)) #will not converge within 100 it
+ir.pos_ZT <- vglm(number ~ year +month+veg+bottom+shore, data=ir.pos, family=posnegbinomial, control=vglm.control(maxit=100))
 
-##### MODEL SELECTION POSITIVE w/ DROP1 command_YOY ######
+##### MODEL SELECTION POSITIVE w/ DROP1 command_QUASIPOS_ YOY ######
 # Pages 220 is to 230 in Zuur are helpful for following methods. 
 # The AIC is not defined for quasipoisson models so can't use the step function like what was used in the FWRI code. 
 # Instead, use the drop1 function which is applicable for the quassiPoisson GLM and it is more equivalent to hypothesis testing. (Zuur pg 227)
 # If just using Poisson or Bernoulli (binomial) can use step command but this gives AIC- not deviance. (Zuur pg 253)
 # Explained deviance is nearly the equivalent of R^2 so use this (Zuur pg 218 for equation), "The smaller the residual deviance the better is the model"
 
-###AP_POS (Year, Veg, Shore = significant factors)
+#AP_POS (Year, Veg, Shore = significant factors)
 summary(Full_ap.pos)
 drop1(Full_ap.pos, test="F")  #model selection in quasipoisson is done using F-ratio (Zuur pg 227)
 # bottom and month do not appear significant. Drop all sequentially. 
@@ -243,7 +295,7 @@ M2_ap.pos <- glm(number ~ year+veg+shore, data=ap.pos, family=quasipoisson)
 drop1(M2_ap.pos, test="F")
 # Year, Veg, Shore = significant factors
 
-### CK_POS (Year, Veg = significant factor)
+#CK_POS (Year, Veg = significant factor)
 summary(Full_ck.pos)
 drop1(Full_ck.pos, test="F")
 #month, bottom, and shore do not appear significant. Drop all sequentially. 
@@ -261,7 +313,7 @@ M3_ck.pos <- glm(number ~ year+veg, data=ck.pos, family=quasipoisson)
 drop1(M3_ck.pos, test="F")
 # Year, Veg = significant factors 
 
-### TB_POS (Year, Veg, Shore = significant factors)
+# TB_POS (Year, Veg, Shore = significant factors)
 summary(Full_tb.pos)
 drop1(Full_tb.pos, test="F")
 # bottom and month do not appear significant. Drop all sequentially
@@ -307,6 +359,18 @@ drop1(M1_ir.pos, test="F")
 M2_ir.pos <- glm(number ~ year+veg+bottom, data=ir.pos, family=quasipoisson)
 drop1(M2_ir.pos, test="F")
 # Year, Veg, Bottom = significant factors
+
+
+##### MODEL SELECTION POSITIVE w/ DROP1 command_ZeroTrunc_NB_ YOY ######
+
+summary(ap.pos_ZT)
+
+
+
+
+
+
+
 
 ##### MODEL SELECTION BINARY w/ DROP1 command_YOY ######
 # pg 253 Zuur
