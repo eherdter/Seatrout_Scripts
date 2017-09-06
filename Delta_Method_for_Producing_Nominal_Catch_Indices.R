@@ -148,6 +148,15 @@ ch.bin <- full.bin %>% subset(bay =='CH')
 jx.bin <- full.bin %>% subset(bay =='JX')
 ir.bin <- full.bin %>% subset(bay =='IR')
 
+#check histograms to determine mean 
+hist(ap.pos$number)
+hist(ck.pos$number)
+hist(tb.pos$number)
+hist(ch.pos$number)
+hist(jx.pos$number)
+hist(ir.pos$number)
+
+
 ##### VISUALIZE THE DATA_YOY ########
 
 
@@ -163,33 +172,35 @@ plot(ap.pos$veg, ap.pos$number, vlab="veg", ylab="number")
 # To produce predicted positive numbers and binomial data set
 
 # 1. Build the full models with all potential variables and a base model with only year as a variable. 
-#    Do this for both the positive (Poisson distribution) and binary (Binomial distribution) datasets. 
-# 2. Check for overdispersion in the Poisson distribution scenario. 
-# 3. If there is overdispersion use quasipoisson 
+#    Do this for both the positive  and binary  datasets. 
+# 2. Because the positive data is actualyl zero-truncated (the zeros were removed) they may need to be treated differently.
+#    Zuur chapter 11 outlines use of zero-truncated models. You can either use a zero-truncated Poissan model which is good for count data 
+#    or you can use a zero trucated negative binomial which will deal with overdispersion if the data are overdispersed. There is 
+#     no such thing as a zero-truncated, quasi poisson model (where quasi poisson deals with overdispersion). 
+#     Must check for overdispersion. If there isn't then use zero-truncated Poisson. If there is then use zero-truncated NB. (Chapter 11 Zuur)
+#    If you can't decide which models to use in terms of a zero truncated or not (i.e. sometimes even if the data are zero truncated the mean will be large so results will be unaffected by model choice, page 269)
+#    you can run different model options and compare model validation plots to decide which fit best. 
+# 2. Check for overdispersion first assumming not zero truncated because I dont know how do it when taking acount of zero truncated. 
+# 3. If there is overdispersion then try quasi Poisson
+# 4. Also, try to account for zero truncated data using zero truncated methods. Here, we'd want to do zero truncated Negative binomial because 
+#    there is overdispersion and there is no such thing as a zero truncated quasi Poisson. 
+
 
 # 1. Build the full models for the positive and binomial datasets.  
-#AP
+#positive
 Full_ap.pos <- glm(number ~ year+month+bottom+veg+shore, data=ap.pos, family=poisson)
-Full_ap.bin <- glm(number ~ year+month+bottom+veg+shore, data=ap.bin, family=binomial)
-
-#CK
 Full_ck.pos <- glm(number ~ year+month+bottom+veg+shore, data=ck.pos, family=poisson)
-Full_ck.bin <- glm(number ~ year+month+bottom+veg+shore, data=ck.bin, family=binomial)
-
-#TB
 Full_tb.pos <- glm(number ~ year+month+bottom+veg+shore, data=tb.pos, family=poisson)
-Full_tb.bin <- glm(number ~ year+month+bottom+veg+shore, data=tb.bin, family=binomial)
-
-#CH
 Full_ch.pos <- glm(number ~ year+month+bottom+veg+shore, data=ch.pos, family=poisson)
-Full_ch.bin <- glm(number ~ year+month+bottom+veg+shore, data=ch.bin, family=binomial)
-
-#JX
 Full_jx.pos <- glm(number ~ year+month+bottom+veg+shore, data=jx.pos, family=poisson)
-Full_jx.bin <- glm(number ~ year+month+bottom+veg+shore, data=jx.bin, family=binomial)
-
-#IR
 Full_ir.pos <- glm(number ~ year+month+bottom+veg+shore, data=ir.pos, family=poisson)
+
+#binary
+Full_ap.bin <- glm(number ~ year+month+bottom+veg+shore, data=ap.bin, family=binomial)
+Full_ck.bin <- glm(number ~ year+month+bottom+veg+shore, data=ck.bin, family=binomial)
+Full_tb.bin <- glm(number ~ year+month+bottom+veg+shore, data=tb.bin, family=binomial)
+Full_ch.bin <- glm(number ~ year+month+bottom+veg+shore, data=ch.bin, family=binomial)
+Full_jx.bin <- glm(number ~ year+month+bottom+veg+shore, data=jx.bin, family=binomial)
 Full_ir.bin <- glm(number ~ year+month+bottom+veg+shore, data=ir.bin, family=binomial)
 
 #2. Test the Poisson GLMs for overdispersion
@@ -208,6 +219,8 @@ Full_tb.pos <- glm(number ~ year +month+veg+bottom+shore, data=tb.pos, family=qu
 Full_ch.pos <- glm(number ~ year +month+veg+bottom+shore, data=ch.pos, family=quasipoisson)
 Full_jx.pos <- glm(number ~ year +month+veg+bottom+shore, data=jx.pos, family=quasipoisson)
 Full_ir.pos <- glm(number ~ year +month+veg+bottom+shore, data=ir.pos, family=quasipoisson)
+
+
 
 ##### MODEL SELECTION POSITIVE w/ DROP1 command_YOY ######
 # Pages 220 is to 230 in Zuur are helpful for following methods. 
