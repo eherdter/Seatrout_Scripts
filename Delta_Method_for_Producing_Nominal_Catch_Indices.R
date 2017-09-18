@@ -34,6 +34,10 @@
 
 # Then I can create the Adjusted Predicted Index = Predicted Positive Data * Predicted Proportion Positive Data
 
+# 9/18/17
+# Added in different model formula for fitting abundnace indices. 
+# See edits below. 
+
 ##### SET WORKING DIRECTORY_YOY ####
 #must change working directory for data when working on personal vs work computer
 setwd("~/Desktop/PhD project/Projects/Seatrout/FWRI SCRATCH FOLDER/Elizabeth Herdter/SAS data sets/FIMData/NEWNov7")
@@ -45,6 +49,8 @@ library(haven) #to load sas
 library(dplyr) # to do df manipulation
 library(lsmeans) #to determine the least squares means
 library(AER) #to test for overdispersion
+library(pscl)
+library(lmtest)
 
 ##### IMPORT DATA SETS_YOY ######
 # These data sets were produced using the spp_comb_5_13_EG_2bays_yoy_2015_EHedits.sas program which is stored in my scratch folder
@@ -107,6 +113,12 @@ jxl = read_sas("jx_yoy_cn_l.sas7bdat")
 
 full <- rbind(ap,ck,tb,ch,jx,ir)
 
+library(ggplot2)
+
+ggplot(full, aes(x=number)) +geom_histogram(binwidth=10)
+
+
+
 ##### SELECT CATEGORICAL HABITAT VALUES_YOY ########
 # to be used in the model to predict positive numbers
 
@@ -129,24 +141,32 @@ full[,c(2,5:9)] <- lapply(full[,c(2,5:9)], factor)
 
 ##### MAKE POSITIVE & BINARY SET_YOY ##########
 # to determine the total number of positive huals and proportion positive
-
+# make complete dataset also for use in the mixture model
 
 full.pos<- full %>% subset(number>0)
 full.bin <- full %>% mutate(number=ifelse(number>0,1,0))
 
-ap.pos <- full.pos %>% subset(bay =='AP') %>% droplevels(ap.pos$bay)
-ck.pos <- full.pos %>% subset(bay =='CK')%>% droplevels(ck.pos$bay)
-tb.pos <- full.pos %>% subset(bay =='TB')%>% droplevels(tb.pos$bay)
-ch.pos <- full.pos %>% subset(bay =='CH')%>% droplevels(ch.pos$bay)
-jx.pos <- full.pos %>% subset(bay =='JX')%>% droplevels(jx.pos$bay)
-ir.pos <- full.pos %>% subset(bay =='IR')%>% droplevels(ir.pos$bay)
+ap.pos <- droplevels(full.pos %>% subset(bay =='AP'))
+ck.pos <- droplevels(full.pos %>% subset(bay =='CK')) 
+tb.pos <- droplevels(full.pos %>% subset(bay =='TB')) 
+ch.pos <- droplevels(full.pos %>% subset(bay =='CH')) 
+jx.pos <- droplevels(full.pos %>% subset(bay =='JX')) 
+ir.pos <- droplevels(full.pos %>% subset(bay =='IR')) 
 
-ap.bin <- full.bin %>% subset(bay =='AP') %>% droplevels(ap.bin$bay)
-ck.bin <- full.bin %>% subset(bay =='CK')%>% droplevels(ck.bin$bay)
-tb.bin <- full.bin %>% subset(bay =='TB')%>% droplevels(tb.bin$bay)
-ch.bin <- full.bin %>% subset(bay =='CH')%>% droplevels(ch.bin$bay)
-jx.bin <- full.bin %>% subset(bay =='JX')%>% droplevels(jx.bin$bay)
-ir.bin <- full.bin %>% subset(bay =='IR')%>% droplevels(ir.bin$bay)
+ap.bin <- droplevels(full.bin %>% subset(bay =='AP'))
+ck.bin <- droplevels(full.bin %>% subset(bay =='CK'))
+tb.bin <- droplevels(full.bin %>% subset(bay =='TB'))
+ch.bin <- droplevels(full.bin %>% subset(bay =='CH'))
+jx.bin <- droplevels(full.bin %>% subset(bay =='JX'))
+ir.bin <- droplevels(full.bin %>% subset(bay =='IR'))
+
+ap.fl <- droplevels(full %>% subset(bay =='AP'))
+ck.fl <- droplevels(full %>% subset(bay =='CK'))
+tb.fl <- droplevels(full %>% subset(bay =='TB'))
+ch.fl <- droplevels(full %>% subset(bay =='CH'))
+jx.fl <- droplevels(full %>% subset(bay =='JX'))
+ir.fl <- droplevels(full %>% subset(bay =='IR'))
+
 
 #check histograms to determine mean 
 hist(ap.pos$number)
@@ -156,44 +176,73 @@ hist(ch.pos$number)
 hist(jx.pos$number)
 hist(ir.pos$number)
 
-# check tables to see if categorical variables are filled and aggregate as needed
+# CHECK FOR AGGREGATIONS #####
+#AP
+#month
 with(ap.pos,tapply(number, list(year,month),sum))
 ap.pos$month[ap.pos$month<7]=7
 ap.pos$month[ap.pos$month>10]=10
 ap.pos$month <- as.factor(as.character(ap.pos$month))
-
+#veg
 with(ap.pos,tapply(number, list(year,veg),sum))
+#bottom
 with(ap.pos,tapply(number, list(year,bottom),sum))
-
+#shore
 with(ap.pos,tapply(number, list(year,shore),sum))
 ap.pos <- subset(ap.pos, shore !=  "Mangrove") %>% droplevels(ap.pos$shore)
 
-
-
+#CK
+#month
 with(ck.pos,tapply(number, list(year,month),sum))
 ck.pos$month[ck.pos$month<6]=6
+#veg
 with(ck.pos,tapply(number, list(year,veg),sum))
+#bottom
 with(ck.pos,tapply(number, list(year,bottom),sum))
-#drop unknown
+ck.pos <- droplevels(subset(ck.pos, bottom != "unknown"))
+#shore 
 with(ck.pos,tapply(number, list(year,shore),sum))
 #drop terrestrial and join structure 
+ck.pos <- droplevels(subset(ck.pos, shore != "Terrestrial"))
+ck.pos$shore[ck.pos$shore== "Mangrove"] = "Structure"
+ck.pos <- droplevels(subset(ck.pos, shore != "Mangrove"))
 
-
+#TB
 with(tb.pos,tapply(number, list(year,month),sum))
+tb.pos$month[tb.pos$month<5]=5
+
 with(tb.pos,tapply(number, list(year,veg),sum))
 with(tb.pos,tapply(number, list(year,bottom),sum))
+tb.pos <- droplevels(subset(tb.pos, bottom != "unknown"))
 with(tb.pos,tapply(number, list(year,shore),sum))
 
+#CH - no aggregation needed
 with(ch.pos,tapply(number, list(year,month),sum))
 with(ch.pos,tapply(number, list(year,veg),sum))
 with(ch.pos,tapply(number, list(year,bottom),sum))
 with(ch.pos,tapply(number, list(year,shore),sum))
 
+with(ch.fl,tapply(number, list(year,month),sum))
+with(ch.fl,tapply(number, list(year,veg),sum))
+with(ch.fl,tapply(number, list(year,bottom),sum))
+with(ch.fl,tapply(number, list(year,shore),sum))
+
+
+#JX 
 with(jx.pos,tapply(number, list(year,month),sum))
 with(jx.pos,tapply(number, list(year,veg),sum))
 with(jx.pos,tapply(number, list(year,bottom),sum))
 with(jx.pos,tapply(number, list(year,shore),sum))
 
+with(jx.fl,tapply(number, list(year,month),sum))
+with(jx.fl,tapply(number, list(year,veg),sum))
+with(jx.fl,tapply(number, list(year,bottom),sum))
+jx.fl <- droplevels(subset(jx.fl, bottom != "unknown"))
+with(jx.fl,tapply(number, list(year,shore),sum))
+
+
+
+#IR - no aggregation needed 
 with(ir.pos,tapply(number, list(year,month),sum))
 with(ir.pos,tapply(number, list(year,veg),sum))
 with(ir.pos,tapply(number, list(year,bottom),sum))
@@ -212,33 +261,30 @@ plot(ap.pos$shore, ap.pos$number, vlab="shore", ylab="number")
 plot(ap.pos$veg, ap.pos$number, vlab="veg", ylab="number")
 
 ##### BUILD MODELS_YOY #########
-# To produce predicted positive numbers and binomial data set
+# There are a few options  for modeling these data. 
+# First three options: build a manual two part model where presence/absence is modeled with binomial and positive catch is 
+# modeled with a poisson, quasi poisson, or a lognormal. 
+# Fourth option: build one mixture model using either a zero inflated poisson or a zero inflated negative binomial depending on what the likelihood ratio test says
+# Fifth option: zero truncated model for positive. See note below. Do this last case scenario because it's quite involved. 
 
-# 1. Build the full models with all potential variables and a base model with only year as a variable. 
-#    Do this for both the positive  and binary  datasets. 
-# 2. Because the positive data is actualyl zero-truncated (the zeros were removed) they may need to be treated differently.
-#    Zuur chapter 11 outlines use of zero-truncated models. You can either use a zero-truncated Poissan model which is good for count data 
-#    or you can use a zero trucated negative binomial which will deal with overdispersion if the data are overdispersed. There is 
-#     no such thing as a zero-truncated, quasi poisson model (where quasi poisson deals with overdispersion). 
-#     Must check for overdispersion. If there isn't then use zero-truncated Poisson. If there is then use zero-truncated NB. (Chapter 11 Zuur)
-#    If you can't decide which models to use in terms of a zero truncated or not (i.e. sometimes even if the data are zero truncated the mean will be large so results will be unaffected by model choice, page 269)
-#    you can run different model options and compare model validation plots to decide which fit best. 
-# 2. Check for overdispersion first assumming not zero truncated because I dont know how do it when taking acount of zero truncated. 
-# 3. If there is overdispersion then try quasi Poisson
-# 4. Also, try to account for zero truncated data for the positive set using zero truncated methods. Here, we'd want to do zero truncated Negative binomial because 
-#    there is overdispersion and there is no such thing as a zero truncated quasi Poisson. 
-# 5. Try lognormal model for positives, too. 
+# Because the positive data is forced into zero-truncated (the zeros were removed) they may need to be treated differently.
+# Zuur chapter 11 outlines use of zero-truncated models. You can either use a zero-truncated Poissan model which is good 
+# for count data or you can use a zero trucated negative binomial which will deal with overdispersion if the data are 
+# overdispersed. There is no such thing as a zero-truncated, quasi poisson model (where quasi poisson deals with overdispersion). 
+# Must check for overdispersion. If there isn't then use zero-truncated Poisson. If there is then use zero-truncated NB. 
+# (Chapter 11 Zuur). If you can't decide which models to use in terms of a zero truncated or not (i.e. sometimes even if the data are zero truncated the mean will be large so results will be unaffected by model choice, page 269)
+# you can run different model options and compare model validation plots to decide which fit best. 
 
-# 1. Build the full models for the positive and binomial datasets.  
-#positive
-Full_ap.pos <- glm(number ~ year+month+bottom+veg+shore, data=ap.pos, family=poisson)
-Full_ck.pos <- glm(number ~ year+month+bottom+veg+shore, data=ck.pos, family=poisson)
-Full_tb.pos <- glm(number ~ year+month+bottom+veg+shore, data=tb.pos, family=poisson)
-Full_ch.pos <- glm(number ~ year+month+bottom+veg+shore, data=ch.pos, family=poisson)
-Full_jx.pos <- glm(number ~ year+month+bottom+veg+shore, data=jx.pos, family=poisson)
-Full_ir.pos <- glm(number ~ year+month+bottom+veg+shore, data=ir.pos, family=poisson)
 
-#binary
+# For first three options: 
+
+# 1. Build the binary datasets.
+# 2. Build the poisson, and lognormal. 
+# 3. Check for overdispersion. Make adjustments for each. i.e. quasi Poisson for overdispersed poisson
+# 4. Build the mixture zero inflated poisson (ZIP) and zero inflated negative binomial (ZINB)
+# 5. Build zero truncated model- last case scenario. 
+
+# 1. Build the binary data sets ####
 Full_ap.bin <- glm(number ~ year+month+bottom+veg+shore, data=ap.bin, family=binomial)
 Full_ck.bin <- glm(number ~ year+month+bottom+veg+shore, data=ck.bin, family=binomial)
 Full_tb.bin <- glm(number ~ year+month+bottom+veg+shore, data=tb.bin, family=binomial)
@@ -246,35 +292,96 @@ Full_ch.bin <- glm(number ~ year+month+bottom+veg+shore, data=ch.bin, family=bin
 Full_jx.bin <- glm(number ~ year+month+bottom+veg+shore, data=jx.bin, family=binomial)
 Full_ir.bin <- glm(number ~ year+month+bottom+veg+shore, data=ir.bin, family=binomial)
 
-#2. Test the Poisson GLMs for overdispersion
+# 2. Build the poisson and lognormal ####
+ap.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=ap.pos, family=poisson)
+ck.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=ck.pos, family=poisson)
+tb.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=tb.pos, family=poisson)
+ch.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=ch.pos, family=poisson)
+jx.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=jx.pos, family=poisson)
+ir.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=ir.pos, family=poisson)
+
+# first need to log transform the data so that they can be modeled (lognormal isnt a family definition for genearlized 
+ap.pos$lnum <- log(ap.pos$number)
+ck.pos$lnum <- log(ck.pos$number)
+tb.pos$lnum <- log(tb.pos$number)
+ch.pos$lnum <- log(ch.pos$number)
+jx.pos$lnum <- log(jx.pos$number)
+ir.pos$lnum <- log(ir.pos$number)
+
+#now model the transformed numbers with the guassian
+ap.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=ap.pos, family=gaussian)
+ck.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=ck.pos, family=gaussian)
+tb.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=tb.pos, family=gaussian)
+ch.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=ch.pos, family=gaussian)
+jx.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=jx.pos, family=gaussian)
+ir.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=ir.pos, family=gaussian)
+
+#3. Test the Poisson GLMs for overdispersion ####
 # With the Bernoulli GLM (binomial, response variable is a vector of zeros and ones) overdispersion does not ever occur (Zuur og 253) so I don't need to test for overdispersion in the .bin models. 
-dispersiontest(Full_ap.pos, trafo=1)
-dispersiontest(Full_ck.pos, trafo=1)
-dispersiontest(Full_tb.pos, trafo=1)
-dispersiontest(Full_ch.pos, trafo=1)
-dispersiontest(Full_jx.pos, trafo=1)
-dispersiontest(Full_ir.pos, trafo=1)
+dispersiontest(ap.pos.P, trafo=1)
+dispersiontest(ck.pos.P, trafo=1)
+dispersiontest(tb.pos.P, trafo=1)
+dispersiontest(ch.pos.P, trafo=1)
+dispersiontest(jx.pos.P, trafo=1)
+dispersiontest(ir.pos.P, trafo=1)
 
-# 3. there is evidence of overdispersion for every bay (p values were less than) so use quasipoisson for Positive models (Zuur pg 226)
-Full_ap.pos <- glm(number ~ year +month+veg+bottom+shore, data=ap.pos, family=quasipoisson)
-Full_ck.pos <- glm(number ~ year +month+veg+bottom+shore, data=ck.pos, family=quasipoisson)
-Full_tb.pos <- glm(number ~ year +month+veg+bottom+shore, data=tb.pos, family=quasipoisson)
-Full_ch.pos <- glm(number ~ year +month+veg+bottom+shore, data=ch.pos, family=quasipoisson)
-Full_jx.pos <- glm(number ~ year +month+veg+bottom+shore, data=jx.pos, family=quasipoisson)
-Full_ir.pos <- glm(number ~ year +month+veg+bottom+shore, data=ir.pos, family=quasipoisson)
+# there is evidence of overdispersion for every bay (p values were less than) so use quasipoisson for Positive models (Zuur pg 226)
+ap.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=ap.pos, family=quasipoisson)
+ck.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=ck.pos, family=quasipoisson)
+tb.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=tb.pos, family=quasipoisson)
+ch.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=ch.pos, family=quasipoisson)
+jx.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=jx.pos, family=quasipoisson)
+ir.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=ir.pos, family=quasipoisson)
 
-# 4. Account for overdispersion AND zero-truncated data using the zero-truncated negative binomial model for positive data (Zuur pg 268)
+# 4. Build the mixture zero inflated poisson (ZIP) and zero inflated negative binomial (ZINB) ####
+library(pscl)
+f1 = formula(number ~ year+month+veg+bottom+shore)
+f2 = formula(number ~ year+month+veg+bottom)
+ap.ZP <- zeroinfl(f1, dist='poisson', link="logit", data=ap.fl)
+ck.ZP <- zeroinfl(f1, dist='poisson', link="logit", data=ck.fl)
+tb.ZP <- zeroinfl(f1, dist='poisson', link="logit", data=tb.fl)
+ch.ZP <- zeroinfl(f2, dist='poisson', link="logit", data=ch.fl)
+jx.ZP <- zeroinfl(f2, dist='poisson', link="logit", data=jx.fl)
+ir.ZP <- zeroinfl(f1, dist='poisson', link="logit", data=ir.fl)
+
+ap.ZNB <- zeroinfl(f1, dist='negbin', link="logit", data=ap.fl)
+ck.ZNB <- zeroinfl(f1, dist='negbin', link="logit", data=ck.fl)
+tb.ZNB <- zeroinfl(f1, dist='negbin', link="logit", data=tb.fl)
+
+#with f1 I was getting an error abotu the system being computationally singular.
+# stack exchange says this is due to the fact that my design matrix is non invertible which
+# from linearly dependent columns (ie.strongly correlated variables)
+#https://stats.stackexchange.com/questions/76488/error-system-is-computationally-singular-when-running-a-glm
+
+ch.ZNB <- zeroinfl(f2, dist='negbin', link="logit", data=ch.fl) 
+jx.ZNB <- zeroinfl(f2, dist='negbin', link="logit", data=jx.fl)
+ir.ZNB <- zeroinfl(f1, dist='negbin', link="logit", data=ir.fl)
+
+lrtest(ap.ZP, ap.ZNB) #ZINB is better for AP than is ZIP
+lrtest(ck.ZP, ck.ZNB) #NB is better than ZIP
+lrtest(tb.ZP, tb.ZNB) #NB is better than ZIP
+lrtest(ch.ZP, ch.ZNB) #NB is better than ZIP
+lrtest(jx.ZP, jx.ZNB) #NB is better than ZIP
+lrtest(ir.ZP, ir.ZNB) #NB is better than ZIP
+
+# 5. Account for overdispersion AND zero-truncated data #### 
+# using the zero-truncated negative binomial model for positive data (Zuur pg 268)
 #load VGAM package that can deal with overdispersion
 
-library(VGAM)
-ap.pos_ZT <- vglm(number ~ year +month+veg+bottom+shore, family=posnegbinomial,option=na.omit, control=vglm.control(maxit=100), data=ap.pos) #this model will not converge within 100 it
-ck.pos_ZT <- vglm(number ~ year +month+veg+bottom+shore, data=ck.pos, family=posnegbinomial, control=vglm.control(maxit=100)) #also will not converge within 100 it
-tb.pos_ZT <- vglm(number ~ year +month+veg+bottom+shore, data=tb.pos, family=posnegbinomial, control=vglm.control(maxit=100))
-ch.pos_ZT <- vglm(number ~ year +month+veg+bottom+shore, data=ch.pos, family=posnegbinomial, control=vglm.control(maxit=100))
-jx.pos_ZT <- vglm(number ~ year +month+veg+bottom+shore, data=jx.pos, family=posnegbinomial, control=vglm.control(maxit=100)) #will not converge within 100 it
-ir.pos_ZT <- vglm(number ~ year +month+veg+bottom+shore, data=ir.pos, family=posnegbinomial, control=vglm.control(maxit=100))
+# library(VGAM)
+# ap.pos_ZT <- vglm(number ~ year +month+veg+bottom+shore, family=posnegbinomial,option=na.omit, control=vglm.control(maxit=100), data=ap.pos) #this model will not converge within 100 it
+# ck.pos_ZT <- vglm(number ~ year +month+veg+bottom+shore, data=ck.pos, family=posnegbinomial, control=vglm.control(maxit=100)) #also will not converge within 100 it
+# tb.pos_ZT <- vglm(number ~ year +month+veg+bottom+shore, data=tb.pos, family=posnegbinomial, control=vglm.control(maxit=100))
+# ch.pos_ZT <- vglm(number ~ year +month+veg+bottom+shore, data=ch.pos, family=posnegbinomial, control=vglm.control(maxit=100))
+# jx.pos_ZT <- vglm(number ~ year +month+veg+bottom+shore, data=jx.pos, family=posnegbinomial, control=vglm.control(maxit=100)) #will not converge within 100 it
+# ir.pos_ZT <- vglm(number ~ year +month+veg+bottom+shore, data=ir.pos, family=posnegbinomial, control=vglm.control(maxit=100))
 
-##### MODEL SELECTION POSITIVE w/ DROP1 command_QUASIPOS_ YOY ######
+##### MODEL SELECTION_ YOY ######
+
+# Model selection for positives lognormal and positives quasipoisson
+# Model selection for ZINB
+
+# For quassipoisson model can use the drop command. 
 # Pages 220 is to 230 in Zuur are helpful for following methods. 
 # The AIC is not defined for quasipoisson models so can't use the step function like what was used in the FWRI code. 
 # Instead, use the drop1 function which is applicable for the quassiPoisson GLM and it is more equivalent to hypothesis testing. (Zuur pg 227)
