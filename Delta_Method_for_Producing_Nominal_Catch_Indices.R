@@ -253,18 +253,22 @@ with(jx.pos,tapply(number, list(year,veg),sum))
 with(jx.pos,tapply(number, list(year,bottom),sum))
 with(jx.pos,tapply(number, list(year,shore),sum))
 jx.pos$shore[jx.pos$shore== "Terrestrial"] = "Emerge"
+jx.pos <- na.omit(jx.pos) #randomly an NA present
 
 with(jx.fl,tapply(number, list(year,month),sum))
 with(jx.fl,tapply(number, list(year,veg),sum))
 with(jx.fl,tapply(number, list(year,bottom),sum))
 jx.fl <- droplevels(subset(jx.fl, bottom != "unknown"))
 with(jx.fl,tapply(number, list(year,shore),sum))
+jx.fl <- na.omit(jx.fl)
 
 #IR - no aggregation needed 
 with(ir.pos,tapply(number, list(year,month),sum))
 with(ir.pos,tapply(number, list(year,veg),sum))
 with(ir.pos,tapply(number, list(year,bottom),sum))
 with(ir.pos,tapply(number, list(year,shore),sum))
+ir.pos <- na.omit(ir.pos)
+ir.fl <- na.omit(ir.fl)
 
 ##### VISUALIZE THE DATA_YOY ########
 #Plot the data
@@ -277,27 +281,27 @@ plot(ap.pos$veg, ap.pos$number, vlab="veg", ylab="number")
 
 ##### BUILD MODELS_YOY #########
 # There are a few options  for modeling these data. 
-# First three options: build a manual two part model where presence/absence is modeled with binomial and positive catch is 
+# First three options: Two-part models: build a manual two part model where presence/absence is modeled with binomial and positive catch is 
 # modeled with a poisson, quasi poisson, or a lognormal. 
-# Fourth option: build one mixture model using either a zero inflated poisson or a zero inflated negative binomial depending on what the likelihood ratio test says
+# Fourth option: Mixture models: model all data with either a poisson or negative binomial. if that doesnt work try zero inflated negative binomial
 # Fifth option: zero truncated model for positive. See note below. Do this last case scenario because it's quite involved. 
-
-# Because the positive data is forced into zero-truncated (the zeros were removed) they may need to be treated differently.
-# Zuur chapter 11 outlines use of zero-truncated models. You can either use a zero-truncated Poissan model which is good 
-# for count data or you can use a zero trucated negative binomial which will deal with overdispersion if the data are 
-# overdispersed. There is no such thing as a zero-truncated, quasi poisson model (where quasi poisson deals with overdispersion). 
-# Must check for overdispersion. If there isn't then use zero-truncated Poisson. If there is then use zero-truncated NB. 
-# (Chapter 11 Zuur). If you can't decide which models to use in terms of a zero truncated or not (i.e. sometimes even if the data are zero truncated the mean will be large so results will be unaffected by model choice, page 269)
-# you can run different model options and compare model validation plots to decide which fit best. 
+    # Because the positive data is forced into zero-truncated (the zeros were removed) they may need to be treated differently.
+    # Zuur chapter 11 outlines use of zero-truncated models. You can either use a zero-truncated Poissan model which is good 
+    # for count data or you can use a zero trucated negative binomial which will deal with overdispersion if the data are 
+    # overdispersed. There is no such thing as a zero-truncated, quasi poisson model (where quasi poisson deals with overdispersion). 
+    # Must check for overdispersion. If there isn't then use zero-truncated Poisson. If there is then use zero-truncated NB. 
+    # (Chapter 11 Zuur). If you can't decide which models to use in terms of a zero truncated or not (i.e. sometimes even if the data are zero truncated the mean will be large so results will be unaffected by model choice, page 269)
+    # you can run different model options and compare model validation plots to decide which fit best. 
 
 
 # For first three options: 
-
 # 1. Build the binary datasets.
 # 2. Build the poisson, and lognormal. 
 # 3. Check for overdispersion. Make adjustments for each. i.e. quasi Poisson for overdispersed poisson
-# 4. Build the mixture zero inflated poisson (ZIP) and zero inflated negative binomial (ZINB)
-# 5. Build zero truncated model- last case scenario. 
+# For fourth option: 
+# 1. Build Poisson and the negative binomial model mixture models. Test. and If necessary build the mixture zero inflated poisson (ZIP) and zero inflated negative binomial (ZINB)
+# For fifth option, last case
+# 1. Build zero truncated model- last case scenario. 
 
 # 1. Build the binary data sets ####
 # With the Bernoulli GLM (binomial, response variable is a vector of zeros and ones) overdispersion does not ever occur (Zuur og 253) so I don't need to test for overdispersion in the .bin models. 
@@ -333,18 +337,14 @@ jx.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=jx.pos, family=gaussian
 ir.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=ir.pos, family=gaussian, na.action = na.exclude)
 
 #3. Test the Poisson GLMs for overdispersion ####
-#manual way
-#P1 <- glm(f.1,offset=logeffort, data=data,family=poisson)
-# EP1 <- resid(P1,type="pearson")
-# Dispersion <- sum(EP1^2)/P1$df.resid
-# Dispersion  #   1.37
-
-dispersiontest(ap.pos.P, trafo=1)
-dispersiontest(ck.pos.P, trafo=1)
-dispersiontest(tb.pos.P, trafo=1)
-dispersiontest(ch.pos.P, trafo=1)
-dispersiontest(jx.pos.P, trafo=1)
-dispersiontest(ir.pos.P, trafo=1)
+#manual way for count models 
+# Pearson chi1/residual deviance
+sum((resid(ap.pos.P,type="pearson"))^2)/ap.pos.P$df.resid #9.37
+sum((resid(ck.pos.P,type="pearson"))^2)/ck.pos.P$df.resid #6.88
+sum((resid(tb.pos.P,type="pearson"))^2)/tb.pos.P$df.resid #14.84
+sum((resid(ch.pos.P,type="pearson"))^2)/ch.pos.P$df.resid #8.48
+sum((resid(jx.pos.P,type="pearson"))^2)/jx.pos.P$df.resid #6.38
+sum((resid(ir.pos.P,type="pearson"))^2)/ir.pos.P$df.resid #21.29
 
 # there is evidence of overdispersion for every bay (p values were less than) so use quasipoisson for Positive models (Zuur pg 226)
 ap.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=ap.pos, family=quasipoisson, na.action = na.exclude)
@@ -354,8 +354,15 @@ ch.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=ch.pos, family=quas
 jx.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=jx.pos, family=quasipoisson, na.action = na.exclude)
 ir.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=ir.pos, family=quasipoisson, na.action = na.exclude)
 
-#4. Build the negative binomial ####
-#NB accounts for zeros so use the full dataset and not just the positives
+
+#4. Mixture models. Build the poisson, negative binomial with the full datasets ####
+apP <- glm(number ~ year +month+veg+bottom+shore, data=ap.fl, family=poisson, na.action = na.exclude)
+ckP <- glm(number ~ year +month+veg+bottom+shore, data=ck.fl,  na.action = na.exclude)
+tbP <- glm(number ~ year +month+veg+bottom+shore, data=tb.fl,  na.action = na.exclude)
+chP <- glm(number ~ year +month+veg+bottom+shore, data=ch.fl,  na.action = na.exclude)
+jxP <- glm(number ~ year +month+veg+bottom+shore, data=jx.fl,  na.action = na.exclude)
+irP <- glm(number ~ year +month+veg+bottom+shore, data=ir.fl,  na.action = na.exclude)
+
 apNB <- glm.nb(number ~ year +month+veg+bottom+shore, data=ap.fl, na.action = na.exclude)
 ckNB <- glm.nb(number ~ year +month+veg+bottom+shore, data=ck.fl,  na.action = na.exclude)
 tbNB <- glm.nb(number ~ year +month+veg+bottom+shore, data=tb.fl,  na.action = na.exclude)
@@ -370,31 +377,41 @@ summary(chNB)
 summary(jxNB)
 summary(irNB)
 
-#check for overdispersion, if it is more that around 1 then there may be excess zeros 
-apNB1 <- resid(apNB,type="pearson")
-Dispersion <- sum(apNB1^2)/apNB$df.resid
-Dispersion #  1.4
+#check for basic model fit if it is more that around 1 then there may be excess zeros 
+#see  page 293 of Analysis of Categorical data with R for equation
+# if returns FALSE then we are all good
+# apNB$deviance/apNB$df.residual> 1+2*(sqrt(2/(apNB$df.residual)))
+# ckNB$deviance/ckNB$df.residual > 1+2*(sqrt(2/(ckNB$df.residual)))
+# tbNB$deviance/tbNB$df.residual >1+2*(sqrt(2/(tbNB$df.residual)))
+# chNB$deviance/chNB$df.residual >1+2*(sqrt(2/(chNB$df.residual)))
+# jxNB$deviance/jxNB$df.residual >1+2*(sqrt(2/(jxNB$df.residual)))
+# irNB$deviance/irNB$df.residual >1+2*(sqrt(2/(irNB$df.residual)))
+# * Hilbe says we cant use the deviance statistic on count data and its more appropriate to use the pearson stat. 
 
-ckNB1 <- resid(ckNB,type="pearson") #NOT WORKING
-Dispersion <- sum(ckNB1^2)/ckNB$df.resid
-Dispersion #  1.4
+#check for over-dispersion for full poisson and full NB
 
-tbNB1 <- resid(tbNB,type="pearson")
-Dispersion <- sum(tbNB1^2)/tbNB$df.resid
-Dispersion #1.67 
+sum((resid(apP,type="pearson"))^2)/apP$df.resid #12.10
+sum((resid(apNB,type="pearson"))^2)/apNB$df.resid #1.32
+sum((resid(apNB,type="pearson"))^2)/apNB$df.resid> 1+2*(sqrt(2/(apNB$df.residual)))
+sum((resid(apNB,type="pearson"))^2)/apNB$df.resid> 1+3*(sqrt(2/(apNB$df.residual)))
 
-chNB1 <- resid(chNB,type="pearson")
-Dispersion <- sum(chNB1^2)/chNB$df.resid
-Dispersion #1.52
+sum((resid(ckP,type="pearson"))^2)/ckP$df.resid #7.45
+sum((resid(ckNB,type="pearson"))^2)/ckNB$df.resid #1.38
 
-jxNB1 <- resid(jxNB,type="pearson") #NOT WORKING 
-Dispersion <- sum(jxNB1^2)/jxNB$df.resid
-Dispersion
+sum((resid(tbP,type="pearson"))^2)/tbP$df.resid #35.57
+sum((resid(tbNB,type="pearson"))^2)/tbNB$df.resid #1.52
 
-irNB1 <- resid(irNB,type="pearson") #NOT WORKING 
-Dispersion <- sum(irNB1^2)/irNB$df.resid
-Dispersion
+sum((resid(chP,type="pearson"))^2)/chP$df.resid #17.14
+sum((resid(chNB,type="pearson"))^2)/chNB$df.resid #1.53
 
+sum((resid(jxP,type="pearson"))^2)/jxP$df.resid #3.98
+sum((resid(jxNB,type="pearson"))^2)/jxNB$df.resid #1.43
+
+sum((resid(irP,type="pearson"))^2)/irP$df.resid #47
+sum((resid(irNB,type="pearson"))^2)/irNB$df.resid #2.11
+
+#Negative binomial reduces dispersion quite a bit but some guidelines indicate poor fit. Lets try model selection and see if that improves things
+# before we foray into the ZIP and ZINB models 
 
 # 5. Build the mixture (full) zero inflated poisson (ZIP) and zero inflated negative binomial (ZINB) ####
 library(pscl)
@@ -446,6 +463,7 @@ lrtest(ir.ZP, ir.ZNB) #NB is better than ZIP
 ##### MODEL SELECTION_ YOY ######
 
 # Model selection for positives lognormal and positives quasipoisson
+# Model selection for mixture (full) poisson and NegativeBi (NB)
 # Model selection for ZINB
 
 # For quassipoisson model can use the drop command. 
@@ -678,24 +696,118 @@ lrtest(ir.ZP, ir.ZNB) #NB is better than ZIP
     M1_ir.pos.L <- glm(lnum ~ year+veg+shore, data=ir.pos, family=gaussian)
     glm.diag.plots(M1_ir.pos.L) 
     
-# 3. Model selection and validation plots for ZINB ####
+# 3. Model selection and validation plots for  NB ####
+# page 235 Zuur    
+#AP
+summary(apNB) #Mean Deviance = 0.412
+drop1(apNB, test= "Chi")
+    #month, bottom NS 
+
+apNB1 <- glm.nb(number ~ year+veg+bottom+shore, data=ap.fl, na.action = na.exclude)
+summary(apNB1) 
+drop1(apNB1, test="Chi")
+apNB2 <- glm.nb(number ~ year+veg+shore, data=ap.fl, na.action = na.exclude)
+summary(apNB2) 
+
+AIC(apNB, apNB1, apNB2) #almost equal
+lrtest(apNB, apNB1) #equal
+lrtest(apNB1, apNB2) #equal
+plot(apNB1)
+
+sum((resid(apNB1,type="pearson"))^2)/apNB$df.resid #1.32
+sum((resid(apNB1,type="pearson"))^2)/apNB1$df.resid> 1+2*(sqrt(2/(apNB1$df.residual)))
+sum((resid(apNB1,type="pearson"))^2)/apNB1$df.resid> 1+3*(sqrt(2/(apNB1$df.residual)))
+
+sum((resid(apNB2,type="pearson"))^2)/apNB2$df.resid #1.33
+sum((resid(apNB2,type="pearson"))^2)/apNB2$df.resid> 1+2*(sqrt(2/(apNB2$df.residual)))
+sum((resid(apNB2,type="pearson"))^2)/apNB2$df.resid> 1+3*(sqrt(2/(apNB2$df.residual)))
+#model selection did not improve fit of NB model to the ap.fl data 
+
+# CK
+summary(ckNB) #Mean Deviance = 0.43
+drop1(ckNB, test= "Chi")
+# bottom NS 
+
+ckNB1 <- glm.nb(number ~ year+veg+month+shore, data=ck.fl, na.action = na.exclude)
+summary(ckNB1) 
+
+AIC(ckNB, ckNB1) #almost equal
+lrtest(ckNB, ckNB1) #equal
+
+sum((resid(ckNB1,type="pearson"))^2)/ckNB1$df.resid #1.35
+sum((resid(ckNB1,type="pearson"))^2)/ckNB1$df.resid> 1+2*(sqrt(2/(ckNB1$df.residual)))
+sum((resid(ckNB1,type="pearson"))^2)/ckNB1$df.resid> 1+3*(sqrt(2/(ckNB1$df.residual)))
+#model selection did not improve fit of NB model to the ck.fl data 
+
+#TB
+summary(tbNB)
+drop1(tbNB, test="Chi")
+#bottom NS
+
+tbNB1 <- glm.nb(number ~ year+veg+shore+month, data=tb.fl, na.action = na.exclude)
+summary(tbNB1)
+
+AIC(tbNB, tbNB1)
+
+sum((resid(tbNB1,type="pearson"))^2)/tbNB1$df.resid #1.52
+sum((resid(tbNB1,type="pearson"))^2)/tbNB1$df.resid> 1+2*(sqrt(2/(tbNB1$df.residual)))
+sum((resid(tbNB1,type="pearson"))^2)/tbNB1$df.resid> 1+3*(sqrt(2/(tbNB1$df.residual)))
+#model selection did not improve fit of NB model to the tb.fl data 
+
+#CH
+summary(chNB)
+drop1(tbNB, test="Chi")
+
+sum((resid(chNB,type="pearson"))^2)/chNB$df.resid> 1+2*(sqrt(2/(chNB$df.residual)))
+sum((resid(chNB,type="pearson"))^2)/chNB$df.resid> 1+3*(sqrt(2/(chNB$df.residual)))
+#model selection did not improve fit of NB model to the ch.fl data 
+
+#JX
+summary(jxNB)
+#month, bottom NS
+drop1(jxNB, test="Chi")
+
+jxNB1 <- glm.nb(number ~ year+veg+shore, data=jx.fl, na.action = na.exclude)
+summary(jxNB1)
+
+AIC(jxNB, jxNB1) #equal
+
+sum((resid(jxNB1,type="pearson"))^2)/jxNB1$df.resid> 1+2*(sqrt(2/(jxNB1$df.residual)))
+sum((resid(jxNB1,type="pearson"))^2)/jxNB1$df.resid> 1+3*(sqrt(2/(jxNB1$df.residual)))
+#model selection did not improve fit of NB model to the jx.fl data 
+
+#IR
+summary(irNB)
+drop1(irNB, test="Chi")
+#bttom NS
+
+irNB1 <- glm.nb(number ~ year+veg+shore+month, data=ir.fl, na.action = na.exclude)
+
+AIC(irNB, irNB1)
+
+sum((resid(irNB1,type="pearson"))^2)/irNB1$df.resid> 1+2*(sqrt(2/(irNB1$df.residual)))
+sum((resid(irNB1,type="pearson"))^2)/irNB1$df.resid> 1+3*(sqrt(2/(irNB1$df.residual)))
+#model selection did not improve fit of NB model to the ir.fl data 
+
+
+# 4. Model selection and validation plots for ZINB ####
 # Page 280 model selection must be done by hand with ZINB
 # Most comprehensive, but takes the most work, is to just drop each term 
     #(count| binomial) 
   
-# f1 = formula(number ~ year+month+veg+bottom+shore | year+month+veg+bottom+shore)
-#   f1A = formula(number ~ year+month+veg+bottom+shore | year +month+veg+bottom) #drop shore
-#   f1B = formula(number ~ year+month+veg+bottom | year +month+veg+bottom+shore) #drop shore
-#   f1C = formula(number ~ year+month+veg+bottom | year+month+veg+bottom)       #drop shore
-#   f2 = formula(number ~ year+month+veg+bottom | year+month+veg) #drop bottom
-#   f2A = formula(number ~ year+month+veg| year+month+veg +bottom) #drop bottom
-#   f2B = formula(number ~ year+month+veg| year+month+veg) #drop bottom
-#   f3 = formula(number ~ year+month+veg| year+month) #drop veg
-#   f3A = formula(number ~ year+month| year+month +veg) #drop veg
-#   f3B = formula(number ~ year+month| year+month) #drop veg
-#   f4 = formula(number ~ year+month| year) #drop month
-#   f4A = formula(number ~ year| year + month) #drop month
-#   f4B = formula(number ~ year| year) #drop month
+f1 = formula(number ~ year+month+veg+bottom+shore | year+month+veg+bottom+shore)
+f1A = formula(number ~ year+month+veg+bottom+shore | year +month+veg+bottom) #drop shore
+f1B = formula(number ~ year+month+veg+bottom | year +month+veg+bottom+shore) #drop shore
+f1C = formula(number ~ year+month+veg+bottom | year+month+veg+bottom)       #drop shore
+f2 = formula(number ~ year+month+veg+bottom | year+month+veg) #drop bottom
+f2A = formula(number ~ year+month+veg| year+month+veg +bottom) #drop bottom
+f2B = formula(number ~ year+month+veg| year+month+veg) #drop bottom
+f3 = formula(number ~ year+month+veg| year+month) #drop veg
+f3A = formula(number ~ year+month| year+month +veg) #drop veg
+f3B = formula(number ~ year+month| year+month) #drop veg
+f4 = formula(number ~ year+month| year) #drop month
+f4A = formula(number ~ year| year + month) #drop month
+f4B = formula(number ~ year| year) #drop month
 
     #https://stats.stackexchange.com/questions/121661/how-to-interpret-anova-output-when-comparing-two-nested-mixed-effect-models
 #The log-likelihoods of the two models are almost exactly equal 
@@ -706,6 +818,7 @@ lrtest(ir.ZP, ir.ZNB) #NB is better than ZIP
 #hypothesis that the likelihoods of the two models are equivalent.
 
 # AP
+# f1 = formula(number ~ year+month+veg+bottom+shore | year+month+veg+bottom+shore)
 ap.ZNB1 <- zeroinfl(f1, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
 summary(ap.ZNB1)
 
@@ -721,13 +834,6 @@ ap.ZNB1C <- zeroinfl(f1C, dist='negbin', link="logit", data=ap.fl, na.action = n
 ap.ZNB2  <- zeroinfl(f2, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
 
 
-lrtest(ap.ZNB1, ap.ZNB6) #f6 fit better
-lrtest(ap.ZNB1A, ap.ZNB6) #f6 does a better job
-lrtest(ap.ZNB1B, ap.ZNB6) #fit equally
-lrtest(ap.ZNB1C, ap.ZNB6) #fit equally 
-lrtest(ap.ZNB10, ap.ZNB6) #6 is better than 10
-
-
 AIC(ap.ZNB1B, ap.ZNB1C, ap.ZNB2, ap.ZNB6, ap.ZNB10)
 #f10 has lowest AIC and is better in the sense that it does as well as the more complex model with 1 fewer parameters.
 # The AICs of the other models differ by more than 2 AIC units which from the definition of AIC is what you'd expect if you added
@@ -736,6 +842,17 @@ AIC(ap.ZNB1B, ap.ZNB1C, ap.ZNB2, ap.ZNB6, ap.ZNB10)
 
 #final
 summary(ap.ZNB6)
+
+
+N<-nrow(ap.fl)
+Ezinb1 <- resid(P.znb6,type="pearson")
+Dispersion <- sum(Ezinb1^2)/(N- 51 )	#==>be sure to change value for degrees of freedom based on summary output
+Dispersion  # 1.102008
+
+
+
+
+
 
 EP <- residuals(ap.ZNB6, type="pearson")
 mu <- predict(ap.ZNB6, type="response")
@@ -1002,6 +1119,7 @@ plot(x=mu, y=EP, main="Pearson residuals")
     
     
     
+
 
 
 
