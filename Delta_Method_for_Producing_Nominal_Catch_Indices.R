@@ -49,8 +49,10 @@ library(haven) #to load sas
 library(dplyr) # to do df manipulation
 library(lsmeans) #to determine the least squares means
 library(AER) #to test for overdispersion
-library(pscl)
-library(lmtest)
+library(pscl) # to run zeroinflated
+library(lmtest) #to test ZINB and ZIP
+library(boot) #to diagnose model fits for generalized linear models 
+library(MASS) #to use negative binomial
 
 ##### IMPORT DATA SETS_YOY ######
 # These data sets were produced using the spp_comb_5_13_EG_2bays_yoy_2015_EHedits.sas program which is stored in my scratch folder
@@ -112,10 +114,6 @@ jxl = read_sas("jx_yoy_cn_l.sas7bdat")
 #Join all together so I can perform following steps on a single dataframe instead of individual ones. 
 
 full <- rbind(ap,ck,tb,ch,jx,ir)
-
-library(ggplot2)
-
-ggplot(full, aes(x=number)) +geom_histogram(binwidth=10)
 
 
 
@@ -191,6 +189,12 @@ with(ap.pos,tapply(number, list(year,bottom),sum))
 with(ap.pos,tapply(number, list(year,shore),sum))
 ap.pos <- subset(ap.pos, shore !=  "Mangrove") %>% droplevels(ap.pos$shore)
 
+with(ap.fl,tapply(number, list(year,month),sum))
+with(ap.fl,tapply(number, list(year,veg),sum))
+with(ap.fl,tapply(number, list(year,bottom),sum))
+with(ap.fl,tapply(number, list(year,shore),sum))
+ap.fl <- subset(ap.fl, shore != "Mangrove") %>% droplevels(ap.fl$shore)
+
 #CK
 #month
 with(ck.pos,tapply(number, list(year,month),sum))
@@ -207,6 +211,16 @@ ck.pos <- droplevels(subset(ck.pos, shore != "Terrestrial"))
 ck.pos$shore[ck.pos$shore== "Mangrove"] = "Structure"
 ck.pos <- droplevels(subset(ck.pos, shore != "Mangrove"))
 
+with(ck.fl,tapply(number, list(year,month),sum))
+with(ck.fl,tapply(number, list(year,veg),sum))
+with(ck.fl,tapply(number, list(year,bottom),sum))
+ck.fl = droplevels(subset(ck.fl, bottom != "unknown"))
+with(ck.fl,tapply(number, list(year,shore),sum))
+#drop terrestrial and join structure 
+ck.fl <- droplevels(subset(ck.fl, shore != "Terrestrial"))
+ck.fl$shore[ck.fl$shore== "Mangrove"] = "Structure"
+ck.fl <- droplevels(subset(ck.fl, shore != "Mangrove"))
+
 #TB
 with(tb.pos,tapply(number, list(year,month),sum))
 tb.pos$month[tb.pos$month<5]=5
@@ -215,6 +229,12 @@ with(tb.pos,tapply(number, list(year,veg),sum))
 with(tb.pos,tapply(number, list(year,bottom),sum))
 tb.pos <- droplevels(subset(tb.pos, bottom != "unknown"))
 with(tb.pos,tapply(number, list(year,shore),sum))
+
+with(tb.fl,tapply(number, list(year,month),sum))
+with(tb.fl,tapply(number, list(year,veg),sum))
+with(tb.fl,tapply(number, list(year,bottom),sum))
+tb.fl <- droplevels(subset(tb.fl, bottom != "unknown"))
+with(tb.fl,tapply(number, list(year,shore),sum))
 
 #CH - no aggregation needed
 with(ch.pos,tapply(number, list(year,month),sum))
@@ -227,12 +247,12 @@ with(ch.fl,tapply(number, list(year,veg),sum))
 with(ch.fl,tapply(number, list(year,bottom),sum))
 with(ch.fl,tapply(number, list(year,shore),sum))
 
-
 #JX 
 with(jx.pos,tapply(number, list(year,month),sum))
 with(jx.pos,tapply(number, list(year,veg),sum))
 with(jx.pos,tapply(number, list(year,bottom),sum))
 with(jx.pos,tapply(number, list(year,shore),sum))
+jx.pos$shore[jx.pos$shore== "Terrestrial"] = "Emerge"
 
 with(jx.fl,tapply(number, list(year,month),sum))
 with(jx.fl,tapply(number, list(year,veg),sum))
@@ -240,18 +260,13 @@ with(jx.fl,tapply(number, list(year,bottom),sum))
 jx.fl <- droplevels(subset(jx.fl, bottom != "unknown"))
 with(jx.fl,tapply(number, list(year,shore),sum))
 
-
-
 #IR - no aggregation needed 
 with(ir.pos,tapply(number, list(year,month),sum))
 with(ir.pos,tapply(number, list(year,veg),sum))
 with(ir.pos,tapply(number, list(year,bottom),sum))
 with(ir.pos,tapply(number, list(year,shore),sum))
 
-
 ##### VISUALIZE THE DATA_YOY ########
-
-
 #Plot the data
 
 #AP
@@ -285,22 +300,23 @@ plot(ap.pos$veg, ap.pos$number, vlab="veg", ylab="number")
 # 5. Build zero truncated model- last case scenario. 
 
 # 1. Build the binary data sets ####
-Full_ap.bin <- glm(number ~ year+month+bottom+veg+shore, data=ap.bin, family=binomial)
-Full_ck.bin <- glm(number ~ year+month+bottom+veg+shore, data=ck.bin, family=binomial)
-Full_tb.bin <- glm(number ~ year+month+bottom+veg+shore, data=tb.bin, family=binomial)
-Full_ch.bin <- glm(number ~ year+month+bottom+veg+shore, data=ch.bin, family=binomial)
-Full_jx.bin <- glm(number ~ year+month+bottom+veg+shore, data=jx.bin, family=binomial)
-Full_ir.bin <- glm(number ~ year+month+bottom+veg+shore, data=ir.bin, family=binomial)
+# With the Bernoulli GLM (binomial, response variable is a vector of zeros and ones) overdispersion does not ever occur (Zuur og 253) so I don't need to test for overdispersion in the .bin models. 
+Full_ap.bin <- glm(number ~ year+month+bottom+veg+shore, data=ap.bin, family=binomial, na.action = na.exclude)
+Full_ck.bin <- glm(number ~ year+month+bottom+veg+shore, data=ck.bin, family=binomial, na.action = na.exclude)
+Full_tb.bin <- glm(number ~ year+month+bottom+veg+shore, data=tb.bin, family=binomial, na.action = na.exclude)
+Full_ch.bin <- glm(number ~ year+month+bottom+veg+shore, data=ch.bin, family=binomial, na.action = na.exclude)
+Full_jx.bin <- glm(number ~ year+month+bottom+veg+shore, data=jx.bin, family=binomial, na.action = na.exclude)
+Full_ir.bin <- glm(number ~ year+month+bottom+veg+shore, data=ir.bin, family=binomial, na.action = na.exclude)
 
 # 2. Build the poisson and lognormal ####
-ap.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=ap.pos, family=poisson)
-ck.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=ck.pos, family=poisson)
-tb.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=tb.pos, family=poisson)
-ch.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=ch.pos, family=poisson)
-jx.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=jx.pos, family=poisson)
-ir.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=ir.pos, family=poisson)
+ap.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=ap.pos, family=poisson, na.action = na.exclude)
+ck.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=ck.pos, family=poisson, na.action = na.exclude)
+tb.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=tb.pos, family=poisson, na.action = na.exclude)
+ch.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=ch.pos, family=poisson, na.action = na.exclude)
+jx.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=jx.pos, family=poisson, na.action = na.exclude)
+ir.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=ir.pos, family=poisson, na.action = na.exclude)
 
-# first need to log transform the data so that they can be modeled (lognormal isnt a family definition for genearlized 
+# For lognormal. first need to log transform the data so that they can be modeled (lognormal isnt a family definition for genearlized linear) 
 ap.pos$lnum <- log(ap.pos$number)
 ck.pos$lnum <- log(ck.pos$number)
 tb.pos$lnum <- log(tb.pos$number)
@@ -309,15 +325,20 @@ jx.pos$lnum <- log(jx.pos$number)
 ir.pos$lnum <- log(ir.pos$number)
 
 #now model the transformed numbers with the guassian
-ap.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=ap.pos, family=gaussian)
-ck.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=ck.pos, family=gaussian)
-tb.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=tb.pos, family=gaussian)
-ch.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=ch.pos, family=gaussian)
-jx.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=jx.pos, family=gaussian)
-ir.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=ir.pos, family=gaussian)
+ap.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=ap.pos, family=gaussian, na.action = na.exclude)
+ck.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=ck.pos, family=gaussian, na.action = na.exclude)
+tb.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=tb.pos, family=gaussian, na.action = na.exclude)
+ch.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=ch.pos, family=gaussian, na.action = na.exclude)
+jx.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=jx.pos, family=gaussian, na.action = na.exclude)
+ir.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=ir.pos, family=gaussian, na.action = na.exclude)
 
 #3. Test the Poisson GLMs for overdispersion ####
-# With the Bernoulli GLM (binomial, response variable is a vector of zeros and ones) overdispersion does not ever occur (Zuur og 253) so I don't need to test for overdispersion in the .bin models. 
+#manual way
+#P1 <- glm(f.1,offset=logeffort, data=data,family=poisson)
+# EP1 <- resid(P1,type="pearson")
+# Dispersion <- sum(EP1^2)/P1$df.resid
+# Dispersion  #   1.37
+
 dispersiontest(ap.pos.P, trafo=1)
 dispersiontest(ck.pos.P, trafo=1)
 dispersiontest(tb.pos.P, trafo=1)
@@ -326,36 +347,94 @@ dispersiontest(jx.pos.P, trafo=1)
 dispersiontest(ir.pos.P, trafo=1)
 
 # there is evidence of overdispersion for every bay (p values were less than) so use quasipoisson for Positive models (Zuur pg 226)
-ap.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=ap.pos, family=quasipoisson)
-ck.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=ck.pos, family=quasipoisson)
-tb.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=tb.pos, family=quasipoisson)
-ch.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=ch.pos, family=quasipoisson)
-jx.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=jx.pos, family=quasipoisson)
-ir.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=ir.pos, family=quasipoisson)
+ap.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=ap.pos, family=quasipoisson, na.action = na.exclude)
+ck.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=ck.pos, family=quasipoisson, na.action = na.exclude)
+tb.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=tb.pos, family=quasipoisson, na.action = na.exclude)
+ch.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=ch.pos, family=quasipoisson, na.action = na.exclude)
+jx.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=jx.pos, family=quasipoisson, na.action = na.exclude)
+ir.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=ir.pos, family=quasipoisson, na.action = na.exclude)
 
-# 4. Build the mixture zero inflated poisson (ZIP) and zero inflated negative binomial (ZINB) ####
+#4. Build the negative binomial ####
+#NB accounts for zeros so use the full dataset and not just the positives
+apNB <- glm.nb(number ~ year +month+veg+bottom+shore, data=ap.fl, na.action = na.exclude)
+ckNB <- glm.nb(number ~ year +month+veg+bottom+shore, data=ck.fl,  na.action = na.exclude)
+tbNB <- glm.nb(number ~ year +month+veg+bottom+shore, data=tb.fl,  na.action = na.exclude)
+chNB <- glm.nb(number ~ year +month+veg+bottom+shore, data=ch.fl,  na.action = na.exclude)
+jxNB <- glm.nb(number ~ year +month+veg+bottom+shore, data=jx.fl,  na.action = na.exclude)
+irNB <- glm.nb(number ~ year +month+veg+bottom+shore, data=ir.fl,  na.action = na.exclude)
+
+summary(apNB)
+summary(ckNB)
+summary(tbNB)
+summary(chNB)
+summary(jxNB)
+summary(irNB)
+
+#check for overdispersion, if it is more that around 1 then there may be excess zeros 
+apNB1 <- resid(apNB,type="pearson")
+Dispersion <- sum(apNB1^2)/apNB$df.resid
+Dispersion #  1.4
+
+ckNB1 <- resid(ckNB,type="pearson") #NOT WORKING
+Dispersion <- sum(ckNB1^2)/ckNB$df.resid
+Dispersion #  1.4
+
+tbNB1 <- resid(tbNB,type="pearson")
+Dispersion <- sum(tbNB1^2)/tbNB$df.resid
+Dispersion #1.67 
+
+chNB1 <- resid(chNB,type="pearson")
+Dispersion <- sum(chNB1^2)/chNB$df.resid
+Dispersion #1.52
+
+jxNB1 <- resid(jxNB,type="pearson") #NOT WORKING 
+Dispersion <- sum(jxNB1^2)/jxNB$df.resid
+Dispersion
+
+irNB1 <- resid(irNB,type="pearson") #NOT WORKING 
+Dispersion <- sum(irNB1^2)/irNB$df.resid
+Dispersion
+
+
+# 5. Build the mixture (full) zero inflated poisson (ZIP) and zero inflated negative binomial (ZINB) ####
 library(pscl)
-f1 = formula(number ~ year+month+veg+bottom+shore)
-f2 = formula(number ~ year+month+veg+bottom)
-ap.ZP <- zeroinfl(f1, dist='poisson', link="logit", data=ap.fl)
-ck.ZP <- zeroinfl(f1, dist='poisson', link="logit", data=ck.fl)
-tb.ZP <- zeroinfl(f1, dist='poisson', link="logit", data=tb.fl)
-ch.ZP <- zeroinfl(f2, dist='poisson', link="logit", data=ch.fl)
-jx.ZP <- zeroinfl(f2, dist='poisson', link="logit", data=jx.fl)
-ir.ZP <- zeroinfl(f1, dist='poisson', link="logit", data=ir.fl)
+#page 279 Zuur
 
-ap.ZNB <- zeroinfl(f1, dist='negbin', link="logit", data=ap.fl)
-ck.ZNB <- zeroinfl(f1, dist='negbin', link="logit", data=ck.fl)
-tb.ZNB <- zeroinfl(f1, dist='negbin', link="logit", data=tb.fl)
+#build additional models used for model selection below 
+f1 = formula(number ~ year+month+veg+bottom+shore | year+month+veg+bottom+shore)
+f1A = formula(number ~ year+month+veg+bottom+shore | year +month+veg+bottom) #drop shore
+f1B = formula(number ~ year+month+veg+bottom | year +month+veg+bottom+shore) #drop shore
+f1C = formula(number ~ year+month+veg+bottom | year+month+veg+bottom)       #drop shore
+f2 = formula(number ~ year+month+veg+bottom | year+month+veg) #drop bottom
+f2A = formula(number ~ year+month+veg| year+month+veg +bottom) #drop bottom
+f2B = formula(number ~ year+month+veg| year+month+veg) #drop bottom
+f3 = formula(number ~ year+month+veg| year+month) #drop veg
+f3A = formula(number ~ year+month| year+month +veg) #drop veg
+f3B = formula(number ~ year+month| year+month) #drop veg
+f4 = formula(number ~ year+month| year) #drop month
+f4A = formula(number ~ year| year + month) #drop month
+f4B = formula(number ~ year| year) #drop month
+
+
+ap.ZP <- zeroinfl(f1, dist='poisson', link="logit", data=ap.fl, na.action = na.exclude)
+ck.ZP <- zeroinfl(f1, dist='poisson', link="logit", data=ck.fl, na.action = na.exclude)
+tb.ZP <- zeroinfl(f1, dist='poisson', link="logit", data=tb.fl, na.action = na.exclude)
+ch.ZP <- zeroinfl(f1, dist='poisson', link="logit", data=ch.fl, na.action = na.exclude)
+jx.ZP <- zeroinfl(f1, dist='poisson', link="logit", data=jx.fl, na.action = na.exclude)
+ir.ZP <- zeroinfl(f1, dist='poisson', link="logit", data=ir.fl, na.action = na.exclude)
+
+ap.ZNB <- zeroinfl(f1, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+ck.ZNB <- zeroinfl(f1, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+tb.ZNB <- zeroinfl(f1, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude)
 
 #with f1 I was getting an error abotu the system being computationally singular.
-# stack exchange says this is due to the fact that my design matrix is non invertible which
-# from linearly dependent columns (ie.strongly correlated variables)
+# stack exchange says this is due to the fact that my design matrix is non invertible which is due to
+# linearly dependent columns (ie.strongly correlated variables)
 #https://stats.stackexchange.com/questions/76488/error-system-is-computationally-singular-when-running-a-glm
 
-ch.ZNB <- zeroinfl(f2, dist='negbin', link="logit", data=ch.fl) 
-jx.ZNB <- zeroinfl(f2, dist='negbin', link="logit", data=jx.fl)
-ir.ZNB <- zeroinfl(f1, dist='negbin', link="logit", data=ir.fl)
+ch.ZNB <- zeroinfl(f1C, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+jx.ZNB <- zeroinfl(f1C, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude)
+ir.ZNB <- zeroinfl(f1, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude)
 
 lrtest(ap.ZP, ap.ZNB) #ZINB is better for AP than is ZIP
 lrtest(ck.ZP, ck.ZNB) #NB is better than ZIP
@@ -363,18 +442,6 @@ lrtest(tb.ZP, tb.ZNB) #NB is better than ZIP
 lrtest(ch.ZP, ch.ZNB) #NB is better than ZIP
 lrtest(jx.ZP, jx.ZNB) #NB is better than ZIP
 lrtest(ir.ZP, ir.ZNB) #NB is better than ZIP
-
-# 5. Account for overdispersion AND zero-truncated data #### 
-# using the zero-truncated negative binomial model for positive data (Zuur pg 268)
-#load VGAM package that can deal with overdispersion
-
-# library(VGAM)
-# ap.pos_ZT <- vglm(number ~ year +month+veg+bottom+shore, family=posnegbinomial,option=na.omit, control=vglm.control(maxit=100), data=ap.pos) #this model will not converge within 100 it
-# ck.pos_ZT <- vglm(number ~ year +month+veg+bottom+shore, data=ck.pos, family=posnegbinomial, control=vglm.control(maxit=100)) #also will not converge within 100 it
-# tb.pos_ZT <- vglm(number ~ year +month+veg+bottom+shore, data=tb.pos, family=posnegbinomial, control=vglm.control(maxit=100))
-# ch.pos_ZT <- vglm(number ~ year +month+veg+bottom+shore, data=ch.pos, family=posnegbinomial, control=vglm.control(maxit=100))
-# jx.pos_ZT <- vglm(number ~ year +month+veg+bottom+shore, data=jx.pos, family=posnegbinomial, control=vglm.control(maxit=100)) #will not converge within 100 it
-# ir.pos_ZT <- vglm(number ~ year +month+veg+bottom+shore, data=ir.pos, family=posnegbinomial, control=vglm.control(maxit=100))
 
 ##### MODEL SELECTION_ YOY ######
 
@@ -388,89 +455,554 @@ lrtest(ir.ZP, ir.ZNB) #NB is better than ZIP
 # If just using Poisson or Bernoulli (binomial) can use step command but this gives AIC- not deviance. (Zuur pg 253)
 # Explained deviance is nearly the equivalent of R^2 so use this (Zuur pg 218 for equation), "The smaller the residual deviance the better is the model"
 
+# 1. Model selection and validation plots for quasipoisson (QP) ####
+# see page 227 in Zuur for full explanation of drop1 and F test for quaispoissona
+
 #AP_POS (Year, Veg, Shore = significant factors)
-summary(Full_ap.pos)
-drop1(Full_ap.pos, test="F")  #model selection in quasipoisson is done using F-ratio (Zuur pg 227)
-# bottom and month do not appear significant. Drop all sequentially. 
+    summary(ap.pos.QP)
+    drop1(ap.pos.QP, test="F")  #model selection in quasipoisson is done using F-ratio (Zuur pg 227)
+    # bottom  NS
+    
+    # drop bottom
+    M1_ap.pos <- glm(number ~ year+veg+month+shore, data=ap.pos, family=quasipoisson)
+    drop1(M1_ap.pos, test="F")
+    summary(M1_ap.pos)
+    
+    # Year, Veg, Shore, Month = significant factors
 
-# drop month
-M1_ap.pos <- glm(number ~ year+veg+bottom+shore, data=ap.pos, family=quasipoisson)
-drop1(M1_ap.pos, test="F")
+# Model validation, page 231 Zuur
+    EP <- resid(M1_ap.pos, type="pearson")
+    ED <- resid(M1_ap.pos, type ="deviance")
+    mu <- predict(M1_ap.pos, type="response")
+    E <- ap.pos$number-mu
+    EP2 <- E/sqrt(9.422133*mu)
+    op <- par(mfrow=c(2,2))
+    plot(x=mu, y=E, main="Response residuals")
+    plot(x=mu, y=EP, main="Pearson residuals")
+    plot(x=mu, Y=EP2, main = "Pearson residual scaled")
+    plot(x=mu, y=ED, main = "Deviance residuals")
+    par(op) 
 
-# drop month, bottom
-M2_ap.pos <- glm(number ~ year+veg+shore, data=ap.pos, family=quasipoisson)
-drop1(M2_ap.pos, test="F")
-# Year, Veg, Shore = significant factors
+#Model validation with boot package
+    glm.diag.plots(M1_ap.pos)
 
 #CK_POS (Year, Veg = significant factor)
-summary(Full_ck.pos)
-drop1(Full_ck.pos, test="F")
-#month, bottom, and shore do not appear significant. Drop all sequentially. 
-
-#drop month
-M1_ck.pos <- glm(number ~ year+veg+bottom+shore, data=ck.pos, family=quasipoisson)
-drop1(M1_ck.pos, test="F")
-
-#drop month, bottom
-M2_ck.pos <- glm(number ~ year+veg+shore, data=ck.pos, family=quasipoisson)
-drop1(M2_ck.pos, test="F")
-
-#drop month, bottom, and shore
-M3_ck.pos <- glm(number ~ year+veg, data=ck.pos, family=quasipoisson)
-drop1(M3_ck.pos, test="F")
-# Year, Veg = significant factors 
-
+    summary(ck.pos.QP)
+    drop1(ck.pos.QP, test="F")
+    #month, bottom, and shore do not appear significant. Drop all sequentially. 
+    
+    #drop month
+    M1_ck.pos <- glm(number ~ year+veg+bottom+shore, data=ck.pos, family=quasipoisson)
+    drop1(M1_ck.pos, test="F")
+    
+    #drop month, bottom
+    M2_ck.pos <- glm(number ~ year+veg+shore, data=ck.pos, family=quasipoisson)
+    drop1(M2_ck.pos, test="F")
+    
+    #drop month, bottom, and shore
+    M3_ck.pos <- glm(number ~ year+veg, data=ck.pos, family=quasipoisson)
+    drop1(M3_ck.pos, test="F")
+    summary(M3_ck.pos)
+    # Year, Veg = significant factors 
+    
+# Model validation, page 231 Zuur
+    EP <- resid(M3_ck.pos, type="pearson")
+    ED <- resid(M3_ck.pos, type ="deviance")
+    mu <- predict(M3_ck.pos, type="response")
+    E <- ck.pos$number-mu
+    EP2 <- E/sqrt(6.868047*mu)
+    op <- par(mfrow=c(2,2))
+    plot(x=mu, y=E, main="Response residuals")
+    plot(x=mu, y=EP, main="Pearson residuals")
+    plot(x=mu, Y=EP2, main = "Pearson residual scaled")
+    plot(x=mu, y=ED, main = "Deviance residuals")
+    par(op) 
+      
 # TB_POS (Year, Veg, Shore = significant factors)
-summary(Full_tb.pos)
-drop1(Full_tb.pos, test="F")
-# bottom and month do not appear significant. Drop all sequentially
-
-# drop month
-M1_tb.pos <- glm(number ~ year+veg+bottom+shore, data=tb.pos, family=quasipoisson)
-drop1(M1_tb.pos, test="F")
-
-# drop month, bottom
-M2_tb.pos <- glm(number ~ year+veg+shore, data=tb.pos, family=quasipoisson)
-drop1(M2_tb.pos, test="F")
-# Year, Veg, Shore = significant factors
+    summary(tb.pos.QP)
+    drop1(tb.pos.QP, test="F")
+    # bottom and month do not appear significant. Drop all sequentially
+    
+    # drop month
+    M1_tb.pos <- glm(number ~ year+veg+bottom+shore, data=tb.pos, family=quasipoisson)
+    drop1(M1_tb.pos, test="F")
+    
+    # drop month, bottom
+    M2_tb.pos <- glm(number ~ year+veg+shore, data=tb.pos, family=quasipoisson)
+    drop1(M2_tb.pos, test="F")
+    summary(M2_tb.pos)
+    # Year, Veg, Shore = significant factors
+    
+# Model validation, page 231 Zuur
+    EP <- resid(M2_tb.pos, type="pearson")
+    ED <- resid(M2_tb.pos, type ="deviance")
+    mu <- predict(M2_tb.pos, type="response")
+    E <- tb.pos$number-mu
+    EP2 <- E/sqrt(14.82482*mu)
+    op <- par(mfrow=c(2,2))
+    plot(x=mu, y=E, main="Response residuals")
+    plot(x=mu, y=EP, main="Pearson residuals")
+    plot(x=mu, Y=EP2, main = "Pearson residual scaled")
+    plot(x=mu, y=ED, main = "Deviance residuals")
+    par(op) 
 
 ### CH_POS (Year, Month, Veg, Bottom, Shore =significnat factors )
-summary(Full_ch.pos)
-drop1(Full_ch.pos, test="F")
-# Year, Month, Veg, Bottom, Shore =significnat factors 
-
+    summary(ch.pos.QP)
+    drop1(ch.pos.QP, test="F")
+    summary(ch.pos.QP)
+    # Year, Month, Veg, Bottom, Shore =significnat factors 
+    
+# Model validation, page 231 Zuur
+    EP <- resid(ch.pos.QP, type="pearson")
+    ED <- resid(ch.pos.QP, type ="deviance")
+    mu <- predict(ch.pos.QP, type="response")
+    E <- ch.pos$number-mu
+    EP2 <- E/sqrt(8.48237*mu)
+    op <- par(mfrow=c(2,2))
+    plot(x=mu, y=E, main="Response residuals")
+    plot(x=mu, y=EP, main="Pearson residuals")
+    plot(x=mu, Y=EP2, main = "Pearson residual scaled")
+    plot(x=mu, y=ED, main = "Deviance residuals")
+    par(op)    
+    
+  
 ### JX_POS (Year, Veg, Shore = significant factors)
-summary(Full_jx.pos)
-drop1(Full_jx.pos, test="F")
-# bottom and month do not appear significant. Drop all sequentially
-
-#drop month
-M1_jx.pos <- glm(number ~ year+veg+bottom+shore, data=jx.pos, family=quasipoisson)
-drop1(M1_jx.pos, test="F")
-
-#drop month, bottom
-M2_jx.pos <- glm(number ~ year+veg+shore, data=jx.pos, family=quasipoisson)
-drop1(M2_jx.pos, test="F")
-# Year, Veg, Shore = significant factors
+    summary(jx.pos.QP)
+    drop1(jx.pos.QP, test="F")
+    # bottom and month do not appear significant. Drop all sequentially
+    
+    #drop month
+    M1_jx.pos <- glm(number ~ year+veg+bottom+shore, data=jx.pos, family=quasipoisson)
+    drop1(M1_jx.pos, test="F")
+    
+    #drop month, bottom
+    M2_jx.pos <- glm(number ~ year+veg+shore, data=jx.pos, family=quasipoisson)
+    drop1(M2_jx.pos, test="F")
+    summary(M2_jx.pos)
+    # Year, Veg, Shore = significant factors
+    
+# Model validation, page 231 Zuur
+    EP <- resid(M2_jx.pos, type="pearson")
+    ED <- resid(M2_jx.pos, type ="deviance")
+    mu <- predict(M2_jx.pos, type="response")
+    E <- jx.pos$number-mu
+    EP2 <- E/sqrt(6.352203*mu)
+    op <- par(mfrow=c(2,2))
+    plot(x=mu, y=E, main="Response residuals")
+    plot(x=mu, y=EP, main="Pearson residuals")
+    plot(x=mu, Y=EP2, main = "Pearson residual scaled")
+    plot(x=mu, y=ED, main = "Deviance residuals")
+    par(op)    
+      
 
 ### IR_POS (Year, Veg, Bottom = significant factors)
-summary(Full_ir.pos)
-drop1(Full_ir.pos, test="F")
-#month and shore do not appear significant. Drop them all. 
+    summary(ir.pos.QP)
+    drop1(ir.pos.QP, test="F")
+    #month and shore do not appear significant. Drop them all. 
+    
+    # drop month
+    M1_ir.pos <- glm(number ~ year+veg+bottom+shore, data=ir.pos, family=quasipoisson)
+    drop1(M1_ir.pos, test="F")
+    
+    # drop shore
+    M2_ir.pos <- glm(number ~ year+veg+bottom, data=ir.pos, family=quasipoisson)
+    drop1(M2_ir.pos, test="F")
+    summary(M2_ir.pos)
+    # Year, Veg, Bottom = significant factors
 
-# drop month
-M1_ir.pos <- glm(number ~ year+veg+bottom+shore, data=ir.pos, family=quasipoisson)
-drop1(M1_ir.pos, test="F")
+# Model validation, page 231 Zuur
+    EP <- resid(M2_ir.pos, type="pearson")
+    ED <- resid(M2_ir.pos, type ="deviance")
+    mu <- predict(M2_ir.pos, type="response")
+    E <- ir.pos$number-mu
+    EP2 <- E/sqrt(21.39846*mu)
+    op <- par(mfrow=c(2,2))
+    plot(x=mu, y=E, main="Response residuals")
+    plot(x=mu, y=EP, main="Pearson residuals")
+    plot(x=mu, Y=EP2, main = "Pearson residual scaled")
+    plot(x=mu, y=ED, main = "Deviance residuals")
+    par(op)  
+    
+    glm.diag.plots(M2_ir.pos)
+    
+# 2. Model selection and validation plots for lognormal ####
+# F test with drop1 command
+# Model validation to be done with boot package- glm.diag.plots because I couldnt
+# find a good example of model validation plots done in the Zuur book. 
+# AP
+    summary(ap.pos.L)
+    drop1(ap.pos.L, test = "F")
+    #bottom NS
+    
+    M1_ap.pos.L <- glm(lnum ~ year+veg+month+shore, data=ap.pos, family=gaussian)
+    drop1(M1_ap.pos.L, test="F")
+    summary(M1_ap.pos.L)
+    glm.diag.plots(M1_ap.pos.L)
+    
+#CK
+    summary(ck.pos.L)
+    drop1(ck.pos.L, test="F")
+    #month and shore NS
+    
+    M1_ck.pos.L <- glm(lnum ~ year +bottom+veg, data=ck.pos, family=gaussian)
+    drop1(M1_ck.pos.L, test="F")
+    glm.diag.plots(M1_ck.pos.L)
+    
+#TB 
+    summary(tb.pos.L)
+    drop1(tb.pos.L, test="F")
+    #bottom NS
+    
+    M1_tb.pos.L <- glm(lnum ~ year+month+veg+shore, data=tb.pos, family=gaussian)
+    drop1(M1_tb.pos.L, test="F")
+    glm.diag.plots(M1_tb.pos.L)
+    
+#CH
+    summary(ch.pos.L)
+    drop1(ch.pos.L, test="F")
+    glm.diag.plots(ch.pos.L)
+    
+#JX
+    summary(jx.pos.L)
+    drop1(jx.pos.L, test="F")
+    # year, month, bottom, shore NS
+    
+    M1_jx.pos.L <- glm(lnum ~ year+veg, data=jx.pos, family=gaussian)
+    glm.diag.plots(M1_jx.pos.L)
+    
+#IR
+    summary(ir.pos.L)
+    drop1(ir.pos.L, test="F")
+    #year,month,bottom NS
+   
+    M1_ir.pos.L <- glm(lnum ~ year+veg+shore, data=ir.pos, family=gaussian)
+    glm.diag.plots(M1_ir.pos.L) 
+    
+# 3. Model selection and validation plots for ZINB ####
+# Page 280 model selection must be done by hand with ZINB
+# Most comprehensive, but takes the most work, is to just drop each term 
+    #(count| binomial) 
+  
+# f1 = formula(number ~ year+month+veg+bottom+shore | year+month+veg+bottom+shore)
+#   f1A = formula(number ~ year+month+veg+bottom+shore | year +month+veg+bottom) #drop shore
+#   f1B = formula(number ~ year+month+veg+bottom | year +month+veg+bottom+shore) #drop shore
+#   f1C = formula(number ~ year+month+veg+bottom | year+month+veg+bottom)       #drop shore
+#   f2 = formula(number ~ year+month+veg+bottom | year+month+veg) #drop bottom
+#   f2A = formula(number ~ year+month+veg| year+month+veg +bottom) #drop bottom
+#   f2B = formula(number ~ year+month+veg| year+month+veg) #drop bottom
+#   f3 = formula(number ~ year+month+veg| year+month) #drop veg
+#   f3A = formula(number ~ year+month| year+month +veg) #drop veg
+#   f3B = formula(number ~ year+month| year+month) #drop veg
+#   f4 = formula(number ~ year+month| year) #drop month
+#   f4A = formula(number ~ year| year + month) #drop month
+#   f4B = formula(number ~ year| year) #drop month
 
-# drop shore
-M2_ir.pos <- glm(number ~ year+veg+bottom, data=ir.pos, family=quasipoisson)
-drop1(M2_ir.pos, test="F")
-# Year, Veg, Bottom = significant factors
+    #https://stats.stackexchange.com/questions/121661/how-to-interpret-anova-output-when-comparing-two-nested-mixed-effect-models
+#The log-likelihoods of the two models are almost exactly equal 
+#indicating the two models do a similar job of fitting the data. 
+#The LRT is telling you that you'd be very likely to observe a test 
+#statistic (Chisq) as large as the one reported if the two models 
+#provided the same fit. Hence you fail to reject the null 
+#hypothesis that the likelihoods of the two models are equivalent.
+
+# AP
+ap.ZNB1 <- zeroinfl(f1, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+summary(ap.ZNB1)
+
+f6 = formula(number ~ year+month+veg | month+veg)
+f10 = formula(number ~ year+month+veg +shore | month+veg)
+
+ap.ZNB6= zeroinfl(f6, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+ap.ZNB10= zeroinfl(f10, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+
+ap.ZNB1A <- zeroinfl(f1A, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+ap.ZNB1B <- zeroinfl(f1B, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+ap.ZNB1C <- zeroinfl(f1C, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+ap.ZNB2  <- zeroinfl(f2, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
 
 
-##### MODEL SELECTION POSITIVE w/ DROP1 command_ZeroTrunc_NB_ YOY ######
+lrtest(ap.ZNB1, ap.ZNB6) #f6 fit better
+lrtest(ap.ZNB1A, ap.ZNB6) #f6 does a better job
+lrtest(ap.ZNB1B, ap.ZNB6) #fit equally
+lrtest(ap.ZNB1C, ap.ZNB6) #fit equally 
+lrtest(ap.ZNB10, ap.ZNB6) #6 is better than 10
 
-summary(ap.pos_ZT)
+
+AIC(ap.ZNB1B, ap.ZNB1C, ap.ZNB2, ap.ZNB6, ap.ZNB10)
+#f10 has lowest AIC and is better in the sense that it does as well as the more complex model with 1 fewer parameters.
+# The AICs of the other models differ by more than 2 AIC units which from the definition of AIC is what you'd expect if you added
+# a redudnant parameter with not additional explanatory power to the model. HOWEVER when
+# comparing 10 and 6 in lrtest above it appears that 6 fits significantly better than does 10. 
+
+#final
+summary(ap.ZNB6)
+
+EP <- residuals(ap.ZNB6, type="pearson")
+mu <- predict(ap.ZNB6, type="response")
+E <- ap.pos$number-mu
+#EP2 <- E/sqrt(9.422133*mu)
+op <- par(mfrow=c(1,2))
+plot(x=mu, y=E, main="Response residuals")
+plot(x=mu, y=EP, main="Pearson residuals")
+#plot(x=mu, Y=EP2, main = "Pearson residual scaled")
+#plot(x=mu, y=ED, main = "Deviance residuals")
+par(op) 
+
+plot(predict(ap.ZNB6, type="response"), ap.fl$number)
+
+# CK
+ck.ZNB <- zeroinfl(f1, dist='negbin', link="logit", data=ck.fl, na.action=na.exclude)
+summary(ck.ZNB)
+f7 = formula(number ~ year+month+veg+shore | year+month+veg+shore)
+f8 = formula(number ~ year+month+veg+shore | month)
+f9 = formula(number ~ year+month+veg | month)
+f10 = formula(number ~ year+month+veg | year+ month)
+f11 = formula(number ~ year+month+veg +shore | year+ month)
+f12 = formula(number ~ year+month+veg +shore | year+ month +veg)
+
+ck.ZNB7 <- zeroinfl(f7, dist='negbin', link="logit", data=ck.fl, na.action=na.exclude)
+ck.ZNB8 <- zeroinfl(f8, dist='negbin', link="logit", data=ck.fl, na.action=na.exclude)
+ck.ZNB1A <- zeroinfl(f1A, dist='negbin', link="logit", data=ck.fl, na.action=na.exclude)
+ck.ZNB1B <- zeroinfl(f1B, dist='negbin', link="logit", data=ck.fl, na.action=na.exclude)
+ck.ZNB1C <- zeroinfl(f1C, dist='negbin', link="logit", data=ck.fl, na.action=na.exclude)
+ck.ZNB2 <- zeroinfl(f2, dist='negbin', link="logit", data=ck.fl, na.action=na.exclude)
+ck.ZNB2A <- zeroinfl(f2A, dist='negbin', link="logit", data=ck.fl, na.action=na.exclude)
+ck.ZNB2B <- zeroinfl(f2B, dist='negbin', link="logit", data=ck.fl, na.action=na.exclude)
+ck.ZNB9 <- zeroinfl(f9, dist='negbin', link="logit", data=ck.fl, na.action=na.exclude)
+ck.ZNB10 <- zeroinfl(f10, dist='negbin', link="logit", data=ck.fl, na.action=na.exclude)
+ck.ZNB11 <- zeroinfl(f11, dist='negbin', link="logit", data=ck.fl, na.action=na.exclude)
+ck.ZNB12 <- zeroinfl(f12, dist='negbin', link="logit", data=ck.fl, na.action=na.exclude)
+
+lrtest(ck.ZNB, ck.ZNB1A) #fit equally
+lrtest(ck.ZNB1A, ck.ZNB1B) #1B does a better job
+lrtest(ck.ZNB1B, ck.ZNB1C) #fits equal
+lrtest(ck.ZNB1C, ck.ZNB2) #fits equal
+lrtest(ck.ZNB1C, ck.ZNB2A) #fits equal
+lrtest(ck.ZNB2A, ck.ZNB2B) #fits equal
+lrtest(ck.ZNB1B, ck.ZNB7) # 7 is better
+lrtest(ck.ZNB7, ck.ZNB8) # 8 is better 
+lrtest(ck.ZNB8, ck.ZNB9)
+lrtest(ck.ZNB9, ck.ZNB10)
+lrtest(ck.ZNB7, ck.ZNB11) #equal
+lrtest(ck.ZNB11, ck.ZNB12) #12 is better 
+
+AIC(ck.ZNB1B, ck.ZNB1C, ck.ZNB2, ck.ZNB2A, ck.ZNB2B, ck.ZNB7,ck.ZNB8, ck.ZNB9, ck.ZNB10, ck.ZNB11, ck.ZNB12)
+
+#F11 is best according to AIC 
+summary(ck.ZNB11)
+
+EP <- residuals(ck.ZNB11, type="pearson")
+mu <- predict(ck.ZNB11, type="response")
+E <- ck.fl$number-mu
+#EP2 <- E/sqrt(9.422133*mu)
+op <- par(mfrow=c(1,2))
+plot(x=mu, y=E, main="Response residuals")
+plot(x=mu, y=EP, main="Pearson residuals")
+#plot(x=mu, Y=EP2, main = "Pearson residual scaled")
+#plot(x=mu, y=ED, main = "Deviance residuals")
+par(op) 
+
+
+# TB
+tb.ZNB <- zeroinfl(f1, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
+summary(tb.ZNB)
+
+f7 = formula(number ~ year+month+veg+shore | year+month+veg+shore)
+f11 = formula(number ~ year+month+veg +shore | year+ month)
+f15 = formula(number ~ year+month+veg +shore | year+month+shore)
+
+f8 = formula(number ~ year+month+veg+shore | month)
+f9 = formula(number ~ year+month+veg | month)
+f10 = formula(number ~ year+month+veg | year+ month)
+f11 = formula(number ~ year+month+veg +shore | year+ month)
+f12 = formula(number ~ year+month+veg +shore | year+ month +veg)
+f1 = formula(number ~ year+month+veg+bottom+shore | year+month+veg+bottom+shore)
+f13 = formula(number ~ year+veg+shore| year+veg )
+f14 = formula(number ~ year+veg+shore| veg)
+f15 = formula(number ~ year+month+veg +shore | year+month+shore)
+
+tb.ZNB7 <- zeroinfl(f7, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
+tb.ZNB8 <- zeroinfl(f8, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
+tb.ZNB1A <- zeroinfl(f1A, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
+tb.ZNB1B <- zeroinfl(f1B, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
+tb.ZNB1C <- zeroinfl(f1C, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
+tb.ZNB2 <- zeroinfl(f2, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
+tb.ZNB2A <- zeroinfl(f2A, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
+tb.ZNB2B <- zeroinfl(f2B, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
+tb.ZNB9 <- zeroinfl(f9, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
+tb.ZNB10 <- zeroinfl(f10, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
+tb.ZNB11 <- zeroinfl(f11, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
+tb.ZNB12 <- zeroinfl(f12, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
+tb.ZNB13 <- zeroinfl(f13, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
+tb.ZNB14 <- zeroinfl(f14, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
+tb.ZNB15 <- zeroinfl(f15, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude) 
+
+lrtest(tb.ZNB, tb.ZNB1A) #fit equally
+lrtest(tb.ZNB1A, tb.ZNB1B) #1B does a better job
+lrtest(tb.ZNB1B, tb.ZNB1C) #fits equal
+lrtest(tb.ZNB1C, tb.ZNB2) #fits equal
+lrtest(tb.ZNB1C, tb.ZNB2A) #fits equal
+lrtest(tb.ZNB2A, tb.ZNB2B) #fits equal
+lrtest(tb.ZNB1B, tb.ZNB7) # 7 is better
+lrtest(tb.ZNB7, tb.ZNB8) # 8 is better 
+lrtest(tb.ZNB8, tb.ZNB9) #9 is better
+lrtest(tb.ZNB9, tb.ZNB10) # 10 is better
+lrtest(tb.ZNB10, tb.ZNB11) #11 is better
+lrtest(tb.ZNB11, tb.ZNB12) #12 is better
+lrtest(tb.ZNB12, tb.ZNB13) #not better
+lrtest(tb.ZNB12, tb.ZNB14) #14 is better
+lrtest(tb.ZNB7, tb.ZNB11) #equal
+
+AIC(tb.ZNB1B, tb.ZNB1C, tb.ZNB2, tb.ZNB2A, tb.ZNB2B, tb.ZNB7, tb.ZNB8, tb.ZNB9, tb.ZNB10, tb.ZNB11, tb.ZNB12, tb.ZNB13, tb.ZNB14, tb.ZNB15)
+#7 or 11 is better 
+summary(tb.ZNB7)
+summary(tb.ZNB11)
+
+EP <- residuals(tb.ZNB11, type="pearson")
+mu <- residuals(tb.ZNB11, type="response")
+E <- tb.fl$number-mu
+#EP2 <- E/sqrt(9.422133*mu)
+op <- par(mfrow=c(1,2))
+plot(x=mu, y=E, main="Response residuals")
+plot(x=mu, y=EP, main="Pearson residuals")
+#plot(x=mu, Y=EP2, main = "Pearson residual scaled")
+#plot(x=mu, y=ED, main = "Deviance residuals")
+par(op) 
+
+plot(predict(tb.ZNB11), tb.fl$number)
+
+
+
+#CH
+ch.ZNB2 <- zeroinfl(f2, dist='negbin', link="logit", data=ch.fl, na.action=na.exclude) 
+summary(ch.ZNB)
+
+#   f1A = formula(number ~ year+month+veg+bottom+shore | year +month+veg+bottom) #drop shore
+#   f1B = formula(number ~ year+month+veg+bottom | year +month+veg+bottom+shore) #drop shore
+#   f1C = formula(number ~ year+month+veg+bottom | year+month+veg+bottom)       #drop shore
+
+# f2 = formula(number ~ year+month+veg+bottom | year+month+veg) #drop bottom
+# f1C = formula(number ~ year+month+veg+bottom | year+month+veg+bottom)  
+fch1 <- formula(number ~ year+month+veg+bottom | month+veg)             #best option, nearly all variable are significant
+#fch2 <- formula(number ~ year+month+veg+bottom | year+ veg) #not a good option
+fch3 <- formula(number ~ year+month+veg+bottom | year+ month)
+fch4 <- formula(number ~ year+month+veg+bottom | year)
+fch5 <- formula(number ~ year+month+veg+bottom | month)
+fch6 <- formula(number ~ year+veg+bottom | year+ month)
+
+ch.ZNB1C <- zeroinfl(f1C, dist='negbin', link="logit", data=ch.fl, na.action=na.exclude) 
+ch.ZNBch1 <- zeroinfl(fch1, dist='negbin', link="logit", data=ch.fl, na.action=na.exclude) 
+#ch.ZNBch2 <- zeroinfl(fch2, dist='negbin', link="logit", data=ch.fl, na.action=na.exclude) 
+ch.ZNBch3 <- zeroinfl(fch3, dist='negbin', link="logit", data=ch.fl, na.action=na.exclude) 
+ch.ZNBch4 <- zeroinfl(fch4, dist='negbin', link="logit", data=ch.fl, na.action=na.exclude) 
+ch.ZNBch5 <- zeroinfl(fch5, dist='negbin', link="logit", data=ch.fl, na.action=na.exclude) 
+ch.ZNBch6 <- zeroinfl(fch6, dist='negbin', link="logit", data=ch.fl, na.action=na.exclude) 
+lrtest(ch.ZNB2, ch.ZNB1C) #equal
+lrtest(ch.ZNB2, ch.ZNBch1) #ch1 better
+lrtest(ch.ZNB1C, ch.ZNBch1) #ch1 better
+lrtest(ch.ZNBch1, ch.ZNBch3) #ch3 better
+lrtest(ch.ZNBch3, ch.ZNBch4) #ch4 is better
+lrtest(ch.ZNBch4, ch.ZNBch5) #ch5 is better
+lrtest(ch.ZNBch3, ch.ZNBch6) #equal
+lrtest(ch.ZNBch5, ch.ZNBch6) #ch6 is better
+
+AIC(ch.ZNB2, ch.ZNB1C,ch.ZNBch1,ch.ZNBch3, ch.ZNBch4, ch.ZNBch5, ch.ZNBch6)
+
+#3 and 6 are about equal but the lrtest indicates that 6 is better
+# so fch6 will be the final model 
+summary(ch.ZNBch6)
+
+# JX - problem child 
+# f1 = formula(number ~ year+month+veg+bottom+shore | year +month+veg+bottom+shore)
+# f2 = formula(number ~ year+month+veg+bottom | year+month+veg) #drop bottom 
+#jx.ZNB1 =  zeroinfl(f1, dist='negbin', link="logit", data=jx.fl, na.action=na.exclude)
+
+jx.ZNB2 <- zeroinfl(f2, dist='negbin', link="logit", data=jx.fl, na.action=na.exclude)
+summary(jx.ZNB2)
+
+fjx1 <- formula(number ~ year+month+veg+bottom)
+fjx2 <- formula(number ~ year+month+veg)
+fjx3 <- formula(number ~ year+month+veg |year)
+fjx4 <- formula(number ~ year+month+veg |year +month)
+
+jx.ZNBjx1 <- zeroinfl(fjx1, dist='negbin', link="logit", data=jx.fl, na.action=na.exclude)
+jx.ZNBjx2 <- zeroinfl(fjx2, dist='negbin', link="logit", data=jx.fl, na.action=na.exclude)
+jx.ZNBjx3 <- zeroinfl(fjx3, dist='negbin', link="logit", data=jx.fl, na.action=na.exclude)
+jx.ZNBjx4 <- zeroinfl(fjx4, dist='negbin', link="logit", data=jx.fl, na.action=na.exclude)
+
+lrtest(jx.ZNB2, jx.ZNBjx1) #equal
+lrtest(jx.ZNB2, jx.ZNBjx2) #equal
+lrtest(jx.ZNB2, jx.ZNBjx3) #jx3 much better
+lrtest(jx.ZNBjx3, jx.ZNBjx4) #jx4 better
+
+AIC(jx.ZNB2, jx.ZNBjx1,jx.ZNBjx2, jx.ZNBjx3, jx.ZNBjx4 )
+
+summary(jx.ZNBjx4)
+summary(jx.ZNBjx2)
+
+
+# IR 
+f1 = formula(number ~ year+month+veg+bottom+shore | year+month+veg+bottom+shore)
+ir.ZNB <- zeroinfl(f1, dist='negbin', link="logit", data=ir.fl, na.action=na.exclude)
+summary(ir.ZNB)
+
+fir1 <- formula(number ~ year+veg +month +bottom|month+veg+shore)
+fir2 <- formula(number ~ year+veg +month +bottom|year+month+veg+shore)
+fir3 <- formula(number ~ year+veg +bottom|year+month+veg+shore)
+fir4 <- formula(number ~ year+veg |year+month+veg+shore)
+fir5 <- formula(number ~ year+veg |month+veg+shore)
+
+ir.ZNBir1 <- zeroinfl(fir1, dist='negbin', link="logit", data=ir.fl, na.action=na.exclude)
+ir.ZNBir2 <- zeroinfl(fir2, dist='negbin', link="logit", data=ir.fl, na.action=na.exclude)
+ir.ZNBir3 <- zeroinfl(fir3, dist='negbin', link="logit", data=ir.fl, na.action=na.exclude)
+ir.ZNBir4 <- zeroinfl(fir4, dist='negbin', link="logit", data=ir.fl, na.action=na.exclude)
+ir.ZNBir5 <- zeroinfl(fir5, dist='negbin', link="logit", data=ir.fl, na.action=na.exclude)
+
+
+lrtest(ir.ZNB, ir.ZNBir1)
+lrtest(ir.ZNB, ir.ZNBir2) #equal
+lrtest(ir.ZNBir1, ir.ZNBir2) #error
+lrtest(ir.ZNBir4, ir.ZNBir5) #5 is much better
+
+summary(ir.ZNBir1)
+summary(ir.ZNBir2)
+summary(ir.ZNBir4)
+summary(ir.ZNBir5)
+
+AIC(ir.ZNB,ir.ZNBir1,ir.ZNBir2, ir.ZNBir3, ir.ZNBir4, ir.ZNBir5)
+
+#final model will be ir.ZNBir5
+
+
+
+    
+#validation plots page 285 
+EstPar <- coef(ZNB, type="zero")
+Z <- model.matrix(ZNB, model="zero")
+g <- Z %*% EstPar
+p <- exp(g)/(1+exp(g))
+
+EstPar2 <- coef(ZNB, model="count")
+X <- model.matrix(ZNB, model="count")
+g <- X %*% EstPar2
+mu1 <- exp(g)
+
+mu <- (1-p)*mu1
+
+#variance and pearson residual
+
+K <- ZNB$theta 
+VarY <- ((mu^2)/ k+mu)*(1-p) + (mu^2) * (p^2+p)
+EP <- (ZNB$number - mu) /sqrt(VarY) #Pearson residuals
+plot(x=mu, y=EP, main="Pearson residuals")   
+
+
+    
+
+    
+    
+    
+
 
 
 
