@@ -2490,156 +2490,167 @@ ap.rf.grid <- ref.grid(BestModelAP_zanb)
 test_ap = summary(ap.rf.grid)
 
 library(dplyr)
-lsm.AP       <- lsmeans(BestModelAP_zanb, "year", data = ap.fl)
-lsm.AP <- as.data.frame(transform(summary(lsm.AP))) %>% select(year, lsmean, SE) 
+lsm.AP       <- lsmeans(BestModelAP_zanb, "year", data = ap.fl, mode="response")
+estimate.AP <- as.data.frame(transform(summary(lsm.AP))) %>% select(year, lsmean, SE) 
 
-lsm.CK       <- lsmeans(BestModelCK, "year", data = ck.fl)
-lsm.CK <- as.data.frame(transform(summary(lsm.CK))) %>% select(year, lsmean, SE) 
+lsm.CK       <- lsmeans(BestModelCK, "year", data = ck.fl, mode="response")
+estimate.CK <- as.data.frame(transform(summary(lsm.CK))) %>% select(year, lsmean, SE) 
 
-lsm.TB       <- lsmeans(BestModelTB, "year", data = tb.fl)
-lsm.TB <- as.data.frame(transform(summary(lsm.TB))) %>% select(year, lsmean, SE) 
+lsm.TB       <- lsmeans(BestModelTB, "year", data = tb.fl, mode="response")
+estimate.TB <- as.data.frame(transform(summary(lsm.TB))) %>% select(year, lsmean, SE) 
 
-lsm.CH       <- lsmeans(BestModelCH, "year", data = ch.fl)
-lsm.CH <- as.data.frame(transform(summary(lsm.CH))) %>% select(year, lsmean, SE) 
+lsm.CH       <- lsmeans(BestModelCH, "year", data = ch.fl, mode="response")
+estimate.CH <- as.data.frame(transform(summary(lsm.CH))) %>% select(year, lsmean, SE) 
 
-lsm.JX       <- lsmeans(BestModelJX, "year", data = jx.fl)
-lsm.JX <- as.data.frame(transform(summary(lsm.JX))) %>% select(year, lsmean, SE) 
+lsm.JX       <- lsmeans(BestModelJX, "year", data = jx.fl, mode="response")
+estimate.JX <- as.data.frame(transform(summary(lsm.JX))) %>% select(year, lsmean, SE) 
 
-lsm.IR       <- lsmeans(BestModelIR, "year", data = ir.fl)
-lsm.IR <- as.data.frame(transform(summary(lsm.IR))) %>% select(year, lsmean, SE) 
+lsm.IR       <- lsmeans(BestModelIR, "year", data = ir.fl, mode="response")
+estimate.IR <- as.data.frame(transform(summary(lsm.IR))) %>% select(year, lsmean, SE) 
 
-# Use lsmeans to determine the least square mean of positive values. 
-# Display the response scale (as opposed to the log scale which is reported for the Poisson, and the logit scale reported for the Binomial)
+#Make a few thing that we need below for Monte Carlo 
+# determining the number of trips per year
+sample.sizeAP        <- as.data.frame(table(ap.fl$year))
+names(sample.sizeAP) <- c("year","num.trips")
+sample.sizeAP$year   <- as.character(sample.sizeAP$year)
 
-#POSITIVE
-test<- summary(lsmeans(final_ap.pos, 'year', data=ap.pos))
-LSM_ap.pos <- summary(lsmeans(final_ap.pos, 'year', data=ap.pos), type="response")
-LSM_ck.pos <- summary(lsmeans(final_ck.pos, 'year', data=ck.pos), type="response")
-LSM_tb.pos <- summary(lsmeans(final_tb.pos, 'year', data=tb.pos), type="response")
-LSM_ch.pos <- summary(lsmeans(final_ch.pos, 'year', data=ch.pos), type="response")
-LSM_jx.pos <- summary(lsmeans(final_jx.pos, 'year', data=jx.pos), type="response")
-LSM_ir.pos <- summary(lsmeans(final_ir.pos, 'year', data=ir.pos), type="response")
+sample.sizeCK        <- as.data.frame(table(ck.fl$year))
+names(sample.sizeCK) <- c("year","num.trips")
+sample.sizeCK$year   <- as.character(sample.sizeCK$year)
 
-#BINOMIAL (with type="response" this is equal to proportion positive becuase its like a percentage- proportion of 0s to 1s)
-LSM_ap.bin <- summary(lsmeans(final_ap.bin, 'year', data=ap.bin), type="response")
-LSM_ck.bin <- summary(lsmeans(final_ck.bin, 'year', data=ck.bin), type="response")
-LSM_tb.bin <- summary(lsmeans(final_tb.bin, 'year', data=tb.bin), type="response")
-LSM_ch.bin <- summary(lsmeans(final_ch.bin, 'year', data=ch.bin), type="response")
-LSM_jx.bin <- summary(lsmeans(final_jx.bin, 'year', data=jx.bin), type="response")
-LSM_ir.bin <- summary(lsmeans(final_ir.bin, 'year', data=ir.bin), type="response")
+sample.sizeTB        <- as.data.frame(table(tb.fl$year))
+names(sample.sizeTB) <- c("year","num.trips")
+sample.sizeTB$year   <- as.character(sample.sizeTB$year)
 
-##### ERROR PROPAGATION TO FIND FINAL VALUE (pos * prop.pos)_YOY #####
-# multiply positive lsmean by porportion positive lsmean and use error propagation to determine value and associated error
-# using the package Propagate. See example below. 
-# https://www.rdocumentation.org/packages/propagate/versions/1.0-4/topics/propagate    
+sample.sizeCH        <- as.data.frame(table(ch.fl$year))
+names(sample.sizeCH) <- c("year","num.trips")
+sample.sizeCH$year   <- as.character(sample.sizeCH$year)
 
-#Must use a for loop to do the error propagation because it goes one row at a time without the loop and its very cumbersome 
-#error propagation steps start with the EXPR command where you tell it what the expression is going to be. 
-# The the expression setup gets used within the propagation step below with the actual dataframe (DF)
+sample.sizeJX        <- as.data.frame(table(jx.fl$year))
+names(sample.sizeJX) <- c("year","num.trips")
+sample.sizeJX$year   <- as.character(sample.sizeJX$year)
 
+sample.sizeIR        <- as.data.frame(table(ir.fl$year))
+names(sample.sizeIR) <- c("year","num.trips")
+sample.sizeIR$year   <- as.character(sample.sizeIR$year)
 
-#AP
-num.yr = length(LSM_ap.pos$year)  
-df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
+# Use lsmeans to determine the least square mean of values. 
+#to display lsmeans on the response scale (with a glm model) as oppose to the log/logit scale you can do this:
+# LSM_ap.pos <- summary(lsmeans(BestModelAP, 'year', data=ap.fl), type="response")
+#However, this above method doesnt apply to every model supported by lsmeans. For example, zeroinfl and hurdle models 
+# are returned on the response scale (on the scale of the observed counts) as the default. For more info see below source.
+# https://rdrr.io/cran/lsmeans/man/models.html#heading-17
+
+# CREATE INDEX WITH MONTE CARLO IF YOU WANT #####
+# creating the index through Monte Carlo simulations
+# Technically don't have to if you just want the estimates and the standard errors. 
+#Monte Carlo simulations are necessary here because its the only way to incorporate the lsmeans error into the estimate and 
+#then determine CV, and 95% conf intervals. Without a distribution you can't get to the confidence intervals which are what people actually care about. 
+# This is borrowed from tuning_index_update.R from Hogfish2017 at FWRI. This monte carlo method seems standard among the group. 
+
+# AP Monte Carlo ####
+#making an empty matrix to fill with results 
+num.yr <- length(estimate.AP$year)
+index.dist <- matrix(data=NA,nrow=num.yr,ncol=8) 
+num.iter=10000
+
+#build the random distribution (i.e the random deviates)
 for (i in 1:num.yr) {
-  x = c(LSM_ap.pos$rate[i], LSM_ap.pos$SE[i])
-  y= c(LSM_ap.bin$prob[i], LSM_ap.bin$SE[i])
-  EXPR <- expression(x*y)
-  DF <- cbind(x,y)
-  RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
-  df[i,] <- t(matrix(RES$sim))
+  rand.1    <- qt(runif(num.iter,0.001,0.999),sample.sizeAP$num.trips) 
+  
+  #create the distribution of the data 
+  APdist <- estimate.AP$lsmean[i] + estimate.AP$SE[i] * rand.1 
+  
+  index.dist[i,1] <- mean(APdist) #take the mean of the dist (aka temp)
+  index.dist[i,2] <- sd(APdist) #take the sd of the dist
+  index.dist[i,3] <- sd(APdist)/mean(APdist) #create CV
+  index.dist[i,4:8] <- quantile(APdist,probs=c(0.025,0.25,0.50,0.75,0.975))
 }
-Mean_AP <- df %>% cbind(LSM_ap.pos$year)
-colnames(Mean_AP) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+Upper        <- index.dist[ ,8] - index.dist[ ,7]
+Lower        <- index.dist[ ,5] - index.dist[ ,4]
+NominalMean  = as.vector(tapply(ap.fl$number, ap.fl$year, mean))
+NominalSD    = as.vector(tapply(ap.fl$number, ap.fl$year, sd))
+NominalCV    = NominalSD /NominalMean
+APindex <- as.data.frame(cbind(sample.sizeAP, index.dist, Upper, Lower, NominalMean, NominalSD, NominalCV ))
+names(APindex) <- c("year","Total.num.trips","Mean","std.dev", "CV","Low.95","Qtr.1","Median","Qtr.3","Up.95","Upper",
+                  "Lower", "NominalMean", "NominalSD", "NominalCV" )
+APindex$year = as.numeric(APindex$year)
+  
+# CK Monte Carlo ####
+#making an empty matrix to fill with results 
+num.yr <- length(estimate.CK$year)
+index.dist <- matrix(data=NA,nrow=num.yr,ncol=8) 
+num.iter=10000
 
-#CK
-num.yr = length(LSM_ck.pos$year)  
-df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
+#build the random distribution (i.e the random deviates)
 for (i in 1:num.yr) {
-  x = c(LSM_ck.pos$rate[i], LSM_ck.pos$SE[i])
-  y= c(LSM_ck.bin$prob[i], LSM_ck.bin$SE[i])
-  EXPR <- expression(x*y)
-  DF <- cbind(x,y)
-  RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
-  df[i,] <- t(matrix(RES$sim))
+  rand.1    <- qt(runif(num.iter,0.001,0.999),sample.sizeCK$num.trips) 
+  
+  #create the distribution of the data 
+  CKdist <- estimate.CK$lsmean[i] + estimate.CK$SE[i] * rand.1 
+  
+  index.dist[i,1] <- mean(CKdist) #take the mean of the dist (aka temp)
+  index.dist[i,2] <- sd(CKdist) #take the sd of the dist
+  index.dist[i,3] <- sd(CKdist)/mean(CKdist) #create CV
+  index.dist[i,4:8] <- quantile(CKdist,probs=c(0.025,0.25,0.50,0.75,0.975))
 }
-Mean_CK <- df %>% cbind(LSM_ck.pos$year)
-colnames(Mean_CK) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+Upper        <- index.dist[ ,8] - index.dist[ ,7]
+Lower        <- index.dist[ ,5] - index.dist[ ,4]
+NominalMean  = as.vector(tapply(ck.fl$number, ck.fl$year, mean))
+NominalSD    = as.vector(tapply(ck.fl$number, ck.fl$year, sd))
+NominalCV    = NominalSD /NominalMean
+CKindex <- as.data.frame(cbind(sample.sizeCK, index.dist, Upper, Lower, NominalMean, NominalSD, NominalCV ))
+names(CKindex) <- c("year","Total.num.trips","Mean","std.dev", "CV","Low.95","Qtr.1","Median","Qtr.3","Up.95","Upper",
+                    "Lower", "NominalMean", "NominalSD", "NominalCV" )
+CKindex$year = as.numeric(CKindex$year)
 
-#TB
-num.yr = length(LSM_tb.pos$year)  
-df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
-for (i in 1:num.yr) {
-  x = c(LSM_tb.pos$rate[i], LSM_tb.pos$SE[i])
-  y= c(LSM_tb.bin$prob[i], LSM_tb.bin$SE[i])
-  EXPR <- expression(x*y)
-  DF <- cbind(x,y)
-  RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
-  df[i,] <- t(matrix(RES$sim))
-}
-Mean_TB <- df %>% cbind(LSM_tb.pos$year)
-colnames(Mean_TB) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
 
-#CH
-num.yr = length(LSM_ch.pos$year)  
-df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
-for (i in 1:num.yr) {
-  x = c(LSM_ch.pos$rate[i], LSM_ch.pos$SE[i])
-  y= c(LSM_ch.bin$prob[i], LSM_ch.bin$SE[i])
-  EXPR <- expression(x*y)
-  DF <- cbind(x,y)
-  RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
-  df[i,] <- t(matrix(RES$sim))
-}
-Mean_CH <- df %>% cbind(LSM_ch.pos$year)
-colnames(Mean_CH) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+# TB Monte Carlo ####
+# CH Monte Carlo ####
+# JX Monte Carlo ####
+# IR Monte Carlo ####
 
-#JX
-num.yr = length(LSM_jx.pos$year)  
-df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
-for (i in 1:num.yr) {
-  x = c(LSM_jx.pos$rate[i], LSM_jx.pos$SE[i])
-  y= c(LSM_jx.bin$prob[i], LSM_jx.bin$SE[i])
-  EXPR <- expression(x*y)
-  DF <- cbind(x,y)
-  RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
-  df[i,] <- t(matrix(RES$sim))
-}
-Mean_JX <- df %>% cbind(LSM_jx.pos$year)
-colnames(Mean_JX) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
 
-#IR
-num.yr = length(LSM_ir.pos$year)  
-df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
-for (i in 1:num.yr) {
-  x = c(LSM_ir.pos$rate[i], LSM_ir.pos$SE[i])
-  y= c(LSM_ir.bin$prob[i], LSM_ir.bin$SE[i])
-  EXPR <- expression(x*y)
-  DF <- cbind(x,y)
-  RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
-  df[i,] <- t(matrix(RES$sim))
-}
-Mean_IR <- df %>% cbind(LSM_ir.pos$year)
-colnames(Mean_IR) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+
+
+
+
+# PLOT INDICES ####
+
+library(reshape2)
+library(ggplot2)
+
+APred <- APindex[,c(1,3,13)] %>% melt(id=c("year"))
+
+library(ggplot2)
+
+ggplot(APred, aes(x=year, y=value, color=variable))+
+geom_line()  
+
+
+
+test <- CKindex[,c(1,3,13)]
+test <- melt(test, id=c("year"))
+ggplot(test, aes(x=year, y=value, color=variable))+
+  geom_line()  
 
 
 ##### EXPORT PREDICTED INDEX_YOY ####
 #export to csv _PERSONAL COMPUTER
-#write.csv(Mean_AP, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/AP_yoy_index.csv")
-#write.csv(Mean_IR, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/IR_yoy_index.csv")
-#write.csv(Mean_JX, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/JX_yoy_index.csv")
-#write.csv(Mean_CH, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/CH_yoy_index.csv")
-#write.csv(Mean_TB, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/TB_yoy_index.csv")
-#write.csv(Mean_CK, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/CK_yoy_index.csv")
-
+#write.csv(Mean_AP, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/UpdatedIndices/AP_yoy_index.csv")
+#write.csv(Mean_IR, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/UpdatedIndices/IR_yoy_index.csv")
+#write.csv(Mean_JX, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/UpdatedIndices/JX_yoy_index.csv")
+#write.csv(Mean_CH, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/UpdatedIndices/CH_yoy_index.csv")
+#write.csv(Mean_TB, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/UpdatedIndices/TB_yoy_index.csv")
+#write.csv(Mean_CK, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/UpdatedIndices/CK_yoy_index.csv")
 
 #export to csv _WORK COMPUTER
-write.csv(Mean_AP, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/DeltaMethod_Indices/AP_yoy_index.csv")
-write.csv(Mean_IR, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/DeltaMethod_Indices/IR_yoy_index.csv")
-write.csv(Mean_JX, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/DeltaMethod_Indices/JX_yoy_index.csv")
-write.csv(Mean_CH, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/DeltaMethod_Indices/CH_yoy_index.csv")
-write.csv(Mean_TB, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/DeltaMethod_Indices/TB_yoy_index.csv")
-write.csv(Mean_CK, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/DeltaMethod_Indices/CK_yoy_index.csv")
+write.csv(estimate.AP, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/AP_yoy_index.csv")
+write.csv(estimate.CK, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/IR_yoy_index.csv")
+write.csv(estimate.TB, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/JX_yoy_index.csv")
+write.csv(estimate.CH, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/CH_yoy_index.csv")
+write.csv(estimate.JX, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/TB_yoy_index.csv")
+write.csv(estimate.IR, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/CK_yoy_index.csv")
 
 ##### ADULT SECTION ####
 # Now that the YOY index is done... I need to load the adult data because I need this to predict
@@ -3644,3 +3655,115 @@ pR <- bh(x, a=coef(srBH_ap))
 xlmts=range(c(x,AP_bio$adult))
 plot(yoy~adult, data=AP_bio, xlim=xlmts)
 lines(pR~x, lwd=2)
+
+#POSITIVE
+test<- summary(lsmeans(final_ap.pos, 'year', data=ap.pos))
+LSM_ap.pos <- summary(lsmeans(final_ap.pos, 'year', data=ap.pos), type="response")
+LSM_ck.pos <- summary(lsmeans(final_ck.pos, 'year', data=ck.pos), type="response")
+LSM_tb.pos <- summary(lsmeans(final_tb.pos, 'year', data=tb.pos), type="response")
+LSM_ch.pos <- summary(lsmeans(final_ch.pos, 'year', data=ch.pos), type="response")
+LSM_jx.pos <- summary(lsmeans(final_jx.pos, 'year', data=jx.pos), type="response")
+LSM_ir.pos <- summary(lsmeans(final_ir.pos, 'year', data=ir.pos), type="response")
+
+#BINOMIAL (with type="response" this is equal to proportion positive becuase its like a percentage- proportion of 0s to 1s)
+LSM_ap.bin <- summary(lsmeans(final_ap.bin, 'year', data=ap.bin), type="response")
+LSM_ck.bin <- summary(lsmeans(final_ck.bin, 'year', data=ck.bin), type="response")
+LSM_tb.bin <- summary(lsmeans(final_tb.bin, 'year', data=tb.bin), type="response")
+LSM_ch.bin <- summary(lsmeans(final_ch.bin, 'year', data=ch.bin), type="response")
+LSM_jx.bin <- summary(lsmeans(final_jx.bin, 'year', data=jx.bin), type="response")
+LSM_ir.bin <- summary(lsmeans(final_ir.bin, 'year', data=ir.bin), type="response")
+
+##### ERROR PROPAGATION TO FIND FINAL VALUE (pos * prop.pos)_YOY 
+# multiply positive lsmean by porportion positive lsmean and use error propagation to determine value and associated error
+# using the package Propagate. See example below. 
+# https://www.rdocumentation.org/packages/propagate/versions/1.0-4/topics/propagate    
+
+#Must use a for loop to do the error propagation because it goes one row at a time without the loop and its very cumbersome 
+#error propagation steps start with the EXPR command where you tell it what the expression is going to be. 
+# The the expression setup gets used within the propagation step below with the actual dataframe (DF)
+
+
+#AP
+num.yr = length(LSM_ap.pos$year)  
+df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  x = c(LSM_ap.pos$rate[i], LSM_ap.pos$SE[i])
+  y= c(LSM_ap.bin$prob[i], LSM_ap.bin$SE[i])
+  EXPR <- expression(x*y)
+  DF <- cbind(x,y)
+  RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
+  df[i,] <- t(matrix(RES$sim))
+}
+Mean_AP <- df %>% cbind(LSM_ap.pos$year)
+colnames(Mean_AP) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+
+#CK
+num.yr = length(LSM_ck.pos$year)  
+df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  x = c(LSM_ck.pos$rate[i], LSM_ck.pos$SE[i])
+  y= c(LSM_ck.bin$prob[i], LSM_ck.bin$SE[i])
+  EXPR <- expression(x*y)
+  DF <- cbind(x,y)
+  RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
+  df[i,] <- t(matrix(RES$sim))
+}
+Mean_CK <- df %>% cbind(LSM_ck.pos$year)
+colnames(Mean_CK) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+
+#TB
+num.yr = length(LSM_tb.pos$year)  
+df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  x = c(LSM_tb.pos$rate[i], LSM_tb.pos$SE[i])
+  y= c(LSM_tb.bin$prob[i], LSM_tb.bin$SE[i])
+  EXPR <- expression(x*y)
+  DF <- cbind(x,y)
+  RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
+  df[i,] <- t(matrix(RES$sim))
+}
+Mean_TB <- df %>% cbind(LSM_tb.pos$year)
+colnames(Mean_TB) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+
+#CH
+num.yr = length(LSM_ch.pos$year)  
+df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  x = c(LSM_ch.pos$rate[i], LSM_ch.pos$SE[i])
+  y= c(LSM_ch.bin$prob[i], LSM_ch.bin$SE[i])
+  EXPR <- expression(x*y)
+  DF <- cbind(x,y)
+  RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
+  df[i,] <- t(matrix(RES$sim))
+}
+Mean_CH <- df %>% cbind(LSM_ch.pos$year)
+colnames(Mean_CH) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+
+#JX
+num.yr = length(LSM_jx.pos$year)  
+df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  x = c(LSM_jx.pos$rate[i], LSM_jx.pos$SE[i])
+  y= c(LSM_jx.bin$prob[i], LSM_jx.bin$SE[i])
+  EXPR <- expression(x*y)
+  DF <- cbind(x,y)
+  RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
+  df[i,] <- t(matrix(RES$sim))
+}
+Mean_JX <- df %>% cbind(LSM_jx.pos$year)
+colnames(Mean_JX) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+
+#IR
+num.yr = length(LSM_ir.pos$year)  
+df <- data.frame(matrix(data=NA, nrow=num.yr, ncol=6)) #make a dataframe for the loop to store results in
+for (i in 1:num.yr) {
+  x = c(LSM_ir.pos$rate[i], LSM_ir.pos$SE[i])
+  y= c(LSM_ir.bin$prob[i], LSM_ir.bin$SE[i])
+  EXPR <- expression(x*y)
+  DF <- cbind(x,y)
+  RES <- propagate(expr=EXPR, data=DF, type='stat', do.sim=TRUE, verbose=TRUE)
+  df[i,] <- t(matrix(RES$sim))
+}
+Mean_IR <- df %>% cbind(LSM_ir.pos$year)
+colnames(Mean_IR) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+
