@@ -143,6 +143,7 @@ full[,c(2,5:9)] <- lapply(full[,c(2,5:9)], factor)
 
 full.pos<- full %>% subset(number>0)
 full.bin <- full %>% mutate(number=ifelse(number>0,1,0))
+full.bin$month <- as.factor(as.character(full.bin$month))
 
 ap.pos <- droplevels(full.pos %>% subset(bay =='AP'))
 ck.pos <- droplevels(full.pos %>% subset(bay =='CK')) 
@@ -194,11 +195,14 @@ with(ap.fl,tapply(number, list(year,veg),sum))
 with(ap.fl,tapply(number, list(year,bottom),sum))
 with(ap.fl,tapply(number, list(year,shore),sum))
 ap.fl <- subset(ap.fl, shore != "Mangrove") %>% droplevels(ap.fl$shore)
+ap.fl$month <- as.factor(as.character(ap.fl$month))
+
 
 #CK
 #month
 with(ck.pos,tapply(number, list(year,month),sum))
 ck.pos$month[ck.pos$month<6]=6
+ck.pos$month <- as.factor(as.character(ck.pos$month))
 #veg
 with(ck.pos,tapply(number, list(year,veg),sum))
 #bottom
@@ -220,11 +224,12 @@ with(ck.fl,tapply(number, list(year,shore),sum))
 ck.fl <- droplevels(subset(ck.fl, shore != "Terrestrial"))
 ck.fl$shore[ck.fl$shore== "Mangrove"] = "Structure"
 ck.fl <- droplevels(subset(ck.fl, shore != "Mangrove"))
+ck.fl$month <- as.factor(as.character(ck.fl$month))
 
 #TB
 with(tb.pos,tapply(number, list(year,month),sum))
 tb.pos$month[tb.pos$month<5]=5
-
+tb.pos$month <- as.factor(as.character(tb.pos$month))
 with(tb.pos,tapply(number, list(year,veg),sum))
 with(tb.pos,tapply(number, list(year,bottom),sum))
 tb.pos <- droplevels(subset(tb.pos, bottom != "unknown"))
@@ -235,17 +240,20 @@ with(tb.fl,tapply(number, list(year,veg),sum))
 with(tb.fl,tapply(number, list(year,bottom),sum))
 tb.fl <- droplevels(subset(tb.fl, bottom != "unknown"))
 with(tb.fl,tapply(number, list(year,shore),sum))
+tb.fl$month <- as.factor(as.character(tb.fl$month))
 
 #CH - no aggregation needed
 with(ch.pos,tapply(number, list(year,month),sum))
 with(ch.pos,tapply(number, list(year,veg),sum))
 with(ch.pos,tapply(number, list(year,bottom),sum))
 with(ch.pos,tapply(number, list(year,shore),sum))
+ch.pos$month <- as.factor(as.character(ch.pos$month))
 
 with(ch.fl,tapply(number, list(year,month),sum))
 with(ch.fl,tapply(number, list(year,veg),sum))
 with(ch.fl,tapply(number, list(year,bottom),sum))
 with(ch.fl,tapply(number, list(year,shore),sum))
+ch.fl$month <- as.factor(as.character(ch.fl$month))
 
 #JX 
 with(jx.pos,tapply(number, list(year,month),sum))
@@ -254,6 +262,7 @@ with(jx.pos,tapply(number, list(year,bottom),sum))
 with(jx.pos,tapply(number, list(year,shore),sum))
 jx.pos$shore[jx.pos$shore== "Terrestrial"] = "Emerge"
 jx.pos <- na.omit(jx.pos) #randomly an NA present
+jx.pos$month <- as.factor(as.character(jx.pos$month))
 
 with(jx.fl,tapply(number, list(year,month),sum))
 with(jx.fl,tapply(number, list(year,veg),sum))
@@ -261,6 +270,7 @@ with(jx.fl,tapply(number, list(year,bottom),sum))
 jx.fl <- droplevels(subset(jx.fl, bottom != "unknown"))
 with(jx.fl,tapply(number, list(year,shore),sum))
 jx.fl <- na.omit(jx.fl)
+jx.fl$month <- as.factor(as.character(jx.fl$month))
 
 #IR - no aggregation needed 
 with(ir.pos,tapply(number, list(year,month),sum))
@@ -269,6 +279,8 @@ with(ir.pos,tapply(number, list(year,bottom),sum))
 with(ir.pos,tapply(number, list(year,shore),sum))
 ir.pos <- na.omit(ir.pos)
 ir.fl <- na.omit(ir.fl)
+ir.pos$month <- as.factor(as.character(ir.pos$month))
+ir.fl$month <- as.factor(as.character(ir.fl$month))
 
 ##### VISUALIZE THE DATA_YOY ########
 #Plot the data
@@ -340,28 +352,38 @@ ir.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=ir.pos, family=gaussian
 #manual way for count models 
 # Pearson chi1/residual deviance
 sum((resid(ap.pos.P,type="pearson"))^2)/ap.pos.P$df.resid #9.37
-sum((resid(ck.pos.P,type="pearson"))^2)/ck.pos.P$df.resid #6.88
-sum((resid(tb.pos.P,type="pearson"))^2)/tb.pos.P$df.resid #14.84
-sum((resid(ch.pos.P,type="pearson"))^2)/ch.pos.P$df.resid #8.48
-sum((resid(jx.pos.P,type="pearson"))^2)/jx.pos.P$df.resid #6.38
-sum((resid(ir.pos.P,type="pearson"))^2)/ir.pos.P$df.resid #21.29
+sum((resid(ck.pos.P,type="pearson"))^2)/ck.pos.P$df.resid #6.30
+sum((resid(tb.pos.P,type="pearson"))^2)/tb.pos.P$df.resid #14.26
+sum((resid(ch.pos.P,type="pearson"))^2)/ch.pos.P$df.resid #8.12
+sum((resid(jx.pos.P,type="pearson"))^2)/jx.pos.P$df.resid #5.79
+sum((resid(ir.pos.P,type="pearson"))^2)/ir.pos.P$df.resid #18.46
 
-# there is evidence of overdispersion for every bay (p values were less than) so use quasipoisson for Positive models (Zuur pg 226)
-ap.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=ap.pos, family=quasipoisson, na.action = na.exclude)
-ck.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=ck.pos, family=quasipoisson, na.action = na.exclude)
-tb.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=tb.pos, family=quasipoisson, na.action = na.exclude)
-ch.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=ch.pos, family=quasipoisson, na.action = na.exclude)
-jx.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=jx.pos, family=quasipoisson, na.action = na.exclude)
-ir.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=ir.pos, family=quasipoisson, na.action = na.exclude)
+#3A. Address overdispersion with different model types ####
+#there is evidence of overdispersion for every bay (p values were less than) so use quasipoisson for Positive models (Zuur pg 226)
+# #decided to avoid QP and opted just for Negative binomial below
+# ap.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=ap.pos, family=quasipoisson, na.action = na.exclude)
+# ck.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=ck.pos, family=quasipoisson, na.action = na.exclude)
+# tb.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=tb.pos, family=quasipoisson, na.action = na.exclude)
+# ch.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=ch.pos, family=quasipoisson, na.action = na.exclude)
+# jx.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=jx.pos, family=quasipoisson, na.action = na.exclude)
+# ir.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=ir.pos, family=quasipoisson, na.action = na.exclude)
+
+# OR, use negative binomial for the positives 
+ap.pos.NB <- glm.nb(number ~ year +month+veg+bottom+shore, data=ap.pos, na.action = na.exclude)
+ck.pos.NB <- glm.nb(number ~ year +month+veg+bottom+shore, data=ck.pos, na.action = na.exclude)
+tb.pos.NB <- glm.nb(number ~ year +month+veg+bottom+shore, data=tb.pos, na.action = na.exclude)
+ch.pos.NB <- glm.nb(number ~ year +month+veg+bottom+shore, data=ch.pos, na.action = na.exclude)
+jx.pos.NB <- glm.nb(number ~ year +month+veg+bottom+shore, data=jx.pos, na.action = na.exclude)
+ir.pos.NB <- glm.nb(number ~ year +month+veg+bottom+shore, data=ir.pos, na.action = na.exclude)
 
 
 #4. Mixture models. Build the poisson, negative binomial with the full datasets ####
 apP <- glm(number ~ year +month+veg+bottom+shore, data=ap.fl, family=poisson, na.action = na.exclude)
-ckP <- glm(number ~ year +month+veg+bottom+shore, data=ck.fl,  na.action = na.exclude)
-tbP <- glm(number ~ year +month+veg+bottom+shore, data=tb.fl,  na.action = na.exclude)
-chP <- glm(number ~ year +month+veg+bottom+shore, data=ch.fl,  na.action = na.exclude)
-jxP <- glm(number ~ year +month+veg+bottom+shore, data=jx.fl,  na.action = na.exclude)
-irP <- glm(number ~ year +month+veg+bottom+shore, data=ir.fl,  na.action = na.exclude)
+ckP <- glm(number ~ year +month+veg+bottom+shore, data=ck.fl, family=poisson,  na.action = na.exclude)
+tbP <- glm(number ~ year +month+veg+bottom+shore, data=tb.fl, family=poisson,  na.action = na.exclude)
+chP <- glm(number ~ year +month+veg+bottom+shore, data=ch.fl, family=poisson, na.action = na.exclude)
+jxP <- glm(number ~ year +month+veg+bottom+shore, data=jx.fl, family=poisson, na.action = na.exclude)
+irP <- glm(number ~ year +month+veg+bottom+shore, data=ir.fl, family=poisson, na.action = na.exclude)
 
 apNB <- glm.nb(number ~ year +month+veg+bottom+shore, data=ap.fl, na.action = na.exclude)
 ckNB <- glm.nb(number ~ year +month+veg+bottom+shore, data=ck.fl,  na.action = na.exclude)
@@ -377,6 +399,15 @@ summary(chNB)
 summary(jxNB)
 summary(irNB)
 
+#odds test shows negative binomial better than poisson
+odTest(apNB)
+odTest(ckNB)
+odTest(tbNB)
+odTest(chNB)
+odTest(jxNB)
+odTest(irNB)
+
+
 #check for basic model fit if it is more that around 1 then there may be excess zeros 
 #see  page 293 of Analysis of Categorical data with R for equation
 # if returns FALSE then we are all good
@@ -390,25 +421,33 @@ summary(irNB)
 
 #check for over-dispersion for full poisson and full NB
 
-sum((resid(apP,type="pearson"))^2)/apP$df.resid #12.10
-sum((resid(apNB,type="pearson"))^2)/apNB$df.resid #1.32
+sum((resid(apP,type="pearson"))^2)/apP$df.resid #9.80
+sum((resid(apNB,type="pearson"))^2)/apNB$df.resid #1.39
 sum((resid(apNB,type="pearson"))^2)/apNB$df.resid> 1+2*(sqrt(2/(apNB$df.residual)))
 sum((resid(apNB,type="pearson"))^2)/apNB$df.resid> 1+3*(sqrt(2/(apNB$df.residual)))
 
-sum((resid(ckP,type="pearson"))^2)/ckP$df.resid #7.45
-sum((resid(ckNB,type="pearson"))^2)/ckNB$df.resid #1.38
+sum((resid(ckP,type="pearson"))^2)/ckP$df.resid #7.36
+sum((resid(ckNB,type="pearson"))^2)/ckNB$df.resid #1.28
+sum((resid(ckNB,type="pearson"))^2)/ckNB$df.resid> 1+2*(sqrt(2/(ckNB$df.residual)))
+sum((resid(ckNB,type="pearson"))^2)/ckNB$df.resid> 1+3*(sqrt(2/(ckNB$df.residual)))
 
-sum((resid(tbP,type="pearson"))^2)/tbP$df.resid #35.57
-sum((resid(tbNB,type="pearson"))^2)/tbNB$df.resid #1.52
+sum((resid(tbP,type="pearson"))^2)/tbP$df.resid #35.14
+sum((resid(tbNB,type="pearson"))^2)/tbNB$df.resid #1.68
+sum((resid(tbNB,type="pearson"))^2)/tbNB$df.resid> 1+2*(sqrt(2/(tbNB$df.residual)))
+sum((resid(tbNB,type="pearson"))^2)/tbNB$df.resid> 1+3*(sqrt(2/(tbNB$df.residual)))
 
-sum((resid(chP,type="pearson"))^2)/chP$df.resid #17.14
-sum((resid(chNB,type="pearson"))^2)/chNB$df.resid #1.53
+sum((resid(chP,type="pearson"))^2)/chP$df.resid #16.98
+sum((resid(chNB,type="pearson"))^2)/chNB$df.resid #1.52
+sum((resid(chNB,type="pearson"))^2)/chNB$df.resid> 1+2*(sqrt(2/(chNB$df.residual)))
+sum((resid(chNB,type="pearson"))^2)/chNB$df.resid> 1+3*(sqrt(2/(chNB$df.residual)))
 
-sum((resid(jxP,type="pearson"))^2)/jxP$df.resid #3.98
-sum((resid(jxNB,type="pearson"))^2)/jxNB$df.resid #1.43
+sum((resid(jxP,type="pearson"))^2)/jxP$df.resid #3.95
+sum((resid(jxNB,type="pearson"))^2)/jxNB$df.resid #1.34
+sum((resid(jxNB,type="pearson"))^2)/jxNB$df.resid> 1+2*(sqrt(2/(jxNB$df.residual)))
+sum((resid(jxNB,type="pearson"))^2)/jxNB$df.resid> 1+3*(sqrt(2/(jxNB$df.residual)))
 
-sum((resid(irP,type="pearson"))^2)/irP$df.resid #47
-sum((resid(irNB,type="pearson"))^2)/irNB$df.resid #2.11
+sum((resid(irP,type="pearson"))^2)/irP$df.resid #46
+sum((resid(irNB,type="pearson"))^2)/irNB$df.resid #1.93
 
 #Negative binomial reduces dispersion quite a bit but some guidelines indicate poor fit. Lets try model selection and see if that improves things
 # before we foray into the ZIP and ZINB models 
@@ -419,19 +458,7 @@ library(pscl)
 
 #build additional models used for model selection below 
 f1 = formula(number ~ year+month+veg+bottom+shore | year+month+veg+bottom+shore)
-f1A = formula(number ~ year+month+veg+bottom+shore | year +month+veg+bottom) #drop shore
-f1B = formula(number ~ year+month+veg+bottom | year +month+veg+bottom+shore) #drop shore
-f1C = formula(number ~ year+month+veg+bottom | year+month+veg+bottom)       #drop shore
-f2 = formula(number ~ year+month+veg+bottom | year+month+veg) #drop bottom
-f2A = formula(number ~ year+month+veg| year+month+veg +bottom) #drop bottom
-f2B = formula(number ~ year+month+veg| year+month+veg) #drop bottom
-f3 = formula(number ~ year+month+veg| year+month) #drop veg
-f3A = formula(number ~ year+month| year+month +veg) #drop veg
-f3B = formula(number ~ year+month| year+month) #drop veg
-f4 = formula(number ~ year+month| year) #drop month
-f4A = formula(number ~ year| year + month) #drop month
-f4B = formula(number ~ year| year) #drop month
-
+# f1C = formula(number ~ year+month+veg+bottom | year+month+veg+bottom)       #drop shore
 
 ap.ZP <- zeroinfl(f1, dist='poisson', link="logit", data=ap.fl, na.action = na.exclude)
 ck.ZP <- zeroinfl(f1, dist='poisson', link="logit", data=ck.fl, na.action = na.exclude)
@@ -448,32 +475,56 @@ tb.ZNB <- zeroinfl(f1, dist='negbin', link="logit", data=tb.fl, na.action = na.e
 # stack exchange says this is due to the fact that my design matrix is non invertible which is due to
 # linearly dependent columns (ie.strongly correlated variables)
 #https://stats.stackexchange.com/questions/76488/error-system-is-computationally-singular-when-running-a-glm
+#problem fitting ch and jx. address this in model validation section below
 
 ch.ZNB <- zeroinfl(f1C, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
 jx.ZNB <- zeroinfl(f1C, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude)
 ir.ZNB <- zeroinfl(f1, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude)
 
-lrtest(ap.ZP, ap.ZNB) #ZINB is better for AP than is ZIP
-lrtest(ck.ZP, ck.ZNB) #NB is better than ZIP
-lrtest(tb.ZP, tb.ZNB) #NB is better than ZIP
-lrtest(ch.ZP, ch.ZNB) #NB is better than ZIP
-lrtest(jx.ZP, jx.ZNB) #NB is better than ZIP
-lrtest(ir.ZP, ir.ZNB) #NB is better than ZIP
+lrtest(ap.ZNB, ap.ZP) #ZINB is better for AP than is ZIP
+lrtest(ck.ZNB, ck.ZP) #NB is better than ZIP
+lrtest(tb.ZNB, tb.ZP) #NB is better than ZIP
+lrtest(ch.ZNB, ch.ZP) #NB is better than ZIP
+lrtest(jx.ZNB, jx.ZP) #NB is better than ZIP
+lrtest(ir.ZNB, ir.ZP) #NB is better than ZIP
+
+# 6. Build the mixture (full) zero altered poisson (ZAP) and zero altered negative binomial(ZANB) #####
+#pg 288 Zuur
+
+apZAP <- hurdle(number ~ year+month+veg+bottom+shore, dist="poisson", lin="logit", data=ap.fl)
+ckZAP <- hurdle(number ~ year+month+veg+bottom+shore, dist="poisson", lin="logit", data=ck.fl)
+tbZAP <- hurdle(number ~ year+month+veg+bottom+shore, dist="poisson", lin="logit", data=tb.fl)
+chZAP <- hurdle(number ~ year+month+veg+bottom+shore, dist="poisson", lin="logit", data=ch.fl)
+jxZAP <- hurdle(number ~ year+month+veg+bottom+shore, dist="poisson", lin="logit", data=jx.fl)
+irZAP <- hurdle(number ~ year+month+veg+bottom+shore, dist="poisson", lin="logit", data=ir.fl)
+
+apZANB <- hurdle(number ~ year+month+veg+bottom+shore, dist="negbin", lin="logit", data=ap.fl)
+ckZANB <- hurdle(number ~ year+month+veg+bottom+shore, dist="negbin", lin="logit", data=ck.fl)
+tbZANB <- hurdle(number ~ year+month+veg+bottom+shore, dist="negbin", lin="logit", data=tb.fl)
+chZANB <- hurdle(number ~ year+month+veg+bottom+shore, dist="negbin", lin="logit", data=ch.fl)
+jxZANB <- hurdle(number ~ year+month+veg+bottom+shore, dist="negbin", lin="logit", data=jx.fl)
+irZANB <- hurdle(number ~ year+month+veg+bottom+shore, dist="negbin", lin="logit", data=ir.fl)
+
+lrtest(apZAP, apZANB)
+lrtest(ckZAP, ckZANB)
+lrtest(tbZAP, tbZANB)
+lrtest(chZAP, chZANB)
+lrtest(jxZAP, jxZANB)
+lrtest(irZAP, irZANB)
+#chi square says that zero altered NB is better than zero altered Poisson
 
 ##### MODEL SELECTION_ YOY ######
+# Model selection for positives: quasipoisson and lognormal
+# Model selection for mixture: poisson and NegativeBi (NB), ZINB
 
-# Model selection for positives lognormal and positives quasipoisson
-# Model selection for mixture (full) poisson and NegativeBi (NB)
-# Model selection for ZINB
+  # For quassipoisson model can use the drop command. 
+  # Pages 220 is to 230 in Zuur are helpful for following methods. 
+  # The AIC is not defined for quasipoisson models so can't use the step function like what was used in the FWRI code. 
+  # Instead, use the drop1 function which is applicable for the quassiPoisson GLM and it is more equivalent to hypothesis testing. (Zuur pg 227)
+  # If just using Poisson or Bernoulli (binomial) can use step command but this gives AIC- not deviance. (Zuur pg 253)
+  # Explained deviance is nearly the equivalent of R^2 so use this (Zuur pg 218 for equation), "The smaller the residual deviance the better is the model"
 
-# For quassipoisson model can use the drop command. 
-# Pages 220 is to 230 in Zuur are helpful for following methods. 
-# The AIC is not defined for quasipoisson models so can't use the step function like what was used in the FWRI code. 
-# Instead, use the drop1 function which is applicable for the quassiPoisson GLM and it is more equivalent to hypothesis testing. (Zuur pg 227)
-# If just using Poisson or Bernoulli (binomial) can use step command but this gives AIC- not deviance. (Zuur pg 253)
-# Explained deviance is nearly the equivalent of R^2 so use this (Zuur pg 218 for equation), "The smaller the residual deviance the better is the model"
-
-# 1. Model selection and validation plots for quasipoisson (QP) ####
+# 1. Model selection and validation plots for Delta quasipoisson (QP) ####
 # see page 227 in Zuur for full explanation of drop1 and F test for quaispoissona
 
 #AP_POS (Year, Veg, Shore = significant factors)
@@ -486,9 +537,9 @@ lrtest(ir.ZP, ir.ZNB) #NB is better than ZIP
     drop1(M1_ap.pos, test="F")
     summary(M1_ap.pos)
     
-    # Year, Veg, Shore, Month = significant factors
-
 # Model validation, page 231 Zuur
+    plot(residuals(M1_ap.pos, type="pearson") ~ fitted(M1_ap.pos))
+    
     EP <- resid(M1_ap.pos, type="pearson")
     ED <- resid(M1_ap.pos, type ="deviance")
     mu <- predict(M1_ap.pos, type="response")
@@ -643,98 +694,139 @@ lrtest(ir.ZP, ir.ZNB) #NB is better than ZIP
     
     glm.diag.plots(M2_ir.pos)
     
-# 2. Model selection and validation plots for lognormal ####
+# 2. Model selection and validation plots for Delta lognormal ####
+    #decided this is not a valid method because lognormal is not for count data and it is hard to compare log(number)
+    #as a dependent variable as oppsed to number whihc is how all of the other models are modeling the dependent variable
 # F test with drop1 command
 # Model validation to be done with boot package- glm.diag.plots because I couldnt
 # find a good example of model validation plots done in the Zuur book. 
-# AP
-    summary(ap.pos.L)
-    drop1(ap.pos.L, test = "F")
+# # AP
+#     summary(ap.pos.L)
+#     drop1(ap.pos.L, test = "F")
+#     #bottom NS
+#     
+#     M1_ap.pos.L <- glm(lnum ~ year+veg+month+shore, data=ap.pos, family=gaussian)
+#     drop1(M1_ap.pos.L, test="F")
+#     summary(M1_ap.pos.L)
+#     glm.diag.plots(M1_ap.pos.L)
+#     
+#     plot(residuals(M1_ap.pos.L) ~ fitted(M1_ap.pos.L))
+#     
+# #CK
+#     summary(ck.pos.L)
+#     drop1(ck.pos.L, test="F")
+#     #month and shore NS
+#     
+#     M1_ck.pos.L <- glm(lnum ~ year +bottom+veg, data=ck.pos, family=gaussian)
+#     drop1(M1_ck.pos.L, test="F")
+#     glm.diag.plots(M1_ck.pos.L)
+#     
+# #TB 
+#     summary(tb.pos.L)
+#     drop1(tb.pos.L, test="F")
+#     #bottom NS
+#     
+#     M1_tb.pos.L <- glm(lnum ~ year+month+veg+shore, data=tb.pos, family=gaussian)
+#     drop1(M1_tb.pos.L, test="F")
+#     glm.diag.plots(M1_tb.pos.L)
+#     
+# #CH
+#     summary(ch.pos.L)
+#     drop1(ch.pos.L, test="F")
+#     glm.diag.plots(ch.pos.L)
+#     
+# #JX
+#     summary(jx.pos.L)
+#     drop1(jx.pos.L, test="F")
+#     # year, month, bottom, shore NS
+#     
+#     M1_jx.pos.L <- glm(lnum ~ year+veg, data=jx.pos, family=gaussian)
+#     glm.diag.plots(M1_jx.pos.L)
+#     
+# #IR
+#     summary(ir.pos.L)
+#     drop1(ir.pos.L, test="F")
+#     #year,month,bottom NS
+#    
+#     M1_ir.pos.L <- glm(lnum ~ year+veg+shore, data=ir.pos, family=gaussian)
+#     glm.diag.plots(M1_ir.pos.L) 
+# 3. Model selection and validation plots for Delta NB ####
+#AP
+drop1(ap.pos.NB, test="Chi")
     #bottom NS
-    
-    M1_ap.pos.L <- glm(lnum ~ year+veg+month+shore, data=ap.pos, family=gaussian)
-    drop1(M1_ap.pos.L, test="F")
-    summary(M1_ap.pos.L)
-    glm.diag.plots(M1_ap.pos.L)
-    
+ap.pos.NB1 <- glm.nb(number ~ year +month+veg+shore, data=ap.pos, na.action = na.exclude)
+lrtest(ap.pos.NB, ap.pos.NB1)
+
+sum((resid(ap.pos.NB1,type="pearson"))^2)/ap.pos.NB1$df.resid #1.59
+sum((resid(ap.pos.NB1,type="pearson"))^2)/ap.pos.NB1$df.resid> 1+2*(sqrt(2/(ap.pos.NB1$df.residual)))
+
 #CK
-    summary(ck.pos.L)
-    drop1(ck.pos.L, test="F")
-    #month and shore NS
-    
-    M1_ck.pos.L <- glm(lnum ~ year +bottom+veg, data=ck.pos, family=gaussian)
-    drop1(M1_ck.pos.L, test="F")
-    glm.diag.plots(M1_ck.pos.L)
-    
-#TB 
-    summary(tb.pos.L)
-    drop1(tb.pos.L, test="F")
-    #bottom NS
-    
-    M1_tb.pos.L <- glm(lnum ~ year+month+veg+shore, data=tb.pos, family=gaussian)
-    drop1(M1_tb.pos.L, test="F")
-    glm.diag.plots(M1_tb.pos.L)
-    
+drop1(ck.pos.NB, test="Chi")
+#month and shore NS
+ck.pos.NB1 <- glm.nb(number ~ year+veg+bottom, data=ck.pos, na.action = na.exclude)
+lrtest(ck.pos.NB, ck.pos.NB1)
+sum((resid(ck.pos.NB1,type="pearson"))^2)/ck.pos.NB1$df.resid #1.97
+
+#TB
+drop1(tb.pos.NB, test="Chi")
+#drop bottom
+tb.pos.NB1 <- glm.nb(number ~ year +month+veg+shore, data=tb.pos, na.action = na.exclude)
+lrtest(tb.pos.NB, tb.pos.NB1)
+sum((resid(tb.pos.NB1,type="pearson"))^2)/tb.pos.NB1$df.resid #1.95
+
 #CH
-    summary(ch.pos.L)
-    drop1(ch.pos.L, test="F")
-    glm.diag.plots(ch.pos.L)
-    
+drop1(ch.pos.NB, test="Chi")
+sum((resid(ch.pos.NB,type="pearson"))^2)/ch.pos.NB$df.resid #1.83
+
 #JX
-    summary(jx.pos.L)
-    drop1(jx.pos.L, test="F")
-    # year, month, bottom, shore NS
-    
-    M1_jx.pos.L <- glm(lnum ~ year+veg, data=jx.pos, family=gaussian)
-    glm.diag.plots(M1_jx.pos.L)
-    
+drop1(jx.pos.NB, test="Chi")
+#drop bottom
+jx.pos.NB1 <- glm.nb(number ~ year +month+veg+shore, data=jx.pos, na.action = na.exclude)
+lrtest(jx.pos.NB, jx.pos.NB1)
+sum((resid(jx.pos.NB1,type="pearson"))^2)/jx.pos.NB1$df.resid #1.71
+
 #IR
-    summary(ir.pos.L)
-    drop1(ir.pos.L, test="F")
-    #year,month,bottom NS
-   
-    M1_ir.pos.L <- glm(lnum ~ year+veg+shore, data=ir.pos, family=gaussian)
-    glm.diag.plots(M1_ir.pos.L) 
-    
-# 3. Model selection and validation plots for  NB ####
+drop1(ir.pos.NB, test="Chi")
+#drop bottom
+ir.pos.NB1 <- glm.nb(number ~ year +month+veg+shore, data=ir.pos, na.action = na.exclude)
+drop1(ir.pos.NB1, test="Chi")
+lrtest(jx.pos.NB, jx.pos.NB1)
+sum((resid(ir.pos.NB1,type="pearson"))^2)/ir.pos.NB1$df.resid #1.71
+
+# 4. Model selection and validation plots for  NB ####
 # page 235 Zuur    
 #AP
 summary(apNB) #Mean Deviance = 0.412
 drop1(apNB, test= "Chi")
-    #month, bottom NS 
+    #bottom NS 
 
-apNB1 <- glm.nb(number ~ year+veg+bottom+shore, data=ap.fl, na.action = na.exclude)
+apNB1 <- glm.nb(number ~ year+month+ veg+shore, data=ap.fl, na.action = na.exclude)
 summary(apNB1) 
 drop1(apNB1, test="Chi")
-apNB2 <- glm.nb(number ~ year+veg+shore, data=ap.fl, na.action = na.exclude)
-summary(apNB2) 
+#all remaining covariates are significant
 
-AIC(apNB, apNB1, apNB2) #almost equal
-lrtest(apNB, apNB1) #equal
-lrtest(apNB1, apNB2) #equal
-plot(apNB1)
-
-sum((resid(apNB1,type="pearson"))^2)/apNB$df.resid #1.32
-sum((resid(apNB1,type="pearson"))^2)/apNB1$df.resid> 1+2*(sqrt(2/(apNB1$df.residual)))
-sum((resid(apNB1,type="pearson"))^2)/apNB1$df.resid> 1+3*(sqrt(2/(apNB1$df.residual)))
-
-sum((resid(apNB2,type="pearson"))^2)/apNB2$df.resid #1.33
-sum((resid(apNB2,type="pearson"))^2)/apNB2$df.resid> 1+2*(sqrt(2/(apNB2$df.residual)))
-sum((resid(apNB2,type="pearson"))^2)/apNB2$df.resid> 1+3*(sqrt(2/(apNB2$df.residual)))
+lrtest(apNB, apNB1) #equal so drop the bottom
+AIC(apNB, apNB1) #AIC doesnt support
+#go with AIC because there is really no huge difference in mean deviance
+#final apNB
+sum((resid(apNB,type="pearson"))^2)/apNB$df.resid #1.39
+sum((resid(apNB,type="pearson"))^2)/apNB$df.resid> 1+2*(sqrt(2/(apNB$df.residual)))
+sum((resid(apNB,type="pearson"))^2)/apNB$df.resid> 1+3*(sqrt(2/(apNB$df.residual)))
 #model selection did not improve fit of NB model to the ap.fl data 
+
+plot(residuals(apNB) ~ fitted(apNB))
 
 # CK
 summary(ckNB) #Mean Deviance = 0.43
 drop1(ckNB, test= "Chi")
 # bottom NS 
-
 ckNB1 <- glm.nb(number ~ year+veg+month+shore, data=ck.fl, na.action = na.exclude)
 summary(ckNB1) 
 
-AIC(ckNB, ckNB1) #almost equal
-lrtest(ckNB, ckNB1) #equal
+lrtest(ckNB, ckNB1) #equal so go with simpler model ckNB1
+AIC(ckNB, ckNB1) #NB1 is better
 
-sum((resid(ckNB1,type="pearson"))^2)/ckNB1$df.resid #1.35
+sum((resid(ckNB1,type="pearson"))^2)/ckNB1$df.resid #1.27
 sum((resid(ckNB1,type="pearson"))^2)/ckNB1$df.resid> 1+2*(sqrt(2/(ckNB1$df.residual)))
 sum((resid(ckNB1,type="pearson"))^2)/ckNB1$df.resid> 1+3*(sqrt(2/(ckNB1$df.residual)))
 #model selection did not improve fit of NB model to the ck.fl data 
@@ -747,17 +839,25 @@ drop1(tbNB, test="Chi")
 tbNB1 <- glm.nb(number ~ year+veg+shore+month, data=tb.fl, na.action = na.exclude)
 summary(tbNB1)
 
-AIC(tbNB, tbNB1)
+lrtest(tbNB, tbNB1) #equal so go with simpler model tbNB1
+AIC(tbNB, tbNB1) #AIC says NB1 is better
 
-sum((resid(tbNB1,type="pearson"))^2)/tbNB1$df.resid #1.52
+sum((resid(tbNB1,type="pearson"))^2)/tbNB1$df.resid #1.67
 sum((resid(tbNB1,type="pearson"))^2)/tbNB1$df.resid> 1+2*(sqrt(2/(tbNB1$df.residual)))
 sum((resid(tbNB1,type="pearson"))^2)/tbNB1$df.resid> 1+3*(sqrt(2/(tbNB1$df.residual)))
 #model selection did not improve fit of NB model to the tb.fl data 
 
 #CH
 summary(chNB)
-drop1(tbNB, test="Chi")
+drop1(ckNB, test="Chi")
+#bottom NS
 
+chNB1 <- glm.nb(number ~ year+veg+shore+month, data=ch.fl, na.action = na.exclude)
+
+lrtest(chNB, chNB1) #different, say chNB is better
+AIC(chNB, chNB1) #AIC says chNB is better
+
+sum((resid(chNB,type="pearson"))^2)/chNB$df.resid #1.52
 sum((resid(chNB,type="pearson"))^2)/chNB$df.resid> 1+2*(sqrt(2/(chNB$df.residual)))
 sum((resid(chNB,type="pearson"))^2)/chNB$df.resid> 1+3*(sqrt(2/(chNB$df.residual)))
 #model selection did not improve fit of NB model to the ch.fl data 
@@ -766,12 +866,15 @@ sum((resid(chNB,type="pearson"))^2)/chNB$df.resid> 1+3*(sqrt(2/(chNB$df.residual
 summary(jxNB)
 #month, bottom NS
 drop1(jxNB, test="Chi")
+#drop bottom
 
-jxNB1 <- glm.nb(number ~ year+veg+shore, data=jx.fl, na.action = na.exclude)
+jxNB1 <- glm.nb(number ~ year+month+veg+shore, data=jx.fl, na.action = na.exclude)
 summary(jxNB1)
+lrtest(jxNB, jxNB1) #equal so go with simpler one, jxNB1
+AIC(jxNB, jxNB1) # doesnt agree. both look similar
 
-AIC(jxNB, jxNB1) #equal
-
+sum((resid(jxNB,type="pearson"))^2)/jxNB$df.resid #1.34
+sum((resid(jxNB1,type="pearson"))^2)/jxNB1$df.resid #1.33
 sum((resid(jxNB1,type="pearson"))^2)/jxNB1$df.resid> 1+2*(sqrt(2/(jxNB1$df.residual)))
 sum((resid(jxNB1,type="pearson"))^2)/jxNB1$df.resid> 1+3*(sqrt(2/(jxNB1$df.residual)))
 #model selection did not improve fit of NB model to the jx.fl data 
@@ -782,77 +885,766 @@ drop1(irNB, test="Chi")
 #bttom NS
 
 irNB1 <- glm.nb(number ~ year+veg+shore+month, data=ir.fl, na.action = na.exclude)
+lrtest(irNB, irNB1) #equal so go with simpler
+AIC(irNB, irNB1) #AIC agrees that irNB1 is better
 
-AIC(irNB, irNB1)
-
+sum((resid(irNB1,type="pearson"))^2)/irNB1$df.resid #1.93
 sum((resid(irNB1,type="pearson"))^2)/irNB1$df.resid> 1+2*(sqrt(2/(irNB1$df.residual)))
 sum((resid(irNB1,type="pearson"))^2)/irNB1$df.resid> 1+3*(sqrt(2/(irNB1$df.residual)))
 #model selection did not improve fit of NB model to the ir.fl data 
 
+#because none seemed to really improve fit lets try the zero inflated NB
 
-# 4. Model selection and validation plots for ZINB ####
+# 5. Model selection and validation plots for ZINB ####
 # Page 280 model selection must be done by hand with ZINB
 # Most comprehensive, but takes the most work, is to just drop each term 
     #(count| binomial) 
-  
-f1 = formula(number ~ year+month+veg+bottom+shore | year+month+veg+bottom+shore)
-f1A = formula(number ~ year+month+veg+bottom+shore | year +month+veg+bottom) #drop shore
-f1B = formula(number ~ year+month+veg+bottom | year +month+veg+bottom+shore) #drop shore
-f1C = formula(number ~ year+month+veg+bottom | year+month+veg+bottom)       #drop shore
-f2 = formula(number ~ year+month+veg+bottom | year+month+veg) #drop bottom
-f2A = formula(number ~ year+month+veg| year+month+veg +bottom) #drop bottom
-f2B = formula(number ~ year+month+veg| year+month+veg) #drop bottom
-f3 = formula(number ~ year+month+veg| year+month) #drop veg
-f3A = formula(number ~ year+month| year+month +veg) #drop veg
-f3B = formula(number ~ year+month| year+month) #drop veg
-f4 = formula(number ~ year+month| year) #drop month
-f4A = formula(number ~ year| year + month) #drop month
-f4B = formula(number ~ year| year) #drop month
+# Using LRtest defined in code from Shanae
+#process to drop each variable is from:
+    #StandardizeIndexGLM_adult_6ottertrawl.R which was put together with help from Zuur.
 
-    #https://stats.stackexchange.com/questions/121661/how-to-interpret-anova-output-when-comparing-two-nested-mixed-effect-models
+#Function for likelihood ratio test to condense coding
+  LLRatioTest <- function(L1,L2,df){
+  #L1 is full model, L2 is nested model
+  #df is difference in paramters
+  L <- 2 * (L1 - L2)
+  L <- abs(as.numeric(L))
+  p <- 1 - pchisq(L,df)
+  round(c(L,p), digits = 4)}
+
+#5A. AP model selection ZINB ####
+f1 = formula(number ~ year+month+veg+bottom+shore | year+month+veg+bottom+shore)
+
+#drop year from count
+A1= zeroinfl(number ~ month+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop month from count
+A2= zeroinfl(number ~ year+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop veg from count
+A3= zeroinfl(number ~ year+month+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop bottom from count
+A4= zeroinfl(number ~ year+month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop shore from count
+A5= zeroinfl(number ~ year+month+veg+bottom | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+
+#drop year from binary
+A6= zeroinfl(number ~ year+month+veg+bottom+shore |month+veg+bottom+shore , dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop month from binary
+A7= zeroinfl(number ~ year+month+veg+bottom+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop veg from binary
+A8= zeroinfl(number ~ year+month+veg+bottom+shore | year+month+bottom+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop bottom from binary
+A9= zeroinfl(number ~ year+month+veg+bottom+shore | year+month+veg+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop shore from binary
+A10= zeroinfl(number ~ year+month+veg+bottom+shore | year+month+veg+bottom, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+
+#Run LL ratio test for each sub-model
+#Compare each model to base model; last argument is degrees of freedom, which is the number of levels minus 1 for
+#categorical covariates and is 1 for continuous covariates for those that are dropped.
+# for example, year is categorical and has 18 levels (For AP) so degrees of freedom for models that drop year from
+#either count or binary part of model is 17
+Z1 <- LLRatioTest(logLik(ap.ZNB),logLik(A1),17)		#drop year from count part
+Z2 <- LLRatioTest(logLik(ap.ZNB),logLik(A2),5)		#drop month from count part
+Z3 <- LLRatioTest(logLik(ap.ZNB),logLik(A3),1) #drop veg from count part
+Z4 <- LLRatioTest(logLik(ap.ZNB),logLik(A4),1) #drop bottom from count part
+Z5 <- LLRatioTest(logLik(ap.ZNB),logLik(A5),2) #drop shore from count part
+
+Z6 <- LLRatioTest(logLik(ap.ZNB),logLik(A6),17)		#drop year from binary
+Z7 <- LLRatioTest(logLik(ap.ZNB),logLik(A7),5)		#drop month from binary
+Z8 <- LLRatioTest(logLik(ap.ZNB),logLik(A8),1) #drop veg from binary
+Z9 <- LLRatioTest(logLik(ap.ZNB),logLik(A9),1) #drop bottom from binary
+Z10 <- LLRatioTest(logLik(ap.ZNB),logLik(A10),2) #drop shore from binary
+
+#bottom in log link
+#bottom in logistic link
+#shore from logistic link
+
+#check with AIC
+
+AIC(ap.ZNB, A1, A2, A3, A4, A5, A6, A8, A9, A10)
+
+#starting model with bottom removed from log link
+A <- zeroinfl(number ~ year +month+veg+shore | year+month+bottom+veg+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+
+#drop year from count
+A1 <- zeroinfl(number ~ month+veg+shore | year+month+bottom+veg+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop month from count
+A2 <- zeroinfl(number ~ year+veg+shore | year+month+bottom+veg+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop veg from count
+A3 <- zeroinfl(number ~ year +month+shore | year+month+bottom+veg+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop shore from count
+A4 <- zeroinfl(number ~ year +month+veg | year+month+bottom+veg+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop year from binary
+A5 <- zeroinfl(number ~ year +month+veg+shore |month+bottom+veg+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop month from binary
+#A6 <- zeroinfl(number ~ year +month+veg+shore | year+bottom+veg+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop veg from binary
+#A7 <- zeroinfl(number ~ year +month+veg+shore | year+month+bottom+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop bottom from binary
+A8 <-  zeroinfl(number ~ year +month+veg+shore | year+month+veg+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop shore from binary 
+A9 <- zeroinfl(number ~ year +month+veg+shore | year+month+bottom+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+
+
+Z1 <- LLRatioTest(logLik(A),logLik(A1),17)		#drop year from count part
+Z2 <- LLRatioTest(logLik(A),logLik(A2),5)		#drop month from count part
+Z3 <- LLRatioTest(logLik(A),logLik(A3),1) #drop veg from count part
+Z4 <- LLRatioTest(logLik(A),logLik(A4),2) #drop shore from count part
+
+Z5 <- LLRatioTest(logLik(A),logLik(A5),17)		#drop year from binary
+#Z6 <- LLRatioTest(logLik(A),logLik(A6),5)		#drop month from binary
+#Z7 <- LLRatioTest(logLik(A),logLik(A7),1) #drop veg from binary
+Z8 <- LLRatioTest(logLik(A), logLik(A8),1) #drop bottom
+Z9 <- LLRatioTest(logLik(A), logLik(A9), 2) #drop shore
+
+#month in log link
+#shore in logistic link
+
+#check with AIC
+AIC(A, A1, A2, A3, A4, A5, A8, A9)
+
+
+#starting model with shore in logistic link removed because both upper steps indicate removal
+A <- zeroinfl(number ~ year +month+veg+shore | year+month+bottom+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop year
+A1 <- zeroinfl(number ~ month+veg+shore | year+month+bottom+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop month
+A2 <- zeroinfl(number ~ year+veg+shore | year+month+bottom+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop veg
+A3 <- zeroinfl(number ~ year +month+shore | year+month+bottom+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop shore
+A4 <- zeroinfl(number ~ year +month+veg | year+month+bottom+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop year binary
+A5 <- zeroinfl(number ~ year +month+veg+shore | month+bottom+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop month binary
+A6 <- zeroinfl(number ~ year +month+veg+shore | year+bottom+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop bottom binary
+A7 <- zeroinfl(number ~ year +month+veg+shore | year+month+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop veg binary
+A8 <- zeroinfl(number ~ year +month+veg+shore | year+month+bottom, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+
+Z1 <- LLRatioTest(logLik(A),logLik(A1),summary(A1)$df.residual - summary(A)$df.residual)		#drop year from count part
+Z2 <- LLRatioTest(logLik(A),logLik(A2),5)		#drop month from count part
+Z3 <- LLRatioTest(logLik(A),logLik(A3),1) #drop veg from count part
+Z4 <- LLRatioTest(logLik(A),logLik(A4),2) #drop shore from count part
+Z5 <- LLRatioTest(logLik(A),logLik(A5), 17) #drop year binary 
+Z6 <- LLRatioTest(logLik(A),logLik(A6),5)		#drop month binary
+Z7 <- LLRatioTest(logLik(A),logLik(A7),1)		#drop bottom binary 
+Z8 <- LLRatioTest(logLik(A), logLik(A8),1) #drop veg from binary
+
+AIC(A, A1, A2, A3, A4, A5, A6, A7, A8)
+
+#all remaining covariates significant; A best model; can be confirmed using AIC
+
+summary(A)	#==>examine standard errors of covariates; unusually large values indicate problem with model
+
+N<-nrow(ap.fl)
+EZIP <- resid(A,type="pearson")
+Dispersion <- sum(EZIP^2)/(N-52)	#==>be sure to change value for degrees of freedom based on summary output
+Dispersion #1.12
+
+#==>Dispersion is 1.12 for model which is an improvement from  1.39 in the NB 
+sum((resid(A,type="pearson"))^2)/(N-52) #1.12 
+sum((resid(A,type="pearson"))^2)/(N-52) > 1+3*(sqrt(2/(N-52)))
+BestModelAP <- A
+
+#5B. CK model selection ZINB ####
+
+#drop year from count
+C1= zeroinfl(number ~ month+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop month from count
+#C2= zeroinfl(number ~ year+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop veg from count
+#C3= zeroinfl(number ~ year+month+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop bottom from count
+C4= zeroinfl(number ~ year+month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop shore from count
+C5= zeroinfl(number ~ year+month+veg+bottom | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+
+#drop year from binary
+C6= zeroinfl(number ~ year+month+veg+bottom+shore |month+veg+bottom+shore , dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop month from binary
+#C7= zeroinfl(number ~ year+month+veg+bottom+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop veg from binary
+#C8= zeroinfl(number ~ year+month+veg+bottom+shore | year+month+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop bottom from binary
+C9= zeroinfl(number ~ year+month+veg+bottom+shore | year+month+veg+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop shore from binary
+#C10= zeroinfl(number ~ year+month+veg+bottom+shore | year+month+veg+bottom, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+
+
+#Run LL ratio test for each sub-model
+#Compare each model to base model; last argument is degrees of freedom, which is the number of levels minus 1 for
+#categorical covariates and is 1 for continuous covariates for those that are dropped.
+# for example, year is categorical and has 18 levels (For AP) so degrees of freedom for models that drop year from
+#either count or binary part of model is 17
+Z1 <- LLRatioTest(logLik(ck.ZNB),logLik(C1),19)		#drop year from count part
+Z4 <- LLRatioTest(logLik(ck.ZNB),logLik(C4),1) #drop bottom from count part
+Z5 <- LLRatioTest(logLik(ck.ZNB),logLik(C5),1) #drop shore from count part
+
+Z6 <- LLRatioTest(logLik(ck.ZNB),logLik(C6),19)		#drop year from binary
+Z9 <- LLRatioTest(logLik(ck.ZNB),logLik(C9),1) #drop bottom from binary
+
+
+#bottom from count NS
+#shore from count NS
+#bottom from binary
+
+#first drop bottom from count
+C= zeroinfl(number ~ year+ month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop year
+#C1= zeroinfl(number ~  month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop month
+C2= zeroinfl(number ~ year+ veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop veg
+#C3= zeroinfl(number ~ year+ month+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop shore
+#C4= zeroinfl(number ~ year+ month+veg | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop year
+C5= zeroinfl(number ~ year+ month+veg+shore | month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop month
+C6= zeroinfl(number ~ year+ month+veg+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop veg
+#C7= zeroinfl(number ~ year+ month+veg+shore | year+month+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop bottom
+#C8= zeroinfl(number ~ year+ month+veg+shore | year+month+veg+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop shore
+#C9= zeroinfl(number ~ year+ month+veg+shore | year+month+veg+bottom, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+
+Z2 <- LLRatioTest(logLik(C),logLik(C2),6)		#drop month from count part
+Z5 <- LLRatioTest(logLik(C),logLik(C5),19)		#drop year from binary
+Z6 <- LLRatioTest(logLik(C),logLik(C6),6) #drop month from binary
+#no change
+
+#try dropping shore from count
+C= zeroinfl(number ~ year+ month+veg +bottom | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop year
+C1= zeroinfl(number ~  month+veg +bottom | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop month
+C2= zeroinfl(number ~ year+ veg+bottom | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop veg
+#C3= zeroinfl(number ~ year+ month+bottom | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop bottom
+#C4= zeroinfl(number ~ year+ month+veg | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop year
+C5= zeroinfl(number ~ year+ month+veg+bottom | month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop month
+C6= zeroinfl(number ~ year+ month+veg+bottom | year+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop veg
+#C7= zeroinfl(number ~ year+ month+veg+bottom | year+month+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop bottom
+C8= zeroinfl(number ~ year+ month+veg+bottom | year+month+veg+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop shore 
+#C9= zeroinfl(number ~ year+ month+veg+bottom | year+month+veg+bottom, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+
+lrtest(C, C1)
+lrtest(C, C2)
+lrtest(C, C5)
+lrtest(C, C6)
+lrtest(C, C8) #equal so drop bottom from binary 
+
+#shore from count dropped, bottom from binary dropped
+C= zeroinfl(number ~ year+ month+veg +bottom | year+month+veg+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop year
+C1= zeroinfl(number ~  month+veg +bottom | year+month+veg+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop month
+C2= zeroinfl(number ~ year+ veg +bottom | year+month+veg+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop veg
+#C3= zeroinfl(number ~ year+ month +bottom | year+month+veg+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop bottom
+#C4= zeroinfl(number ~ year+ month+veg  | year+month+veg+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop year
+C5= zeroinfl(number ~ year+ month+veg +bottom | month+veg+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop month
+#C6= zeroinfl(number ~ year+ month+veg +bottom | year+veg+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop veg
+#C7= zeroinfl(number ~ year+ month+veg +bottom | year+month+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop shore 
+#C8= zeroinfl(number ~ year+ month+veg +bottom | year+month+veg, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+
+lrtest(C, C1)
+lrtest(C, C2)
+lrtest(C, C5)
+
+AIC(C, C1, C2, C5, C5A)
+# model C appears best
+
+N<-nrow(ck.fl)
+EZIP <- resid(C,type="pearson")
+Dispersion <- sum(EZIP^2)/(N-57)	#==>be sure to change value for degrees of freedom based on summary output
+Dispersion #1.17.. improvement from 1.27 with negative binomial 
+
+BestModelCK <- C
+
+#5C. TB model selection ZINB ####
+#full
+t <- zeroinfl(number ~ year+month+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop yea
+t1 <- zeroinfl(number ~month+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop month
+t2 <- zeroinfl(number ~ year+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop veg
+t3 <- zeroinfl(number ~ year+month+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop bottom
+t4 <- zeroinfl(number ~ year+month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop shore
+t5 <- zeroinfl(number ~ year+month+veg+bottom | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop year binary
+t6 <- zeroinfl(number ~ year+month+veg+bottom+shore | month+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop month binary
+#t7 <- zeroinfl(number ~ year+month+veg+bottom+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop veg binary
+t8 <- zeroinfl(number ~ year+month+veg+bottom+shore | year+month+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop bottom binary
+t9 <- zeroinfl(number ~ year+month+veg+bottom+shore | year+month+veg+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop shore binary
+t10 <- zeroinfl(number ~ year+month+veg+bottom+shore | year+month+veg+bottom, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+
+lrtest(t, t1)
+lrtest(t, t2)
+lrtest(t, t3)
+lrtest(t, t4) #equal so drop bottom in count
+lrtest(t, t5)
+lrtest(t, t6)
+lrtest(t, t8) #equal so drop veg from binary
+lrtest(t, t9) #equal so drop shore from binary
+
+#drop bottom from count
+t <- zeroinfl(number ~ year+month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop year
+t1 <- zeroinfl(number ~ month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop month
+t2 <- zeroinfl(number ~ year+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#dropveg
+t3 <- zeroinfl(number ~ year+month+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop shore
+t4 <- zeroinfl(number ~ year+month+veg | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop year from binary
+t5 <- zeroinfl(number ~ year+month+veg+shore | month+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop month from binary
+#t6 <- zeroinfl(number ~ year+month+veg+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop veg from binary
+t7 <- zeroinfl(number ~ year+month+veg+shore | year+month+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop bottom from binary
+t8 <- zeroinfl(number ~ year+month+veg+shore | year+month+veg+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop shore from binary
+t9 <- zeroinfl(number ~ year+month+veg+shore | year+month+veg+bottom, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+
+lrtest(t, t1)
+lrtest(t, t2)
+lrtest(t, t3)
+lrtest(t, t4) 
+lrtest(t, t5)
+#lrtest(t, t6)
+lrtest(t, t7) #equal so drop veg from binary
+lrtest(t, t8) #equal so drop shore form binary
+
+#drop veg from binary
+t <- zeroinfl(number ~ year+month+veg+shore | year+month+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop year
+t1 <- zeroinfl(number ~ month+veg+shore | year+month+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop month
+t2 <- zeroinfl(number ~ year+veg+shore | year+month+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop veg
+t3 <- zeroinfl(number ~ year+month+shore | year+month+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop shore
+t4 <- zeroinfl(number ~ year+month+veg | year+month+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop year
+t5 <- zeroinfl(number ~ year+month+veg+shore | month+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop month
+t6 <- zeroinfl(number ~ year+month+veg+shore | year+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop bottom
+t7 <- zeroinfl(number ~ year+month+veg+shore | year+month+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop shore 
+t8 <- zeroinfl(number ~ year+month+veg+shore | year+month+bottom, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+
+lrtest(t, t1)
+lrtest(t, t2)
+lrtest(t, t3)
+lrtest(t, t4) 
+lrtest(t, t5)
+lrtest(t, t6)
+lrtest(t, t7) #equal so drop bottom from binary
+lrtest(t, t8) #equal so drop shore from binary
+
+#drop bottom from binary
+t <- zeroinfl(number ~ year+month+veg+shore | year+month+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop year
+t1 <- zeroinfl(number ~ month+veg+shore | year+month+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop month
+t2 <- zeroinfl(number ~ year+veg+shore | year+month+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop veg
+t3 <- zeroinfl(number ~ year+month+shore | year+month+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop shore
+t4 <- zeroinfl(number ~ year+month+veg | year+month+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop year
+t5 <- zeroinfl(number ~ year+month+veg+shore | month+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop month
+#t6 <- zeroinfl(number ~ year+month+veg+shore | year+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop shore
+t7 <- zeroinfl(number ~ year+month+veg+shore | year+month, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+
+lrtest(t, t1)
+lrtest(t, t2)
+lrtest(t, t3)
+lrtest(t, t4) 
+lrtest(t, t5)
+lrtest(t, t7) #equal so drop shore from binary
+
+#drop shore from binary
+t <- zeroinfl(number ~ year+month+veg+shore | year+month, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop year
+t1 <- zeroinfl(number ~ month+veg+shore | year+month, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop month
+t2 <- zeroinfl(number ~ year+veg+shore | year+month, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop veg
+t3 <- zeroinfl(number ~ year+month+shore | year+month, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#srop shore
+t4 <- zeroinfl(number ~ year+month+veg | year+month, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop year
+t5 <- zeroinfl(number ~ year+month+veg+shore | month, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop month
+#t6 <- zeroinfl(number ~ year+month+veg+shore | year, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+
+lrtest(t, t1)
+lrtest(t, t2)
+lrtest(t, t3)
+lrtest(t, t4) 
+lrtest(t, t5)
+
+AIC(t, t1, t2, t3, t4)
+# model t appears best
+#All covariates remain significant
+
+N<-nrow(tb.fl)
+EZIP <- resid(t,type="pearson")
+Dispersion <- sum(EZIP^2)/(N-71)	#==>be sure to change value for degrees of freedom based on summary output
+Dispersion #1.19.. improvement from 1.67 with negative binomial 
+
+BestModelTB <- t
+
+#5D. CH model selection ZINB ####
+ch <- zeroinfl(number ~ year+month+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop year
+ch1 <- zeroinfl(number ~ month+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop month
+ch2 <- zeroinfl(number ~ year+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop veg
+ch3 <- zeroinfl(number ~ year+month+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop shore
+ch4 <- zeroinfl(number ~ year+month+veg+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop bottom
+ch5 <- zeroinfl(number ~ year+month+veg+shore | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop year binary
+ch6 <- zeroinfl(number ~ year+month+veg+shore+bottom | month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop month binary
+#ch7 <- zeroinfl(number ~ year+month+veg+shore+bottom | year+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop veg binary
+ch8 <- zeroinfl(number ~ year+month+veg+shore+bottom | year+month+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop shore binary
+ch9 <- zeroinfl(number ~ year+month+veg+shore+bottom | year+month+veg+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop bottom binary
+ch10 <- zeroinfl(number ~ year+month+veg+shore+bottom | year+month+veg+shore, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+
+lrtest(ch, ch1)
+lrtest(ch, ch2)
+lrtest(ch, ch3)
+lrtest(ch, ch4)
+lrtest(ch, ch5)
+lrtest(ch, ch6)
+#lrtest(ch, ch7)
+lrtest(ch, ch8)
+lrtest(ch, ch9)
+lrtest(ch, ch10)
+
+AIC(ch, ch1, ch2, ch3, ch4, ch5, ch6, ch8, ch9, ch10)
+#model C seems to be the best
+#All covariates are significant
+
+N<-nrow(ch.fl)
+EZIP <- resid(c,type="pearson")
+Dispersion <- sum(EZIP^2)/(N-77)	#==>be sure to change value for degrees of freedom based on summary output
+Dispersion #1.37.. improvement from 1.52 with negative binomial 
+
+BestModelCH <- ch
+
+#5E. JX model selection ZINB####
+j <- zeroinfl(number ~ year+month+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+
+#drop year
+j1 <- zeroinfl(number ~ month+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop month
+#j2 <- zeroinfl(number ~ year+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop veg
+#j3 <- zeroinfl(number ~ year+month+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop shore
+#j4 <- zeroinfl(number ~ year+month+veg+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop bottom
+j5 <- zeroinfl(number ~ year+month+veg+shore | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop year binary
+j6 <- zeroinfl(number ~ year+month+veg+shore+bottom | month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop month binary
+j7 <- zeroinfl(number ~ year+month+veg+shore+bottom | year+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop veg binary
+j8 <- zeroinfl(number ~ year+month+veg+shore+bottom | year+month+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop shore binary
+j9 <- zeroinfl(number ~ year+month+veg+shore+bottom | year+month+veg+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop bottom binary
+j10 <- zeroinfl(number ~ year+month+veg+shore+bottom | year+month+veg+shore, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+
+lrtest(j, j1)
+lrtest(j, j5) #equal so drop bottom from count
+lrtest(j, j6)
+lrtest(j, j7)
+lrtest(j, j8)
+lrtest(j, j9) #equal so drop shore from binary
+lrtest(j, j10) #equal so drop bottom from binary
+
+#drop bottom from count
+j <- zeroinfl(number ~ year+month+veg+shore | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop year
+j1 <- zeroinfl(number ~ month+veg+shore | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop month
+#j2<- zeroinfl(number ~ year+veg+shore | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop veg
+j3 <- zeroinfl(number ~ year+month+shore | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop shore
+j4 <- zeroinfl(number ~ year+month+veg | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop year
+j5 <- zeroinfl(number ~ year+month+veg+shore | month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop month
+j6 <- zeroinfl(number ~ year+month+veg+shore | year+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop veg
+#j7 <- zeroinfl(number ~ year+month+veg+shore | year+month+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop shore
+j8 <- zeroinfl(number ~ year+month+veg+shore | year+month+veg+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop bottom
+#j9 <- zeroinfl(number ~ year+month+veg+shore | year+month+veg+shore, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+
+lrtest(j, j1)
+lrtest(j, j3)
+lrtest(j, j4)
+lrtest(j, j5)
+lrtest(j, j6) 
+lrtest(j, j8) #equal so drop shore from binary
+
+#drop shore from binary 
+j <- zeroinfl(number ~ year+month+veg+shore | year+month+veg+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop year
+j1 <- zeroinfl(number ~ month+veg+shore | year+month+veg+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop month
+j2 <- zeroinfl(number ~ year+veg+shore | year+month+veg+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop veg
+j3 <- zeroinfl(number ~ year+month+shore | year+month+veg+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop shore
+j4 <- zeroinfl(number ~ year+month+veg | year+month+veg+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop year
+j5 <- zeroinfl(number ~ year+month+veg+shore | month+veg+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop month
+#j6 <- zeroinfl(number ~ year+month+veg+shore | year+veg+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop veg
+j7 <- zeroinfl(number ~ year+month+veg+shore | year+month+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop bottom
+j8 <- zeroinfl(number ~ year+month+veg+shore | year+month+veg, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+
+lrtest(j, j1)
+lrtest(j, j3)
+lrtest(j, j4)
+lrtest(j, j5)
+lrtest(j, j7) 
+lrtest(j, j8) #equal so drop bottom from binary 
+
+#drop bottom from binary
+j <- zeroinfl(number ~ year+month+veg+shore | year+month+veg, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop year
+j1 <- zeroinfl(number ~ month+veg+shore | year+month+veg, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop month
+#j2 <- zeroinfl(number ~ year+veg+shore | year+month+veg, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop veg
+j3 <- zeroinfl(number ~ year+month+shore | year+month+veg, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop shore
+j4 <- zeroinfl(number ~ year+month+veg | year+month+veg, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop year
+#j5 <- zeroinfl(number ~ year+month+veg+shore | month+veg, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop month
+j6 <- zeroinfl(number ~ year+month+veg+shore | year+veg, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop veg
+j7 <- zeroinfl(number ~ year+month+veg+shore | year+month, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+
+lrtest(j, j1)
+lrtest(j, j3)
+lrtest(j, j4)
+lrtest(j, j6)
+lrtest(j, j7) 
+
+#all remaining covariates are significant
+
+AIC(j, j1, j2, j3,j4, j5, j6, j7)
+#best model is j
+
+N<-nrow(jx.fl)
+EZIP <- resid(j,type="pearson")
+Dispersion <- sum(EZIP^2)/(N-47)	#==>be sure to change value for degrees of freedom based on summary output
+Dispersion #1.07.. improvement from 1.34 with negative binomial 
+
+BestModelJX <- j
+
+#5F. IR model selection ZINB ####
+
+i <- zeroinfl(number ~ year+month+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop year
+i1 <- zeroinfl(number ~ month+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop month
+i2 <- zeroinfl(number ~ year+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop veg
+i3 <- zeroinfl(number ~ year+month+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop shore
+i4 <- zeroinfl(number ~ year+month+veg+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop bottom
+i5 <- zeroinfl(number ~ year+month+veg+shore | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop year
+i6 <- zeroinfl(number ~ year+month+veg+shore+bottom | month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop month
+i7 <- zeroinfl(number ~ year+month+veg+shore+bottom | year+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop veg
+i8 <- zeroinfl(number ~ year+month+veg+shore+bottom | year+month+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop shore
+i9 <- zeroinfl(number ~ year+month+veg+shore+bottom | year+month+veg+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop bottom
+i10 <- zeroinfl(number ~ year+month+veg+shore+bottom | year+month+veg+shore, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+
+lrtest(i, i1)
+lrtest(i, i2)
+lrtest(i, i3)
+lrtest(i, i4) #equal so drop shore in count
+lrtest(i, i5) #equal so drop bottom i count
+lrtest(i, i6)
+lrtest(i, i7)
+lrtest(i, i8)
+lrtest(i, i9)
+lrtest(i, i10) #equal so drop bottom in binary
+
+#drop shore in count
+i <- zeroinfl(number ~ year+month+veg+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop year
+i1 <- zeroinfl(number ~ month+veg+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop month
+i2 <- zeroinfl(number ~ year+veg+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop veg
+i3 <- zeroinfl(number ~ year+month+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop bottom
+i4 <- zeroinfl(number ~ year+month+veg | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop year
+i5 <- zeroinfl(number ~ year+month+veg+bottom | month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop month
+i6 <- zeroinfl(number ~ year+month+veg+bottom | year+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop veg
+i7 <- zeroinfl(number ~ year+month+veg+bottom | year+month+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop shore
+i8 <- zeroinfl(number ~ year+month+veg+bottom | year+month+veg+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop bottom
+i9 <- zeroinfl(number ~ year+month+veg+bottom | year+month+veg+shore, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+
+lrtest(i, i1)
+lrtest(i, i2)
+lrtest(i, i3)
+lrtest(i, i4) #equal so drop bottom from count
+lrtest(i, i5) 
+lrtest(i, i6)
+lrtest(i, i7)
+lrtest(i, i8)
+lrtest(i, i9) #equal so drop bottom from binary
+
+#drop bottom from count
+i <- zeroinfl(number ~ year+month+veg | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+
+i1 <- zeroinfl(number ~ month+veg | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+i2 <- zeroinfl(number ~ year+veg | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+i3 <- zeroinfl(number ~ year+month | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+i4 <- zeroinfl(number ~ year+month+veg | month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+i5 <- zeroinfl(number ~ year+month+veg | year+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+i6 <- zeroinfl(number ~ year+month+veg | year+month+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+i7 <- zeroinfl(number ~ year+month+veg | year+month+veg+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+i8 <- zeroinfl(number ~ year+month+veg | year+month+veg+shore, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+
+lrtest(i, i1)
+lrtest(i, i2)
+lrtest(i, i3)
+lrtest(i, i4) 
+lrtest(i, i5) 
+lrtest(i, i6)
+lrtest(i, i7)
+lrtest(i, i8) #equal so drop bottom from binary
+
+#drop bttom from binary
+i <- zeroinfl(number ~ year+month+veg | year+month+veg+shore, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+
+i1 <- zeroinfl(number ~ month+veg | year+month+veg+shore, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+i2 <- zeroinfl(number ~ year+veg | year+month+veg+shore, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+i3 <- zeroinfl(number ~ year+month | year+month+veg+shore, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+i4 <- zeroinfl(number ~ year+month+veg | month+veg+shore, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+i5 <- zeroinfl(number ~ year+month+veg | year+veg+shore, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+i6 <- zeroinfl(number ~ year+month+veg | year+month+shore, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+i7 <- zeroinfl(number ~ year+month+veg | year+month+veg, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+
+lrtest(i, i1)
+lrtest(i, i2)
+lrtest(i, i3)
+lrtest(i, i4) 
+lrtest(i, i5) 
+lrtest(i, i6)
+lrtest(i, i7)
+
+#all covariates remain significant
+
+AIC(i, i1, i2, i3, i4, i5, i6, i7)
+#model i is best
+
+N<-nrow(ir.fl)
+EZIP <- resid(i,type="pearson")
+Dispersion <- sum(EZIP^2)/(N-70)	#==>be sure to change value for degrees of freedom based on summary output
+Dispersion #1.46.. improvement from 1.93 with negative binomial 
+
+BestModelIR <- i
+
+#https://stats.stackexchange.com/questions/121661/how-to-interpret-anova-output-when-comparing-two-nested-mixed-effect-models
 #The log-likelihoods of the two models are almost exactly equal 
 #indicating the two models do a similar job of fitting the data. 
 #The LRT is telling you that you'd be very likely to observe a test 
 #statistic (Chisq) as large as the one reported if the two models 
 #provided the same fit. Hence you fail to reject the null 
 #hypothesis that the likelihoods of the two models are equivalent.
+#therefore, chose the simpler model over the more complex model if the p value is NS and proceed 
 
-# AP
-# f1 = formula(number ~ year+month+veg+bottom+shore | year+month+veg+bottom+shore)
-ap.ZNB1 <- zeroinfl(f1, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
-summary(ap.ZNB1)
+#5G. Model validation plots for ZINB ####
 
-f6 = formula(number ~ year+month+veg | month+veg)
-f10 = formula(number ~ year+month+veg +shore | month+veg)
-
-ap.ZNB6= zeroinfl(f6, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
-ap.ZNB10= zeroinfl(f10, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
-
-ap.ZNB1A <- zeroinfl(f1A, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
-ap.ZNB1B <- zeroinfl(f1B, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
-ap.ZNB1C <- zeroinfl(f1C, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
-ap.ZNB2  <- zeroinfl(f2, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#BestModelAP
+#BestModelCK
+#BestModelTB
+#BestModelCH
+#BestModelJX
+#BestModelIR 
 
 
-AIC(ap.ZNB1B, ap.ZNB1C, ap.ZNB2, ap.ZNB6, ap.ZNB10)
-#f10 has lowest AIC and is better in the sense that it does as well as the more complex model with 1 fewer parameters.
-# The AICs of the other models differ by more than 2 AIC units which from the definition of AIC is what you'd expect if you added
-# a redudnant parameter with not additional explanatory power to the model. HOWEVER when
-# comparing 10 and 6 in lrtest above it appears that 6 fits significantly better than does 10. 
+#create index plot of pearson residuals for ZINB models 
+plot(residuals(BestModelAP, type="pearson"), ylab="Pearson Residuals")
+plot(residuals(BestModelAP, type="pearson") ~ fitted(BestModelAP))
 
-#final
-summary(ap.ZNB6)
+plot(residuals(BestModelCK, type="pearson"), ylab="Pearson Residuals")
+plot(residuals(BestModelCK, type="pearson") ~ fitted(BestModelCK))
 
+plot(residuals(BestModelTB, type="pearson"), ylab="Pearson Residuals")
+plot(residuals(BestModelTB, type="pearson") ~ fitted(BestModelTB))
 
-N<-nrow(ap.fl)
-Ezinb1 <- resid(P.znb6,type="pearson")
-Dispersion <- sum(Ezinb1^2)/(N- 51 )	#==>be sure to change value for degrees of freedom based on summary output
-Dispersion  # 1.102008
+plot(residuals(BestModelCH, type="pearson"), ylab="Pearson Residuals")
+plot(residuals(BestModelCH, type="pearson") ~ fitted(BestModelCH))
 
+plot(residuals(BestModelJX, type="pearson"), ylab="Pearson Residuals")
+plot(residuals(BestModelJX, type="pearson") ~ fitted(BestModelJX))
 
+plot(residuals(BestModelIR, type="pearson"), ylab="Pearson Residuals")
+plot(residuals(BestModelIR, type="pearson") ~ fitted(BestModelIR))
 
-
-
+AIC(apNB, BestModelAP)
 
 EP <- residuals(ap.ZNB6, type="pearson")
 mu <- predict(ap.ZNB6, type="response")
@@ -867,46 +1659,6 @@ par(op)
 
 plot(predict(ap.ZNB6, type="response"), ap.fl$number)
 
-# CK
-ck.ZNB <- zeroinfl(f1, dist='negbin', link="logit", data=ck.fl, na.action=na.exclude)
-summary(ck.ZNB)
-f7 = formula(number ~ year+month+veg+shore | year+month+veg+shore)
-f8 = formula(number ~ year+month+veg+shore | month)
-f9 = formula(number ~ year+month+veg | month)
-f10 = formula(number ~ year+month+veg | year+ month)
-f11 = formula(number ~ year+month+veg +shore | year+ month)
-f12 = formula(number ~ year+month+veg +shore | year+ month +veg)
-
-ck.ZNB7 <- zeroinfl(f7, dist='negbin', link="logit", data=ck.fl, na.action=na.exclude)
-ck.ZNB8 <- zeroinfl(f8, dist='negbin', link="logit", data=ck.fl, na.action=na.exclude)
-ck.ZNB1A <- zeroinfl(f1A, dist='negbin', link="logit", data=ck.fl, na.action=na.exclude)
-ck.ZNB1B <- zeroinfl(f1B, dist='negbin', link="logit", data=ck.fl, na.action=na.exclude)
-ck.ZNB1C <- zeroinfl(f1C, dist='negbin', link="logit", data=ck.fl, na.action=na.exclude)
-ck.ZNB2 <- zeroinfl(f2, dist='negbin', link="logit", data=ck.fl, na.action=na.exclude)
-ck.ZNB2A <- zeroinfl(f2A, dist='negbin', link="logit", data=ck.fl, na.action=na.exclude)
-ck.ZNB2B <- zeroinfl(f2B, dist='negbin', link="logit", data=ck.fl, na.action=na.exclude)
-ck.ZNB9 <- zeroinfl(f9, dist='negbin', link="logit", data=ck.fl, na.action=na.exclude)
-ck.ZNB10 <- zeroinfl(f10, dist='negbin', link="logit", data=ck.fl, na.action=na.exclude)
-ck.ZNB11 <- zeroinfl(f11, dist='negbin', link="logit", data=ck.fl, na.action=na.exclude)
-ck.ZNB12 <- zeroinfl(f12, dist='negbin', link="logit", data=ck.fl, na.action=na.exclude)
-
-lrtest(ck.ZNB, ck.ZNB1A) #fit equally
-lrtest(ck.ZNB1A, ck.ZNB1B) #1B does a better job
-lrtest(ck.ZNB1B, ck.ZNB1C) #fits equal
-lrtest(ck.ZNB1C, ck.ZNB2) #fits equal
-lrtest(ck.ZNB1C, ck.ZNB2A) #fits equal
-lrtest(ck.ZNB2A, ck.ZNB2B) #fits equal
-lrtest(ck.ZNB1B, ck.ZNB7) # 7 is better
-lrtest(ck.ZNB7, ck.ZNB8) # 8 is better 
-lrtest(ck.ZNB8, ck.ZNB9)
-lrtest(ck.ZNB9, ck.ZNB10)
-lrtest(ck.ZNB7, ck.ZNB11) #equal
-lrtest(ck.ZNB11, ck.ZNB12) #12 is better 
-
-AIC(ck.ZNB1B, ck.ZNB1C, ck.ZNB2, ck.ZNB2A, ck.ZNB2B, ck.ZNB7,ck.ZNB8, ck.ZNB9, ck.ZNB10, ck.ZNB11, ck.ZNB12)
-
-#F11 is best according to AIC 
-summary(ck.ZNB11)
 
 EP <- residuals(ck.ZNB11, type="pearson")
 mu <- predict(ck.ZNB11, type="response")
@@ -920,60 +1672,6 @@ plot(x=mu, y=EP, main="Pearson residuals")
 par(op) 
 
 
-# TB
-tb.ZNB <- zeroinfl(f1, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
-summary(tb.ZNB)
-
-f7 = formula(number ~ year+month+veg+shore | year+month+veg+shore)
-f11 = formula(number ~ year+month+veg +shore | year+ month)
-f15 = formula(number ~ year+month+veg +shore | year+month+shore)
-
-f8 = formula(number ~ year+month+veg+shore | month)
-f9 = formula(number ~ year+month+veg | month)
-f10 = formula(number ~ year+month+veg | year+ month)
-f11 = formula(number ~ year+month+veg +shore | year+ month)
-f12 = formula(number ~ year+month+veg +shore | year+ month +veg)
-f1 = formula(number ~ year+month+veg+bottom+shore | year+month+veg+bottom+shore)
-f13 = formula(number ~ year+veg+shore| year+veg )
-f14 = formula(number ~ year+veg+shore| veg)
-f15 = formula(number ~ year+month+veg +shore | year+month+shore)
-
-tb.ZNB7 <- zeroinfl(f7, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
-tb.ZNB8 <- zeroinfl(f8, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
-tb.ZNB1A <- zeroinfl(f1A, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
-tb.ZNB1B <- zeroinfl(f1B, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
-tb.ZNB1C <- zeroinfl(f1C, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
-tb.ZNB2 <- zeroinfl(f2, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
-tb.ZNB2A <- zeroinfl(f2A, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
-tb.ZNB2B <- zeroinfl(f2B, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
-tb.ZNB9 <- zeroinfl(f9, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
-tb.ZNB10 <- zeroinfl(f10, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
-tb.ZNB11 <- zeroinfl(f11, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
-tb.ZNB12 <- zeroinfl(f12, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
-tb.ZNB13 <- zeroinfl(f13, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
-tb.ZNB14 <- zeroinfl(f14, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude)
-tb.ZNB15 <- zeroinfl(f15, dist='negbin', link="logit", data=tb.fl, na.action=na.exclude) 
-
-lrtest(tb.ZNB, tb.ZNB1A) #fit equally
-lrtest(tb.ZNB1A, tb.ZNB1B) #1B does a better job
-lrtest(tb.ZNB1B, tb.ZNB1C) #fits equal
-lrtest(tb.ZNB1C, tb.ZNB2) #fits equal
-lrtest(tb.ZNB1C, tb.ZNB2A) #fits equal
-lrtest(tb.ZNB2A, tb.ZNB2B) #fits equal
-lrtest(tb.ZNB1B, tb.ZNB7) # 7 is better
-lrtest(tb.ZNB7, tb.ZNB8) # 8 is better 
-lrtest(tb.ZNB8, tb.ZNB9) #9 is better
-lrtest(tb.ZNB9, tb.ZNB10) # 10 is better
-lrtest(tb.ZNB10, tb.ZNB11) #11 is better
-lrtest(tb.ZNB11, tb.ZNB12) #12 is better
-lrtest(tb.ZNB12, tb.ZNB13) #not better
-lrtest(tb.ZNB12, tb.ZNB14) #14 is better
-lrtest(tb.ZNB7, tb.ZNB11) #equal
-
-AIC(tb.ZNB1B, tb.ZNB1C, tb.ZNB2, tb.ZNB2A, tb.ZNB2B, tb.ZNB7, tb.ZNB8, tb.ZNB9, tb.ZNB10, tb.ZNB11, tb.ZNB12, tb.ZNB13, tb.ZNB14, tb.ZNB15)
-#7 or 11 is better 
-summary(tb.ZNB7)
-summary(tb.ZNB11)
 
 EP <- residuals(tb.ZNB11, type="pearson")
 mu <- residuals(tb.ZNB11, type="response")
@@ -987,110 +1685,6 @@ plot(x=mu, y=EP, main="Pearson residuals")
 par(op) 
 
 plot(predict(tb.ZNB11), tb.fl$number)
-
-
-
-#CH
-ch.ZNB2 <- zeroinfl(f2, dist='negbin', link="logit", data=ch.fl, na.action=na.exclude) 
-summary(ch.ZNB)
-
-#   f1A = formula(number ~ year+month+veg+bottom+shore | year +month+veg+bottom) #drop shore
-#   f1B = formula(number ~ year+month+veg+bottom | year +month+veg+bottom+shore) #drop shore
-#   f1C = formula(number ~ year+month+veg+bottom | year+month+veg+bottom)       #drop shore
-
-# f2 = formula(number ~ year+month+veg+bottom | year+month+veg) #drop bottom
-# f1C = formula(number ~ year+month+veg+bottom | year+month+veg+bottom)  
-fch1 <- formula(number ~ year+month+veg+bottom | month+veg)             #best option, nearly all variable are significant
-#fch2 <- formula(number ~ year+month+veg+bottom | year+ veg) #not a good option
-fch3 <- formula(number ~ year+month+veg+bottom | year+ month)
-fch4 <- formula(number ~ year+month+veg+bottom | year)
-fch5 <- formula(number ~ year+month+veg+bottom | month)
-fch6 <- formula(number ~ year+veg+bottom | year+ month)
-
-ch.ZNB1C <- zeroinfl(f1C, dist='negbin', link="logit", data=ch.fl, na.action=na.exclude) 
-ch.ZNBch1 <- zeroinfl(fch1, dist='negbin', link="logit", data=ch.fl, na.action=na.exclude) 
-#ch.ZNBch2 <- zeroinfl(fch2, dist='negbin', link="logit", data=ch.fl, na.action=na.exclude) 
-ch.ZNBch3 <- zeroinfl(fch3, dist='negbin', link="logit", data=ch.fl, na.action=na.exclude) 
-ch.ZNBch4 <- zeroinfl(fch4, dist='negbin', link="logit", data=ch.fl, na.action=na.exclude) 
-ch.ZNBch5 <- zeroinfl(fch5, dist='negbin', link="logit", data=ch.fl, na.action=na.exclude) 
-ch.ZNBch6 <- zeroinfl(fch6, dist='negbin', link="logit", data=ch.fl, na.action=na.exclude) 
-lrtest(ch.ZNB2, ch.ZNB1C) #equal
-lrtest(ch.ZNB2, ch.ZNBch1) #ch1 better
-lrtest(ch.ZNB1C, ch.ZNBch1) #ch1 better
-lrtest(ch.ZNBch1, ch.ZNBch3) #ch3 better
-lrtest(ch.ZNBch3, ch.ZNBch4) #ch4 is better
-lrtest(ch.ZNBch4, ch.ZNBch5) #ch5 is better
-lrtest(ch.ZNBch3, ch.ZNBch6) #equal
-lrtest(ch.ZNBch5, ch.ZNBch6) #ch6 is better
-
-AIC(ch.ZNB2, ch.ZNB1C,ch.ZNBch1,ch.ZNBch3, ch.ZNBch4, ch.ZNBch5, ch.ZNBch6)
-
-#3 and 6 are about equal but the lrtest indicates that 6 is better
-# so fch6 will be the final model 
-summary(ch.ZNBch6)
-
-# JX - problem child 
-# f1 = formula(number ~ year+month+veg+bottom+shore | year +month+veg+bottom+shore)
-# f2 = formula(number ~ year+month+veg+bottom | year+month+veg) #drop bottom 
-#jx.ZNB1 =  zeroinfl(f1, dist='negbin', link="logit", data=jx.fl, na.action=na.exclude)
-
-jx.ZNB2 <- zeroinfl(f2, dist='negbin', link="logit", data=jx.fl, na.action=na.exclude)
-summary(jx.ZNB2)
-
-fjx1 <- formula(number ~ year+month+veg+bottom)
-fjx2 <- formula(number ~ year+month+veg)
-fjx3 <- formula(number ~ year+month+veg |year)
-fjx4 <- formula(number ~ year+month+veg |year +month)
-
-jx.ZNBjx1 <- zeroinfl(fjx1, dist='negbin', link="logit", data=jx.fl, na.action=na.exclude)
-jx.ZNBjx2 <- zeroinfl(fjx2, dist='negbin', link="logit", data=jx.fl, na.action=na.exclude)
-jx.ZNBjx3 <- zeroinfl(fjx3, dist='negbin', link="logit", data=jx.fl, na.action=na.exclude)
-jx.ZNBjx4 <- zeroinfl(fjx4, dist='negbin', link="logit", data=jx.fl, na.action=na.exclude)
-
-lrtest(jx.ZNB2, jx.ZNBjx1) #equal
-lrtest(jx.ZNB2, jx.ZNBjx2) #equal
-lrtest(jx.ZNB2, jx.ZNBjx3) #jx3 much better
-lrtest(jx.ZNBjx3, jx.ZNBjx4) #jx4 better
-
-AIC(jx.ZNB2, jx.ZNBjx1,jx.ZNBjx2, jx.ZNBjx3, jx.ZNBjx4 )
-
-summary(jx.ZNBjx4)
-summary(jx.ZNBjx2)
-
-
-# IR 
-f1 = formula(number ~ year+month+veg+bottom+shore | year+month+veg+bottom+shore)
-ir.ZNB <- zeroinfl(f1, dist='negbin', link="logit", data=ir.fl, na.action=na.exclude)
-summary(ir.ZNB)
-
-fir1 <- formula(number ~ year+veg +month +bottom|month+veg+shore)
-fir2 <- formula(number ~ year+veg +month +bottom|year+month+veg+shore)
-fir3 <- formula(number ~ year+veg +bottom|year+month+veg+shore)
-fir4 <- formula(number ~ year+veg |year+month+veg+shore)
-fir5 <- formula(number ~ year+veg |month+veg+shore)
-
-ir.ZNBir1 <- zeroinfl(fir1, dist='negbin', link="logit", data=ir.fl, na.action=na.exclude)
-ir.ZNBir2 <- zeroinfl(fir2, dist='negbin', link="logit", data=ir.fl, na.action=na.exclude)
-ir.ZNBir3 <- zeroinfl(fir3, dist='negbin', link="logit", data=ir.fl, na.action=na.exclude)
-ir.ZNBir4 <- zeroinfl(fir4, dist='negbin', link="logit", data=ir.fl, na.action=na.exclude)
-ir.ZNBir5 <- zeroinfl(fir5, dist='negbin', link="logit", data=ir.fl, na.action=na.exclude)
-
-
-lrtest(ir.ZNB, ir.ZNBir1)
-lrtest(ir.ZNB, ir.ZNBir2) #equal
-lrtest(ir.ZNBir1, ir.ZNBir2) #error
-lrtest(ir.ZNBir4, ir.ZNBir5) #5 is much better
-
-summary(ir.ZNBir1)
-summary(ir.ZNBir2)
-summary(ir.ZNBir4)
-summary(ir.ZNBir5)
-
-AIC(ir.ZNB,ir.ZNBir1,ir.ZNBir2, ir.ZNBir3, ir.ZNBir4, ir.ZNBir5)
-
-#final model will be ir.ZNBir5
-
-
 
     
 #validation plots page 285 
@@ -1114,102 +1708,774 @@ EP <- (ZNB$number - mu) /sqrt(VarY) #Pearson residuals
 plot(x=mu, y=EP, main="Pearson residuals")   
 
 
-    
+# 6. Model selection and validation plots for ZANB ####
+# Like ZINB model selection must be done by hand with ZANB
+# Most comprehensive, but takes the most work, is to just drop each term 
+#(count| binomial) 
+# Using LRtest defined in code from Shanae
+#process to drop each variable is from:
+#StandardizeIndexGLM_adult_6ottertrawl.R which was put together with help from Zuur.
 
-    
-    
-    
+#6A. AP model selection ZANB ####
+A = hurdle(number ~ year+month+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.fl, na.action=na.exclude)
 
+#drop year from count
+A1= hurdle(number ~ month+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop month from count
+A2= hurdle(number ~ year+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop veg from count
+A3= hurdle(number ~ year+month+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop bottom from count
+A4= hurdle(number ~ year+month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop shore from count
+A5= hurdle(number ~ year+month+veg+bottom | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
 
+#drop year from binary
+A6= hurdle(number ~ year+month+veg+bottom+shore |month+veg+bottom+shore , dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop month from binary
+A7= hurdle(number ~ year+month+veg+bottom+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop veg from binary
+A8= hurdle(number ~ year+month+veg+bottom+shore | year+month+bottom+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop bottom from binary
+A9= hurdle(number ~ year+month+veg+bottom+shore | year+month+veg+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop shore from binary
+A10= hurdle(number ~ year+month+veg+bottom+shore | year+month+veg+bottom, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
 
+#Run LL ratio test for each sub-model
+#Compare each model to base model; last argument is degrees of freedom, which is the number of levels minus 1 for
+#categorical covariates and is 1 for continuous covariates for those that are dropped.
+# for example, year is categorical and has 18 levels (For AP) so degrees of freedom for models that drop year from
+#either count or binary part of model is 17
+lrtest(A, A1)
+lrtest(A, A2)
+lrtest(A, A3)
+lrtest(A, A4) #equal so drop bottom from count
+lrtest(A, A5)
+lrtest(A, A6)
+lrtest(A, A7)
+lrtest(A, A8)
+lrtest(A, A9) #equal so drop bottom from binary
+lrtest(A, A10) #equal so drop shore from binary
 
+#check with AIC
+AIC(ap.ZNB, A1, A2, A3, A4, A5, A6, A8, A9, A10)
 
+#starting model with bottom removed from count
+A <- hurdle(number ~ year +month+veg+shore | year+month+bottom+veg+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
 
+#drop year from count
+A1 <- hurdle(number ~ month+veg+shore | year+month+bottom+veg+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop month from count
+A2 <- hurdle(number ~ year+veg+shore | year+month+bottom+veg+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop veg from count
+A3 <- hurdle(number ~ year +month+shore | year+month+bottom+veg+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop shore from count
+A4 <- hurdle(number ~ year +month+veg | year+month+bottom+veg+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop year from binary
+A5 <- hurdle(number ~ year +month+veg+shore |month+bottom+veg+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop month from binary
+A6 <- hurdle(number ~ year +month+veg+shore | year+bottom+veg+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop veg from binary
+A7 <- hurdle(number ~ year +month+veg+shore | year+month+bottom+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop bottom from binary
+A8 <-  hurdle(number ~ year +month+veg+shore | year+month+veg+shore, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop shore from binary 
+A9 <- hurdle(number ~ year +month+veg+shore | year+month+bottom+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
 
+lrtest(A, A1)
+lrtest(A, A2)
+lrtest(A, A3)
+lrtest(A, A4) 
+lrtest(A, A5)
+lrtest(A, A6)
+lrtest(A, A7)
+lrtest(A, A8) #equal so drop bottom from binary
+lrtest(A, A9) #equal so drop shore from binary
 
+#starting model with shore in logistic link removed because both upper steps indicate removal
+A <- hurdle(number ~ year +month+veg+shore | year+month+bottom+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop year
+A1 <- hurdle(number ~ month+veg+shore | year+month+bottom+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop month
+A2 <- hurdle(number ~ year+veg+shore | year+month+bottom+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop veg
+A3 <- hurdle(number ~ year +month+shore | year+month+bottom+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop shore
+A4 <- hurdle(number ~ year +month+veg | year+month+bottom+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop year binary
+A5 <- hurdle(number ~ year +month+veg+shore | month+bottom+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop month binary
+A6 <- hurdle(number ~ year +month+veg+shore | year+bottom+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop bottom binary
+A7 <- hurdle(number ~ year +month+veg+shore | year+month+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+#drop veg binary
+A8 <- hurdle(number ~ year +month+veg+shore | year+month+bottom, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
 
+lrtest(A, A1)
+lrtest(A, A2)
+lrtest(A, A3)
+lrtest(A, A4) 
+lrtest(A, A5)
+lrtest(A, A6)
+lrtest(A, A7) #equal so drop bottom from binary
+lrtest(A, A8)
+
+#starting model with bottom in logistic link removed 
+A <- hurdle(number ~ year +month+veg+shore | year+month+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+
+A1 <- hurdle(number ~ month+veg+shore | year+month+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+A2 <- hurdle(number ~ year +veg+shore | year+month+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+A3 <- hurdle(number ~ year +month+shore | year+month+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+A4 <- hurdle(number ~ year +month+veg | year+month+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+A5 <- hurdle(number ~ year +month+veg+shore | month+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+A6 <- hurdle(number ~ year +month+veg+shore | year+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+A7 <- hurdle(number ~ year +month+veg+shore | year+month, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+
+lrtest(A, A1)
+lrtest(A, A2)
+lrtest(A, A3)
+lrtest(A, A4) 
+lrtest(A, A5)
+lrtest(A, A6)
+lrtest(A, A7) 
+
+#all remaining covariates are significant
+AIC(A, A1, A2, A3, A4, A5, A6, A7) #AIC agrees
+#model A is best
+BestModelAP_zanb<- A
+summary(BestModelAP_zanb)	#==>examine standard errors of covariates; unusually large values indicate problem with model
+
+AIC(BestModelAP, BestModelAP_zanb)
+
+N<-nrow(ap.fl)
+EZANB <- resid(BestModelAP_zanb,type="pearson")
+Dispersion <- sum(EZANB^2)/(N-51)	#==>be sure to change value for degrees of freedom based on summary output
+Dispersion #1.02
+
+sum((resid(BestModelAP_zanb,type="pearson"))^2)/(N-51) > 1+2*(sqrt(2/(N-51)))
+sum((resid(BestModelAP_zanb,type="pearson"))^2)/(N-51) > 1+3*(sqrt(2/(N-51)))
+#good fit on both accounts!!! 
+
+#6B. CK model selection ZANB ####
+C= hurdle(number ~ year+ month+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+
+#drop year from count
+C1= hurdle(number ~ month+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop month from count
+C2= hurdle(number ~ year+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop veg from count
+C3= hurdle(number ~ year+month+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop bottom from count
+C4= hurdle(number ~ year+month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop shore from count
+C5= hurdle(number ~ year+month+veg+bottom | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop year from binary
+C6= hurdle(number ~ year+month+veg+bottom+shore |month+veg+bottom+shore , dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop month from binary
+C7= hurdle(number ~ year+month+veg+bottom+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop veg from binary
+C8= hurdle(number ~ year+month+veg+bottom+shore | year+month+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop bottom from binary
+C9= hurdle(number ~ year+month+veg+bottom+shore | year+month+veg+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop shore from binary
+C10= hurdle(number ~ year+month+veg+bottom+shore | year+month+veg+bottom, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+
+lrtest(C, C1)
+lrtest(C, C2)
+lrtest(C, C3) #equal so drop veg from count
+lrtest(C, C4) #equal so drop bottom from count
+lrtest(C, C5) #equal so drop shore from count
+lrtest(C, C6)
+lrtest(C, C7)
+lrtest(C, C8)
+lrtest(C, C9) #equal so drop bottom from binary 
+lrtest(C, C10)
+
+#first drop bottom from count
+C= hurdle(number ~ year+ month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop year
+C1= hurdle(number ~  month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop month
+C2= hurdle(number ~ year+ veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop veg
+C3= hurdle(number ~ year+ month+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop shore
+C4= hurdle(number ~ year+ month+veg | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop year
+C5= hurdle(number ~ year+ month+veg+shore | month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop month
+C6= hurdle(number ~ year+ month+veg+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop veg
+C7= hurdle(number ~ year+ month+veg+shore | year+month+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop bottom
+C8= hurdle(number ~ year+ month+veg+shore | year+month+veg+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop shore
+C9= hurdle(number ~ year+ month+veg+shore | year+month+veg+bottom, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+
+lrtest(C, C1)
+lrtest(C, C2)
+lrtest(C, C3) 
+lrtest(C, C4) #equal so drop shore from count
+lrtest(C, C5) 
+lrtest(C, C6)
+lrtest(C, C7)
+lrtest(C, C8) #equal so drop bottom from binary
+lrtest(C, C9) 
+
+#dropping shore from count
+C= hurdle(number ~ year+ month+veg | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop year
+C1= hurdle(number ~  month+veg  | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop month
+C2= hurdle(number ~ year+ veg| year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop veg
+C3= hurdle(number ~ year+ month| year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop year
+C4= hurdle(number ~ year+ month+veg | month+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop month
+C5= hurdle(number ~ year+ month+veg | year+veg+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop veg
+C6= hurdle(number ~ year+ month+veg | year+month+bottom+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop bottom
+C7= hurdle(number ~ year+ month+veg| year+month+veg+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop shore 
+C8= hurdle(number ~ year+ month+veg | year+month+veg+bottom, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+
+lrtest(C, C1)
+lrtest(C, C2)
+lrtest(C, C3) 
+lrtest(C, C4) 
+lrtest(C, C5) 
+lrtest(C, C6)
+lrtest(C, C7) #equal so drop bottom from binary
+lrtest(C, C8) 
+
+#dropping bottom from binary
+C= hurdle(number ~ year+ month+veg | year+month+veg+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop year
+C1= hurdle(number ~  month+veg  | year+month+veg+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop month
+C2= hurdle(number ~ year+ veg| year+month+veg+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop veg
+C3= hurdle(number ~ year+ month| year+month+veg+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop year
+C4= hurdle(number ~ year+ month+veg | month+veg+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop month
+C5= hurdle(number ~ year+ month+veg | year+veg+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop veg
+C6= hurdle(number ~ year+ month+veg | year+month+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+#drop shore 
+C7= hurdle(number ~ year+ month+veg | year+month+veg, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+
+lrtest(C, C1)
+lrtest(C, C2)
+lrtest(C, C3) 
+lrtest(C, C4) 
+lrtest(C, C5) 
+lrtest(C, C6)
+lrtest(C, C7) 
+
+#all remaining covariates are significant
+AIC(C, C1, C2, C3, C4, C5, C6, C7) #best model is C
+BestModelCK_zanb <- C
+
+N<-nrow(ck.fl)
+EZANB <- resid(BestModelCK_zanb,type="pearson")
+Dispersion <- sum(EZANB^2)/(N-56)	#==>be sure to change value for degrees of freedom based on summary output
+Dispersion #1.04
+
+sum((resid(BestModelCK_zanb,type="pearson"))^2)/(N-56) > 1+2*(sqrt(2/(N-56)))
+sum((resid(BestModelCK_zanb,type="pearson"))^2)/(N-56) > 1+3*(sqrt(2/(N-56)))
+#good fit on both accounts!!! 
+
+#6C. TB model selection ZANB ####
+
+#full
+t <- hurdle(number ~ year+month+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop yea
+t1 <- hurdle(number ~month+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop month
+t2 <- hurdle(number ~ year+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop veg
+t3 <- hurdle(number ~ year+month+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop bottom
+t4 <- hurdle(number ~ year+month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop shore
+t5 <- hurdle(number ~ year+month+veg+bottom | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop year binary
+t6 <- hurdle(number ~ year+month+veg+bottom+shore | month+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop month binary
+t7 <- hurdle(number ~ year+month+veg+bottom+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop veg binary
+t8 <- hurdle(number ~ year+month+veg+bottom+shore | year+month+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop bottom binary
+t9 <- hurdle(number ~ year+month+veg+bottom+shore | year+month+veg+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop shore binary
+t10 <- hurdle(number ~ year+month+veg+bottom+shore | year+month+veg+bottom, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+
+lrtest(t, t1)
+lrtest(t, t2)
+lrtest(t, t3)
+lrtest(t, t4) #equal so drop bottom from count
+lrtest(t, t5)
+lrtest(t, t6)
+lrtest(t, t7)
+lrtest(t, t8)
+lrtest(t, t9) #equal so drop bottom from binary
+lrtest(t, t10)
+
+#drop bottom from count
+t <- hurdle(number ~ year+month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop year
+t1 <- hurdle(number ~ month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop month
+t2 <- hurdle(number ~ year+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#dropveg
+t3 <- hurdle(number ~ year+month+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop shore
+t4 <- hurdle(number ~ year+month+veg | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop year from binary
+t5 <- hurdle(number ~ year+month+veg+shore | month+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop month from binary
+t6 <- hurdle(number ~ year+month+veg+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop veg from binary
+t7 <- hurdle(number ~ year+month+veg+shore | year+month+bottom+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop bottom from binary
+t8 <- hurdle(number ~ year+month+veg+shore | year+month+veg+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop shore from binary
+t9 <- hurdle(number ~ year+month+veg+shore | year+month+veg+bottom, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+
+lrtest(t, t1)
+lrtest(t, t2)
+lrtest(t, t3)
+lrtest(t, t4)
+lrtest(t, t5)
+lrtest(t, t6)
+lrtest(t, t7)
+lrtest(t, t8) #equal so drop bottom from binary
+lrtest(t, t9) 
+
+#drop bottom from binary
+t <- hurdle(number ~ year+month+veg+shore | year+month+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop year
+t1 <- hurdle(number ~ month+veg+shore | year+month+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop month
+t2 <- hurdle(number ~ year+veg+shore | year+month+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop veg
+t3 <- hurdle(number ~ year+month+shore | year+month+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop shore
+t4 <- hurdle(number ~ year+month+veg | year+month+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop year
+t5 <- hurdle(number ~ year+month+veg+shore | month+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop month
+#t6 <- hurdle(number ~ year+month+veg+shore | year+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+#drop shore
+t7 <- hurdle(number ~ year+month+veg+shore | year+month, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+
+lrtest(t, t1)
+lrtest(t, t2)
+lrtest(t, t3)
+lrtest(t, t4)
+lrtest(t, t5)
+lrtest(t, t6)
+lrtest(t, t7)
+
+#all remaining covariates are significant
+AIC(t, t1, t2, t3, t4, t5, t6, t7) #AIC says best model is t
+BestModelTB_zanb <- t
+
+N<-nrow(tb.fl)
+EZANB <- resid(BestModelTB_zanb,type="pearson")
+Dispersion <- sum(EZANB^2)/(N-74)	#==>be sure to change value for degrees of freedom based on summary output
+Dispersion #1.12
+
+sum((resid(BestModelTB_zanb,type="pearson"))^2)/(N-74) > 1+2*(sqrt(2/(N-74)))
+sum((resid(BestModelTB_zanb,type="pearson"))^2)/(N-74) > 1+3*(sqrt(2/(N-74)))
+#not great
+
+#6D. CH model selection ZANB ####
+
+ch <- hurdle(number ~ year+month+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop year
+ch1 <- hurdle(number ~ month+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop month
+ch2 <- hurdle(number ~ year+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop veg
+ch3 <- hurdle(number ~ year+month+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop shore
+ch4 <- hurdle(number ~ year+month+veg+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop bottom
+ch5 <- hurdle(number ~ year+month+veg+shore | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop year binary
+ch6 <- hurdle(number ~ year+month+veg+shore+bottom | month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop month binary
+ch7 <- hurdle(number ~ year+month+veg+shore+bottom | year+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop veg binary
+ch8 <- hurdle(number ~ year+month+veg+shore+bottom | year+month+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop shore binary
+ch9 <- hurdle(number ~ year+month+veg+shore+bottom | year+month+veg+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop bottom binary
+ch10 <- hurdle(number ~ year+month+veg+shore+bottom | year+month+veg+shore, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+
+lrtest(ch, ch1)
+lrtest(ch, ch2)
+lrtest(ch, ch3)
+lrtest(ch, ch4)
+lrtest(ch, ch5)
+lrtest(ch, ch6)
+lrtest(ch, ch7)
+lrtest(ch, ch8)
+lrtest(ch, ch9)
+lrtest(ch, ch10) #drop bottom from binary
+
+#drop bottom from binary
+ch <- hurdle(number ~ year+month+veg+shore+bottom | year+month+veg+shore, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop year
+ch1 <- hurdle(number ~ month+veg+shore+bottom | year+month+veg+shore, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop month
+ch2 <- hurdle(number ~ year+veg+shore+bottom | year+month+veg+shore, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop veg
+ch3 <- hurdle(number ~ year+month+shore+bottom | year+month+veg+shore, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop shore
+ch4 <- hurdle(number ~ year+month+veg+bottom | year+month+veg+shore, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop bottom
+ch5 <- hurdle(number ~ year+month+veg+shore | year+month+veg+shore, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop year binary
+ch6 <- hurdle(number ~ year+month+veg+shore+bottom | month+veg+shore, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop month binary
+ch7 <- hurdle(number ~ year+month+veg+shore+bottom | year+veg+shore, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop veg binary
+ch8 <- hurdle(number ~ year+month+veg+shore+bottom | year+month+shore, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#drop shore binary
+ch9 <- hurdle(number ~ year+month+veg+shore+bottom | year+month+veg, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+
+lrtest(ch, ch1)
+lrtest(ch, ch2)
+lrtest(ch, ch3)
+lrtest(ch, ch4)
+lrtest(ch, ch5)
+lrtest(ch, ch6)
+lrtest(ch, ch7)
+lrtest(ch, ch8)
+lrtest(ch, ch9)
+
+#all remaining covariates are significant
+AIC(ch, ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch8, ch9) #AIC says ch is best
+
+BestModelCH_zanb <- ch
+
+N<-nrow(ch.fl)
+EZANB <- resid(BestModelCH_zanb,type="pearson")
+Dispersion <- sum(EZANB^2)/(N-76)	#==>be sure to change value for degrees of freedom based on summary output
+Dispersion #1.18
+
+sum((resid(BestModelCH_zanb,type="pearson"))^2)/(N-76) > 1+2*(sqrt(2/(N-76)))
+sum((resid(BestModelCH_zanb,type="pearson"))^2)/(N-76) > 1+3*(sqrt(2/(N-76)))
+#not great
+
+#6E. JX model selection ZANB ####
+j <- hurdle(number ~ year+month+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop year
+j1 <- hurdle(number ~ month+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop month
+j2 <- hurdle(number ~ year+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop veg
+j3 <- hurdle(number ~ year+month+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop shore
+j4 <- hurdle(number ~ year+month+veg+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop bottom
+j5 <- hurdle(number ~ year+month+veg+shore | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop year binary
+j6 <- hurdle(number ~ year+month+veg+shore+bottom | month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop month binary
+j7 <- hurdle(number ~ year+month+veg+shore+bottom | year+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop veg binary
+j8 <- hurdle(number ~ year+month+veg+shore+bottom | year+month+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop shore binary
+j9 <- hurdle(number ~ year+month+veg+shore+bottom | year+month+veg+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop bottom binary
+j10 <- hurdle(number ~ year+month+veg+shore+bottom | year+month+veg+shore, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+
+lrtest(j, j1) #equal so drop year in count
+lrtest(j, j2) 
+lrtest(j, j3)
+lrtest(j, j4) #equal so drop shore in count
+lrtest(j, j5) #equal so frop bottom in count
+lrtest(j, j6) 
+lrtest(j, j7)
+lrtest(j, j8)
+lrtest(j, j9)
+lrtest(j, j10)
+
+#dropped bottom in count
+j <- hurdle(number ~ year+month+veg+shore | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop year
+j1 <- hurdle(number ~ month+veg+shore | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop month
+j2<- hurdle(number ~ year+veg+shore | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop veg
+j3 <- hurdle(number ~ year+month+shore | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop shore
+j4 <- hurdle(number ~ year+month+veg | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop year
+j5 <- hurdle(number ~ year+month+veg+shore | month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop month
+j6 <- hurdle(number ~ year+month+veg+shore | year+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop veg
+j7 <- hurdle(number ~ year+month+veg+shore | year+month+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop shore
+j8 <- hurdle(number ~ year+month+veg+shore | year+month+veg+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+#drop bottom
+j9 <- hurdle(number ~ year+month+veg+shore | year+month+veg+shore, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+
+lrtest(j, j1)#equal so drop year count
+lrtest(j, j2)
+lrtest(j, j3)
+lrtest(j, j4) #equal so drop shore from count
+lrtest(j, j5)
+lrtest(j, j6)
+lrtest(j, j7)
+lrtest(j, j8) 
+lrtest(j, j9) 
+
+#drop year from count
+j <- hurdle(number ~ month+veg+shore | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+j1 <- hurdle(number ~ veg+shore | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+j2 <- hurdle(number ~ month+shore | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+j3 <- hurdle(number ~ month+veg | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+j4 <- hurdle(number ~ month+veg+shore | month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+j5 <- hurdle(number ~ month+veg+shore | year+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+j6 <- hurdle(number ~ month+veg+shore | year+month+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+j7 <- hurdle(number ~ month+veg+shore | year+month+veg+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+j8 <- hurdle(number ~ month+veg+shore | year+month+veg+shore, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+
+lrtest(j, j1)
+lrtest(j, j2)
+lrtest(j, j3) #equal so drop shore from count
+lrtest(j, j4) 
+lrtest(j, j5)
+lrtest(j, j6)
+lrtest(j, j7)
+lrtest(j, j8) 
+
+#drop shore from count
+j <- hurdle(number ~ veg +month | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+j1 <- hurdle(number ~ month | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+j2 <- hurdle(number ~ veg | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+j3 <- hurdle(number ~ month+veg | month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+j4 <- hurdle(number ~ month+veg | year+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+j5 <- hurdle(number ~ month+veg | year+month+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+j6 <- hurdle(number ~ month+veg | year+month+veg+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+j7 <- hurdle(number ~ month+veg | year+month+veg+shore, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+
+lrtest(j, j1)
+lrtest(j, j2)
+lrtest(j, j3) 
+lrtest(j, j4) 
+lrtest(j, j5)
+lrtest(j, j6)
+lrtest(j, j7)
+
+#all remaining covariates are significant
+AIC(j, j1, j2, j3, j4, j5,j6, j7, j8, j9) #AIC says j is best
+
+BestModelJX_zanb <- j
+
+N<-nrow(jx.fl)
+EZANB <- resid(BestModelJX_zanb,type="pearson")
+Dispersion <- sum(EZANB^2)/(N-34)	#==>be sure to change value for degrees of freedom based on summary output
+Dispersion #0.97
+
+sum((resid(BestModelJX_zanb,type="pearson"))^2)/(N-34) > 1+2*(sqrt(2/(N-34)))
+sum((resid(BestModelJX_zanb,type="pearson"))^2)/(N-34) > 1+3*(sqrt(2/(N-34)))
+#good fit! 
+
+#6F. IR model selection ZANB ####
+i <- hurdle(number ~ year+month+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop year
+i1 <- hurdle(number ~ month+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop month
+i2 <- hurdle(number ~ year+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop veg
+i3 <- hurdle(number ~ year+month+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop shore
+i4 <- hurdle(number ~ year+month+veg+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop bottom
+i5 <- hurdle(number ~ year+month+veg+shore | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop year
+i6 <- hurdle(number ~ year+month+veg+shore+bottom | month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop month
+i7 <- hurdle(number ~ year+month+veg+shore+bottom | year+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop veg
+i8 <- hurdle(number ~ year+month+veg+shore+bottom | year+month+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop shore
+i9 <- hurdle(number ~ year+month+veg+shore+bottom | year+month+veg+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop bottom
+i10 <- hurdle(number ~ year+month+veg+shore+bottom | year+month+veg+shore, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+
+lrtest(i, i1)
+lrtest(i, i2)
+lrtest(i, i3)
+lrtest(i, i4) #equal so drop shore in count
+lrtest(i, i5) #equal so drop bottom i count
+lrtest(i, i6)
+lrtest(i, i7)
+lrtest(i, i8)
+lrtest(i, i9)
+lrtest(i, i10) 
+
+#drop shore in count
+i <- hurdle(number ~ year+month+veg+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop year
+i1 <- hurdle(number ~ month+veg+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop month
+i2 <- hurdle(number ~ year+veg+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop veg
+i3 <- hurdle(number ~ year+month+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop bottom
+i4 <- hurdle(number ~ year+month+veg | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop year
+i5 <- hurdle(number ~ year+month+veg+bottom | month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop month
+i6 <- hurdle(number ~ year+month+veg+bottom | year+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop veg
+i7 <- hurdle(number ~ year+month+veg+bottom | year+month+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop shore
+i8 <- hurdle(number ~ year+month+veg+bottom | year+month+veg+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+#drop bottom
+i9 <- hurdle(number ~ year+month+veg+bottom | year+month+veg+shore, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+
+lrtest(i, i1)
+lrtest(i, i2)
+lrtest(i, i3)
+lrtest(i, i4) #equal so drop bottom from count
+lrtest(i, i5) 
+lrtest(i, i6)
+lrtest(i, i7)
+lrtest(i, i8)
+lrtest(i, i9) 
+
+#drop bottom from count
+i <- hurdle(number ~ year+month+veg | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+
+i1 <- hurdle(number ~ month+veg | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+i2 <- hurdle(number ~ year+veg | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+i3 <- hurdle(number ~ year+month | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+i4 <- hurdle(number ~ year+month+veg | month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+i5 <- hurdle(number ~ year+month+veg | year+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+i6 <- hurdle(number ~ year+month+veg | year+month+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+i7 <- hurdle(number ~ year+month+veg | year+month+veg+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+i8 <- hurdle(number ~ year+month+veg | year+month+veg+shore, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+
+lrtest(i, i1)
+lrtest(i, i2)
+lrtest(i, i3)
+lrtest(i, i4) 
+lrtest(i, i5) 
+lrtest(i, i6)
+lrtest(i, i7)
+lrtest(i, i8) 
+
+#all remaining covariates are significant
+AIC(i, i1, i2, i3, i4, i5,i6, i7, i8, i9) #AIC says i is best
+
+BestModelIR_zanb <- i
+
+N<-nrow(ir.fl)
+EZANB <- resid(BestModelIR_zanb,type="pearson")
+Dispersion <- sum(EZANB^2)/(N-71)	#==>be sure to change value for degrees of freedom based on summary output
+Dispersion #1.26
+
+sum((resid(BestModelJX_zanb,type="pearson"))^2)/(N-71) > 1+2*(sqrt(2/(N-71)))
+sum((resid(BestModelJX_zanb,type="pearson"))^2)/(N-71) > 1+3*(sqrt(2/(N-71)))
+#good fit! 
+
+#7. Compare ZINB to ZANB ####
+AIC(BestModelAP, BestModelAP_zanb) #ZANB is better
+AIC(BestModelCK, BestModelCK_zanb) #ZINB is better
+AIC(BestModelTB, BestModelTB_zanb) #ZINB is better
+AIC(BestModelCH, BestModelCH_zanb) #ZINB is better
+AIC(BestModelJX, BestModelJX_zanb) #ZINB is better
+AIC(BestModelIR, BestModelIR_zanb) #ZINB is better
+
+#for every case except for AP, the zero inflated model is better. 
 
 ##### MODEL SELECTION BINARY w/ DROP1 command_YOY ######
-# pg 253 Zuur
-##  AP_BIN (Year, Veg = significant)
-summary(Full_ap.bin)
-drop1(Full_ap.bin, test ='Chi')
-# month, bottom, and shore are not significant so drop them one at a time
-
-#drop month
-M1_ap.bin <- glm(number ~ year+bottom+veg+shore, data=ap.bin, family=binomial)
-drop1(M1_ap.bin, test ="Chi")
-
-#drop month, bottom
-M2_ap.bin <- glm(number ~ year+veg+shore, data=ap.bin, family=binomial)
-drop1(M2_ap.bin, test ="Chi")
-
-#drop month, bottom, shore
-M3_ap.bin <- glm(number ~ year+veg, data=ap.bin, family=binomial)
-drop1(M3_ap.bin, test ="Chi")
-# Year, Veg = significant
-
-## CK_BIN (Year, Month, Veg, Shore = significant)
-summary(Full_ck.bin)
-drop1(Full_ck.bin, test ='Chi')
-# bottom is not signficiant
-
-#drop bottom 
-M1_ck.bin <- glm(number ~ year+month+veg+shore, data=ck.bin, family=binomial)
-drop1(M1_ck.bin, test ="Chi")
-
-
-## TB_BIN (Year, Month, Veg, Shore = significant)
-summary(Full_tb.bin)
-drop1(Full_tb.bin, test ='Chi')
-# bottom is not signficiant
-
-#drop bottom 
-M1_tb.bin <- glm(number ~ year+month+veg+shore, data=tb.bin, family=binomial)
-drop1(M1_tb.bin, test ="Chi")
-
-##  CH_BIN (Year, Month, Veg, Shore = significant)
-summary(Full_ch.bin)
-drop1(Full_ch.bin, test ='Chi')
-# bottom is not signficiant
-
-#drop bottom 
-M1_ch.bin <- glm(number ~ year+month+veg+shore, data=ch.bin, family=binomial)
-drop1(M1_ch.bin, test ="Chi")
-
-## JX_BIN (Year, Bottom, Veg, Shore =signficant)
-summary(Full_jx.bin)
-drop1(Full_jx.bin, test ='Chi')
-# month is not signficiant
-
-#drop month 
-M1_jx.bin <- glm(number ~ year+bottom+veg+shore, data=jx.bin, family=binomial)
-drop1(M1_jx.bin, test ="Chi")
-# Year, Bottom, Veg, Shore = significant
-
-## IR_BIN (Year, Month, Veg, Shore = significant)
-summary(Full_ir.bin)
-drop1(Full_ir.bin, test ='Chi')
-# bottom is not signficiant
-
-#drop bottom 
-M1_ir.bin <- glm(number ~ year+month+veg+shore, data=ir.bin, family=binomial)
-drop1(M1_ir.bin, test ="Chi")
-
+# # pg 253 Zuur
+# # Even though I decided that for this case not to use delta method I will fit the binary model still  
+# ##  AP_BIN (Year, Veg = significant)
+# summary(Full_ap.bin)
+# drop1(Full_ap.bin, test ='Chi')
+# # bottom, and shore are not significant so drop them one at a time
+# 
+# #drop bottom
+# M1_ap.bin <- glm(number ~ year+month+veg+shore, data=ap.bin, family=binomial)
+# drop1(M1_ap.bin, test ="Chi")
+# 
+# #drop shore
+# M2_ap.bin <- glm(number ~ year+month+veg, data=ap.bin, family=binomial)
+# drop1(M2_ap.bin, test ="Chi")
+# 
+# lrtest(M1_ap.bin, M2_ap.bin) #equal so opt for simpler
+# AIC(Full_ap.bin,M1_ap.bin, M2_ap.bin) #AIC agrees
+# #M3_ap.bin is best
+# 
+# ## CK_BIN (Year, Month, Veg, Shore = significant)
+# summary(Full_ck.bin)
+# drop1(Full_ck.bin, test ='Chi')
+# # bottom  is not signficiant
+# 
+# #drop bottom 
+# M1_ck.bin <- glm(number ~ year+month+veg+shore, data=ck.bin, family=binomial, na.action=na.exclude)
+# drop1(M1_ck.bin, test ="Chi")
+# lrtest(Full_ck.bin, M1_ck.bin)
+# 
+# ## TB_BIN (Year, Month, Veg, Shore = significant)
+# summary(Full_tb.bin)
+# drop1(Full_tb.bin, test ='Chi')
+# # bottom is not signficiant
+# 
+# #drop bottom 
+# M1_tb.bin <- glm(number ~ year+month+veg+shore, data=tb.bin, family=binomial)
+# drop1(M1_tb.bin, test ="Chi")
+# lrtest(Full_tb.bin, M1_tb.bin) #equal so go with simpler
+# 
+# ##  CH_BIN (Year, Month, Veg, Shore = significant)
+# summary(Full_ch.bin)
+# drop1(Full_ch.bin, test ='Chi')
+# # bottom is not signficiant
+# 
+# #drop bottom 
+# M1_ch.bin <- glm(number ~ year+month+veg+shore, data=ch.bin, family=binomial)
+# drop1(M1_ch.bin, test ="Chi")
+# lrtest(Full_ch.bin, M1_ch.bin) #equal so go with simpler
+# 
+# ## JX_BIN (Year, Bottom, Veg, Shore +Month =signficant)
+# summary(Full_jx.bin)
+# drop1(Full_jx.bin, test ='Chi')
+# 
+# 
+# ## IR_BIN (Year, Month, Veg, Shore +bottom = significant)
+# summary(Full_ir.bin)
+# drop1(Full_ir.bin, test ='Chi')
+# 
+# #drop bottom 
+# M1_ir.bin <- glm(number ~ year+month+veg+shore, data=ir.bin, family=binomial)
+# drop1(M1_ir.bin, test ="Chi")
+# 
 ##### ASSIGN FINAL MODELS_YOY ###### 
-final_ap.pos = M2_ap.pos 
-final_ck.pos = M3_ck.pos
-final_tb.pos = M2_tb.pos
-final_ch.pos= Full_ch.pos
-final_jx.pos = M2_jx.pos
-final_ir.pos = M2_ir.pos
 
-final_ap.bin = M3_ap.bin
-final_ck.bin = M1_ck.bin
-final_tb.bin = M1_tb.bin
-final_ch.bin = M1_ch.bin
-final_jx.bin = M1_jx.bin
-final_ir.bin = M1_ir.bin
+#After running mixture model (Posisson -> NB -> ZINB) and an alias hurdle model (zero altered (ZA) Poisson -> ZANB)
+# the best models for each are below: 
+#The zero inflated models were best for each estuary except for AP. For that one, the alias two-part ZANB was best. 
+
+BestModelAP_zanb #zanb was best for AP 
+BestModelCK
+BestModelTB 
+BestModelCH
+BestModelJX
+BestModelIR 
+
 
 ##### DETERMINE LEAST SQUARE MEANS_YOY ###########
 # DETERMINE LEAST SQUARE MEANS 
@@ -1218,12 +2484,29 @@ final_ir.bin = M1_ir.bin
 # Use lsmeans CRAN document. 
 
 # Looking at the reference grid gives a good idea of over what levels the mean is being averaged. 
-ap.rf.grid <- ref.grid(final_ap.pos)
-ap.bin.rf.grid <- ref.grid(final_ap.bin)
+ap.rf.grid <- ref.grid(BestModelAP_zanb)
 
 #Can make predictions using the reference grid. It produces a mean value of numbers based on each scenario combination.  
-test_ap.pos = summary(ap.rf.grid)
-test_ap.bin= summary(ap.bin.rf.grid)
+test_ap = summary(ap.rf.grid)
+
+library(dplyr)
+lsm.AP       <- lsmeans(BestModelAP_zanb, "year", data = ap.fl)
+lsm.AP <- as.data.frame(transform(summary(lsm.AP))) %>% select(year, lsmean, SE) 
+
+lsm.CK       <- lsmeans(BestModelCK, "year", data = ck.fl)
+lsm.CK <- as.data.frame(transform(summary(lsm.CK))) %>% select(year, lsmean, SE) 
+
+lsm.TB       <- lsmeans(BestModelTB, "year", data = tb.fl)
+lsm.TB <- as.data.frame(transform(summary(lsm.TB))) %>% select(year, lsmean, SE) 
+
+lsm.CH       <- lsmeans(BestModelCH, "year", data = ch.fl)
+lsm.CH <- as.data.frame(transform(summary(lsm.CH))) %>% select(year, lsmean, SE) 
+
+lsm.JX       <- lsmeans(BestModelJX, "year", data = jx.fl)
+lsm.JX <- as.data.frame(transform(summary(lsm.JX))) %>% select(year, lsmean, SE) 
+
+lsm.IR       <- lsmeans(BestModelIR, "year", data = ir.fl)
+lsm.IR <- as.data.frame(transform(summary(lsm.IR))) %>% select(year, lsmean, SE) 
 
 # Use lsmeans to determine the least square mean of positive values. 
 # Display the response scale (as opposed to the log scale which is reported for the Poisson, and the logit scale reported for the Binomial)
