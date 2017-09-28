@@ -488,7 +488,7 @@ lrtest(ch.ZNB, ch.ZP) #NB is better than ZIP
 lrtest(jx.ZNB, jx.ZP) #NB is better than ZIP
 lrtest(ir.ZNB, ir.ZP) #NB is better than ZIP
 
-# 6. Build the mixture (full) zero altered poisson (ZAP) and zero altered negative binomial(ZANB) #####
+# 6. Build the mixture (full) zero altered truncated poisson (ZAP) and zero altered truncated (hurdle) negative binomial(ZANB) #####
 #pg 288 Zuur
 
 apZAP <- hurdle(number ~ year+month+veg+bottom+shore, dist="poisson", lin="logit", data=ap.fl)
@@ -1624,7 +1624,6 @@ BestModelIR <- i
 #BestModelJX
 #BestModelIR 
 
-
 #create index plot of pearson residuals for ZINB models 
 plot(residuals(BestModelAP, type="pearson"), ylab="Pearson Residuals")
 plot(residuals(BestModelAP, type="pearson") ~ fitted(BestModelAP))
@@ -2476,6 +2475,14 @@ BestModelCH
 BestModelJX
 BestModelIR 
 
+#alternatives
+# BestModelAP
+# BestModelCK_zanb
+# BestModelCH_zanb
+# BestModelTB_zanb
+# BestModelJX_zanb
+# BestModelIR_zanb
+
 
 ##### DETERMINE LEAST SQUARE MEANS_YOY ###########
 # DETERMINE LEAST SQUARE MEANS 
@@ -2492,21 +2499,34 @@ test_ap = summary(ap.rf.grid)
 library(dplyr)
 lsm.AP       <- lsmeans(BestModelAP_zanb, "year", data = ap.fl, mode="response")
 estimate.AP <- as.data.frame(transform(summary(lsm.AP))) %>% select(year, lsmean, SE) 
+#lsmeans with alternative model type (ZINB for AP)
+alt.AP <- as.data.frame(transform(summary(lsmeans(BestModelAP,"year", data = ap.fl, mode="response"))))  %>% select(year, lsmean, SE) %>% mutate(alternative.mean=lsmean) %>% select(-lsmean)
 
 lsm.CK       <- lsmeans(BestModelCK, "year", data = ck.fl, mode="response")
 estimate.CK <- as.data.frame(transform(summary(lsm.CK))) %>% select(year, lsmean, SE) 
+#lsmeans with alternative model type (ZANB for CK)
+alt.CK <- as.data.frame(transform(summary(lsmeans(BestModelCK_zanb,"year", data = ck.fl, mode="response"))))  %>% select(year, lsmean, SE) %>% mutate(alternative.mean=lsmean) %>% select(-lsmean)
 
 lsm.TB       <- lsmeans(BestModelTB, "year", data = tb.fl, mode="response")
 estimate.TB <- as.data.frame(transform(summary(lsm.TB))) %>% select(year, lsmean, SE) 
+#lsmeans with alternative model type (ZANB for TB)
+alt.TB <- as.data.frame(transform(summary(lsmeans(BestModelTB_zanb,"year", data = tb.fl, mode="response"))))  %>% select(year, lsmean, SE) %>% mutate(alternative.mean=lsmean) %>% select(-lsmean)
 
 lsm.CH       <- lsmeans(BestModelCH, "year", data = ch.fl, mode="response")
 estimate.CH <- as.data.frame(transform(summary(lsm.CH))) %>% select(year, lsmean, SE) 
+#lsmeans with alternative model type (ZANB for CH)
+alt.CH <- as.data.frame(transform(summary(lsmeans(BestModelCH_zanb,"year", data = ch.fl, mode="response"))))  %>% select(year, lsmean, SE) %>% mutate(alternative.mean=lsmean) %>% select(-lsmean)
 
 lsm.JX       <- lsmeans(BestModelJX, "year", data = jx.fl, mode="response")
 estimate.JX <- as.data.frame(transform(summary(lsm.JX))) %>% select(year, lsmean, SE) 
+#lsmeans with alternative model type (ZANB for JX)
+alt.JX <- as.data.frame(transform(summary(lsmeans(BestModelJX_zanb,"year", data = jx.fl, mode="response"))))  %>% select(year, lsmean, SE) %>% mutate(alternative.mean=lsmean) %>% select(-lsmean)
 
 lsm.IR       <- lsmeans(BestModelIR, "year", data = ir.fl, mode="response")
 estimate.IR <- as.data.frame(transform(summary(lsm.IR))) %>% select(year, lsmean, SE) 
+#lsmeans with alternative model type (ZANB for IR)
+alt.IR <- as.data.frame(transform(summary(lsmeans(BestModelIR_zanb,"year", data = ir.fl, mode="response"))))  %>% select(year, lsmean, SE) %>% mutate(alternative.mean=lsmean) %>% select(-lsmean)
+
 
 #Make a few thing that we need below for Monte Carlo 
 # determining the number of trips per year
@@ -2604,36 +2624,114 @@ names(CKindex) <- c("year","Total.num.trips","Mean","std.dev", "CV","Low.95","Qt
                     "Lower", "NominalMean", "NominalSD", "NominalCV" )
 CKindex$year = as.numeric(CKindex$year)
 
-
 # TB Monte Carlo ####
+num.yr <- length(estimate.TB$year)
+index.dist <- matrix(data=NA,nrow=num.yr,ncol=8) 
+num.iter=10000
+
+#build the random distribution (i.e the random deviates)
+for (i in 1:num.yr) {
+  rand.1    <- qt(runif(num.iter,0.001,0.999),sample.sizeTB$num.trips) 
+  
+  #create the distribution of the data 
+  TBdist <- estimate.TB$lsmean[i] + estimate.TB$SE[i] * rand.1 
+  
+  index.dist[i,1] <- mean(TBdist) #take the mean of the dist (aka temp)
+  index.dist[i,2] <- sd(TBdist) #take the sd of the dist
+  index.dist[i,3] <- sd(TBdist)/mean(TBdist) #create CV
+  index.dist[i,4:8] <- quantile(TBdist,probs=c(0.025,0.25,0.50,0.75,0.975))
+}
+Upper        <- index.dist[ ,8] - index.dist[ ,7]
+Lower        <- index.dist[ ,5] - index.dist[ ,4]
+NominalMean  = as.vector(tapply(tb.fl$number, tb.fl$year, mean))
+NominalSD    = as.vector(tapply(tb.fl$number, tb.fl$year, sd))
+NominalCV    = NominalSD /NominalMean
+TBindex <- as.data.frame(cbind(sample.sizeTB, index.dist, Upper, Lower, NominalMean, NominalSD, NominalCV ))
+names(TBindex) <- c("year","Total.num.trips","Mean","std.dev", "CV","Low.95","Qtr.1","Median","Qtr.3","Up.95","Upper",
+                    "Lower", "NominalMean", "NominalSD", "NominalCV" )
+TBindex$year = as.numeric(TBindex$year)
+
 # CH Monte Carlo ####
+num.yr <- length(estimate.CH$year)
+index.dist <- matrix(data=NA,nrow=num.yr,ncol=8) 
+num.iter=10000
+
+#build the random distribution (i.e the random deviates)
+for (i in 1:num.yr) {
+  rand.1    <- qt(runif(num.iter,0.001,0.999),sample.sizeCH$num.trips) 
+  
+  #create the distribution of the data 
+  CHdist <- estimate.CH$lsmean[i] + estimate.CH$SE[i] * rand.1 
+  
+  index.dist[i,1] <- mean(CHdist) #take the mean of the dist (aka temp)
+  index.dist[i,2] <- sd(CHdist) #take the sd of the dist
+  index.dist[i,3] <- sd(CHdist)/mean(CHdist) #create CV
+  index.dist[i,4:8] <- quantile(CHdist,probs=c(0.025,0.25,0.50,0.75,0.975))
+}
+Upper        <- index.dist[ ,8] - index.dist[ ,7]
+Lower        <- index.dist[ ,5] - index.dist[ ,4]
+NominalMean  = as.vector(tapply(ch.fl$number, ch.fl$year, mean))
+NominalSD    = as.vector(tapply(ch.fl$number, ch.fl$year, sd))
+NominalCV    = NominalSD /NominalMean
+CHindex <- as.data.frame(cbind(sample.sizeCH, index.dist, Upper, Lower, NominalMean, NominalSD, NominalCV ))
+names(CHindex) <- c("year","Total.num.trips","Mean","std.dev", "CV","Low.95","Qtr.1","Median","Qtr.3","Up.95","Upper",
+                    "Lower", "NominalMean", "NominalSD", "NominalCV" )
+CHindex$year = as.numeric(CHindex$year)
+
 # JX Monte Carlo ####
+num.yr <- length(estimate.JX$year)
+index.dist <- matrix(data=NA,nrow=num.yr,ncol=8) 
+num.iter=10000
+
+#build the random distribution (i.e the random deviates)
+for (i in 1:num.yr) {
+  rand.1    <- qt(runif(num.iter,0.001,0.999),sample.sizeJX$num.trips) 
+  
+  #create the distribution of the data 
+  JXdist <- estimate.JX$lsmean[i] + estimate.JX$SE[i] * rand.1 
+  
+  index.dist[i,1] <- mean(JXdist) #take the mean of the dist (aka temp)
+  index.dist[i,2] <- sd(JXdist) #take the sd of the dist
+  index.dist[i,3] <- sd(JXdist)/mean(JXdist) #create CV
+  index.dist[i,4:8] <- quantile(JXdist,probs=c(0.025,0.25,0.50,0.75,0.975))
+}
+Upper        <- index.dist[ ,8] - index.dist[ ,7]
+Lower        <- index.dist[ ,5] - index.dist[ ,4]
+NominalMean  = as.vector(tapply(jx.fl$number, jx.fl$year, mean))
+NominalSD    = as.vector(tapply(jx.fl$number, jx.fl$year, sd))
+NominalCV    = NominalSD /NominalMean
+JXindex <- as.data.frame(cbind(sample.sizeJX, index.dist, Upper, Lower, NominalMean, NominalSD, NominalCV ))
+names(JXindex) <- c("year","Total.num.trips","Mean","std.dev", "CV","Low.95","Qtr.1","Median","Qtr.3","Up.95","Upper",
+                    "Lower", "NominalMean", "NominalSD", "NominalCV" )
+JXindex$year = as.numeric(JXindex$year)
+
 # IR Monte Carlo ####
 
+num.yr <- length(estimate.IR$year)
+index.dist <- matrix(data=NA,nrow=num.yr,ncol=8) 
+num.iter=10000
 
-
-
-
-
-# PLOT INDICES ####
-
-library(reshape2)
-library(ggplot2)
-
-APred <- APindex[,c(1,3,13)] %>% melt(id=c("year"))
-
-library(ggplot2)
-
-ggplot(APred, aes(x=year, y=value, color=variable))+
-geom_line()  
-
-
-
-test <- CKindex[,c(1,3,13)]
-test <- melt(test, id=c("year"))
-ggplot(test, aes(x=year, y=value, color=variable))+
-  geom_line()  
-
+#build the random distribution (i.e the random deviates)
+for (i in 1:num.yr) {
+  rand.1    <- qt(runif(num.iter,0.001,0.999),sample.sizeIR$num.trips) 
+  
+  #create the distribution of the data 
+  IRdist <- estimate.IR$lsmean[i] + estimate.IR$SE[i] * rand.1 
+  
+  index.dist[i,1] <- mean(IRdist) #take the mean of the dist (aka temp)
+  index.dist[i,2] <- sd(IRdist) #take the sd of the dist
+  index.dist[i,3] <- sd(IRdist)/mean(IRdist) #create CV
+  index.dist[i,4:8] <- quantile(IRdist,probs=c(0.025,0.25,0.50,0.75,0.975))
+}
+Upper        <- index.dist[ ,8] - index.dist[ ,7]
+Lower        <- index.dist[ ,5] - index.dist[ ,4]
+NominalMean  = as.vector(tapply(ir.fl$number, ir.fl$year, mean))
+NominalSD    = as.vector(tapply(ir.fl$number, ir.fl$year, sd))
+NominalCV    = NominalSD /NominalMean
+IRindex <- as.data.frame(cbind(sample.sizeIR, index.dist, Upper, Lower, NominalMean, NominalSD, NominalCV ))
+names(IRindex) <- c("year","Total.num.trips","Mean","std.dev", "CV","Low.95","Qtr.1","Median","Qtr.3","Up.95","Upper",
+                    "Lower", "NominalMean", "NominalSD", "NominalCV" )
+IRindex$year = as.numeric(IRindex$year)
 
 ##### EXPORT PREDICTED INDEX_YOY ####
 #export to csv _PERSONAL COMPUTER
@@ -2645,12 +2743,46 @@ ggplot(test, aes(x=year, y=value, color=variable))+
 #write.csv(Mean_CK, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/UpdatedIndices/CK_yoy_index.csv")
 
 #export to csv _WORK COMPUTER
-write.csv(estimate.AP, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/AP_yoy_index.csv")
-write.csv(estimate.CK, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/IR_yoy_index.csv")
-write.csv(estimate.TB, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/JX_yoy_index.csv")
-write.csv(estimate.CH, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/CH_yoy_index.csv")
-write.csv(estimate.JX, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/TB_yoy_index.csv")
-write.csv(estimate.IR, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/CK_yoy_index.csv")
+write.csv(APindex, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/AP_yoy_index.csv")
+write.csv(CKindex, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/IR_yoy_index.csv")
+write.csv(TBindex, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/JX_yoy_index.csv")
+write.csv(CHindex, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/CH_yoy_index.csv")
+write.csv(JXindex, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/TB_yoy_index.csv")
+write.csv(IRindex, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/CK_yoy_index.csv")
+
+# PLOT INDICES ####
+
+library(reshape2)
+library(ggplot2)
+
+#add on the alternative index 
+APred <- APindex[,c(1,3,13)] %>% cbind(alt.AP$alternative.mean) %>% melt(id=c("year"))
+CKred <- CKindex[,c(1,3,13)] %>% cbind(alt.CK$alternative.mean) %>% melt(id=c("year"))
+TBred <- TBindex[,c(1,3,13)] %>% cbind(alt.TB$alternative.mean) %>% melt(id=c("year"))
+CHred <- CHindex[,c(1,3,13)] %>% cbind(alt.CH$alternative.mean) %>% melt(id=c("year"))
+JXred <- JXindex[,c(1,3,13)] %>% cbind(alt.JX$alternative.mean) %>% melt(id=c("year"))
+IRred <- IRindex[,c(1,3,13)] %>% cbind(alt.IR$alternative.mean) %>% melt(id=c("year"))
+
+
+library(ggplot2)
+
+ggplot(APred, aes(x=year, y=value, color=variable))+
+geom_line()  
+
+ggplot(CKred, aes(x=year, y=value, color=variable))+
+  geom_line()  
+
+ggplot(TBred, aes(x=year, y=value, color=variable))+
+  geom_line()  
+
+ggplot(CHred, aes(x=year, y=value, color=variable))+
+  geom_line()  
+
+ggplot(JXred, aes(x=year, y=value, color=variable))+
+  geom_line()  
+
+ggplot(IRred, aes(x=year, y=value, color=variable))+
+  geom_line()  
 
 ##### ADULT SECTION ####
 # Now that the YOY index is done... I need to load the adult data because I need this to predict
