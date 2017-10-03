@@ -141,23 +141,23 @@ full[,c(2,5:9)] <- lapply(full[,c(2,5:9)], factor)
 # to determine the total number of positive huals and proportion positive
 # make complete dataset also for use in the mixture model
 
-full.pos<- full %>% subset(number>0)
-full.bin <- full %>% mutate(number=ifelse(number>0,1,0))
-full.bin$month <- as.factor(as.character(full.bin$month))
+# full.pos<- full %>% subset(number>0)
+# full.bin <- full %>% mutate(number=ifelse(number>0,1,0))
+# full.bin$month <- as.factor(as.character(full.bin$month))
 
-ap.pos <- droplevels(full.pos %>% subset(bay =='AP'))
-ck.pos <- droplevels(full.pos %>% subset(bay =='CK')) 
-tb.pos <- droplevels(full.pos %>% subset(bay =='TB')) 
-ch.pos <- droplevels(full.pos %>% subset(bay =='CH')) 
-jx.pos <- droplevels(full.pos %>% subset(bay =='JX')) 
-ir.pos <- droplevels(full.pos %>% subset(bay =='IR')) 
-
-ap.bin <- droplevels(full.bin %>% subset(bay =='AP'))
-ck.bin <- droplevels(full.bin %>% subset(bay =='CK'))
-tb.bin <- droplevels(full.bin %>% subset(bay =='TB'))
-ch.bin <- droplevels(full.bin %>% subset(bay =='CH'))
-jx.bin <- droplevels(full.bin %>% subset(bay =='JX'))
-ir.bin <- droplevels(full.bin %>% subset(bay =='IR'))
+# ap.pos <- droplevels(full.pos %>% subset(bay =='AP'))
+# ck.pos <- droplevels(full.pos %>% subset(bay =='CK')) 
+# tb.pos <- droplevels(full.pos %>% subset(bay =='TB')) 
+# ch.pos <- droplevels(full.pos %>% subset(bay =='CH')) 
+# jx.pos <- droplevels(full.pos %>% subset(bay =='JX')) 
+# ir.pos <- droplevels(full.pos %>% subset(bay =='IR')) 
+# 
+# ap.bin <- droplevels(full.bin %>% subset(bay =='AP'))
+# ck.bin <- droplevels(full.bin %>% subset(bay =='CK'))
+# tb.bin <- droplevels(full.bin %>% subset(bay =='TB'))
+# ch.bin <- droplevels(full.bin %>% subset(bay =='CH'))
+# jx.bin <- droplevels(full.bin %>% subset(bay =='JX'))
+# ir.bin <- droplevels(full.bin %>% subset(bay =='IR'))
 
 ap.fl <- droplevels(full %>% subset(bay =='AP'))
 ck.fl <- droplevels(full %>% subset(bay =='CK'))
@@ -282,6 +282,13 @@ ir.fl <- na.omit(ir.fl)
 ir.pos$month <- as.factor(as.character(ir.pos$month))
 ir.fl$month <- as.factor(as.character(ir.fl$month))
 
+with(ir.fl,tapply(number, list(year,month),sum))
+with(ir.fl,tapply(number, list(year,veg),sum))
+with(ir.fl,tapply(number, list(year,bottom),sum))
+with(ir.fl,tapply(number, list(year,shore),sum))
+ir.fl <- na.omit(ir.fl)
+ir.fl$month <- as.factor(as.character(ir.fl$month))
+
 ##### VISUALIZE THE DATA_YOY ########
 #Plot the data
 
@@ -317,46 +324,46 @@ plot(ap.pos$veg, ap.pos$number, vlab="veg", ylab="number")
 
 # 1. Build the binary data sets ####
 # With the Bernoulli GLM (binomial, response variable is a vector of zeros and ones) overdispersion does not ever occur (Zuur og 253) so I don't need to test for overdispersion in the .bin models. 
-Full_ap.bin <- glm(number ~ year+month+bottom+veg+shore, data=ap.bin, family=binomial, na.action = na.exclude)
-Full_ck.bin <- glm(number ~ year+month+bottom+veg+shore, data=ck.bin, family=binomial, na.action = na.exclude)
-Full_tb.bin <- glm(number ~ year+month+bottom+veg+shore, data=tb.bin, family=binomial, na.action = na.exclude)
-Full_ch.bin <- glm(number ~ year+month+bottom+veg+shore, data=ch.bin, family=binomial, na.action = na.exclude)
-Full_jx.bin <- glm(number ~ year+month+bottom+veg+shore, data=jx.bin, family=binomial, na.action = na.exclude)
-Full_ir.bin <- glm(number ~ year+month+bottom+veg+shore, data=ir.bin, family=binomial, na.action = na.exclude)
-
-# 2. Build the poisson and lognormal ####
-ap.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=ap.pos, family=poisson, na.action = na.exclude)
-ck.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=ck.pos, family=poisson, na.action = na.exclude)
-tb.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=tb.pos, family=poisson, na.action = na.exclude)
-ch.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=ch.pos, family=poisson, na.action = na.exclude)
-jx.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=jx.pos, family=poisson, na.action = na.exclude)
-ir.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=ir.pos, family=poisson, na.action = na.exclude)
+# Full_ap.bin <- glm(number ~ year+month+bottom+veg+shore, data=ap.bin, family=binomial, na.action = na.exclude)
+# Full_ck.bin <- glm(number ~ year+month+bottom+veg+shore, data=ck.bin, family=binomial, na.action = na.exclude)
+# Full_tb.bin <- glm(number ~ year+month+bottom+veg+shore, data=tb.bin, family=binomial, na.action = na.exclude)
+# Full_ch.bin <- glm(number ~ year+month+bottom+veg+shore, data=ch.bin, family=binomial, na.action = na.exclude)
+# Full_jx.bin <- glm(number ~ year+month+bottom+veg+shore, data=jx.bin, family=binomial, na.action = na.exclude)
+# Full_ir.bin <- glm(number ~ year+month+bottom+veg+shore, data=ir.bin, family=binomial, na.action = na.exclude)
+# 
+# # 2. Build the poisson and lognormal ####
+# ap.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=ap.pos, family=poisson, na.action = na.exclude)
+# ck.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=ck.pos, family=poisson, na.action = na.exclude)
+# tb.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=tb.pos, family=poisson, na.action = na.exclude)
+# ch.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=ch.pos, family=poisson, na.action = na.exclude)
+# jx.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=jx.pos, family=poisson, na.action = na.exclude)
+# ir.pos.P <- glm(number ~ year+month+bottom+veg+shore, data=ir.pos, family=poisson, na.action = na.exclude)
 
 # For lognormal. first need to log transform the data so that they can be modeled (lognormal isnt a family definition for genearlized linear) 
-ap.pos$lnum <- log(ap.pos$number)
-ck.pos$lnum <- log(ck.pos$number)
-tb.pos$lnum <- log(tb.pos$number)
-ch.pos$lnum <- log(ch.pos$number)
-jx.pos$lnum <- log(jx.pos$number)
-ir.pos$lnum <- log(ir.pos$number)
-
-#now model the transformed numbers with the guassian
-ap.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=ap.pos, family=gaussian, na.action = na.exclude)
-ck.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=ck.pos, family=gaussian, na.action = na.exclude)
-tb.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=tb.pos, family=gaussian, na.action = na.exclude)
-ch.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=ch.pos, family=gaussian, na.action = na.exclude)
-jx.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=jx.pos, family=gaussian, na.action = na.exclude)
-ir.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=ir.pos, family=gaussian, na.action = na.exclude)
-
-#3. Test the Poisson GLMs for overdispersion ####
-#manual way for count models 
-# Pearson chi1/residual deviance
-sum((resid(ap.pos.P,type="pearson"))^2)/ap.pos.P$df.resid #9.37
-sum((resid(ck.pos.P,type="pearson"))^2)/ck.pos.P$df.resid #6.30
-sum((resid(tb.pos.P,type="pearson"))^2)/tb.pos.P$df.resid #14.26
-sum((resid(ch.pos.P,type="pearson"))^2)/ch.pos.P$df.resid #8.12
-sum((resid(jx.pos.P,type="pearson"))^2)/jx.pos.P$df.resid #5.79
-sum((resid(ir.pos.P,type="pearson"))^2)/ir.pos.P$df.resid #18.46
+# ap.pos$lnum <- log(ap.pos$number)
+# ck.pos$lnum <- log(ck.pos$number)
+# tb.pos$lnum <- log(tb.pos$number)
+# ch.pos$lnum <- log(ch.pos$number)
+# jx.pos$lnum <- log(jx.pos$number)
+# ir.pos$lnum <- log(ir.pos$number)
+# 
+# #now model the transformed numbers with the guassian
+# ap.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=ap.pos, family=gaussian, na.action = na.exclude)
+# ck.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=ck.pos, family=gaussian, na.action = na.exclude)
+# tb.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=tb.pos, family=gaussian, na.action = na.exclude)
+# ch.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=ch.pos, family=gaussian, na.action = na.exclude)
+# jx.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=jx.pos, family=gaussian, na.action = na.exclude)
+# ir.pos.L <- glm(lnum ~ year+month+bottom+veg+shore, data=ir.pos, family=gaussian, na.action = na.exclude)
+# 
+# #3. Test the Poisson GLMs for overdispersion ####
+# #manual way for count models 
+# # Pearson chi1/residual deviance
+# sum((resid(ap.pos.P,type="pearson"))^2)/ap.pos.P$df.resid #9.37
+# sum((resid(ck.pos.P,type="pearson"))^2)/ck.pos.P$df.resid #6.30
+# sum((resid(tb.pos.P,type="pearson"))^2)/tb.pos.P$df.resid #14.26
+# sum((resid(ch.pos.P,type="pearson"))^2)/ch.pos.P$df.resid #8.12
+# sum((resid(jx.pos.P,type="pearson"))^2)/jx.pos.P$df.resid #5.79
+# sum((resid(ir.pos.P,type="pearson"))^2)/ir.pos.P$df.resid #18.46
 
 #3A. Address overdispersion with different model types ####
 #there is evidence of overdispersion for every bay (p values were less than) so use quasipoisson for Positive models (Zuur pg 226)
@@ -369,12 +376,12 @@ sum((resid(ir.pos.P,type="pearson"))^2)/ir.pos.P$df.resid #18.46
 # ir.pos.QP <- glm(number ~ year +month+veg+bottom+shore, data=ir.pos, family=quasipoisson, na.action = na.exclude)
 
 # OR, use negative binomial for the positives 
-ap.pos.NB <- glm.nb(number ~ year +month+veg+bottom+shore, data=ap.pos, na.action = na.exclude)
-ck.pos.NB <- glm.nb(number ~ year +month+veg+bottom+shore, data=ck.pos, na.action = na.exclude)
-tb.pos.NB <- glm.nb(number ~ year +month+veg+bottom+shore, data=tb.pos, na.action = na.exclude)
-ch.pos.NB <- glm.nb(number ~ year +month+veg+bottom+shore, data=ch.pos, na.action = na.exclude)
-jx.pos.NB <- glm.nb(number ~ year +month+veg+bottom+shore, data=jx.pos, na.action = na.exclude)
-ir.pos.NB <- glm.nb(number ~ year +month+veg+bottom+shore, data=ir.pos, na.action = na.exclude)
+# ap.pos.NB <- glm.nb(number ~ year +month+veg+bottom+shore, data=ap.pos, na.action = na.exclude)
+# ck.pos.NB <- glm.nb(number ~ year +month+veg+bottom+shore, data=ck.pos, na.action = na.exclude)
+# tb.pos.NB <- glm.nb(number ~ year +month+veg+bottom+shore, data=tb.pos, na.action = na.exclude)
+# ch.pos.NB <- glm.nb(number ~ year +month+veg+bottom+shore, data=ch.pos, na.action = na.exclude)
+# jx.pos.NB <- glm.nb(number ~ year +month+veg+bottom+shore, data=jx.pos, na.action = na.exclude)
+# ir.pos.NB <- glm.nb(number ~ year +month+veg+bottom+shore, data=ir.pos, na.action = na.exclude)
 
 
 #4. Mixture models. Build the poisson, negative binomial with the full datasets ####
@@ -1330,27 +1337,21 @@ Dispersion #1.19.. improvement from 1.67 with negative binomial
 BestModelTB_zinb <- t
 
 #5D. CH model selection ZINB ####
-ch <- zeroinfl(number ~ year+month+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
-#drop year
-ch1 <- zeroinfl(number ~ month+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
-#drop month
-ch2 <- zeroinfl(number ~ year+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
-#drop veg
-ch3 <- zeroinfl(number ~ year+month+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
-#drop shore
-ch4 <- zeroinfl(number ~ year+month+veg+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
-#drop bottom
-ch5 <- zeroinfl(number ~ year+month+veg+shore | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
-#drop year binary
-ch6 <- zeroinfl(number ~ year+month+veg+shore+bottom | month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
-#drop month binary
-#ch7 <- zeroinfl(number ~ year+month+veg+shore+bottom | year+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
-#drop veg binary
-ch8 <- zeroinfl(number ~ year+month+veg+shore+bottom | year+month+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
-#drop shore binary
-ch9 <- zeroinfl(number ~ year+month+veg+shore+bottom | year+month+veg+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
-#drop bottom binary
-ch10 <- zeroinfl(number ~ year+month+veg+shore+bottom | year+month+veg+shore, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#ch <- zeroinfl(number ~ year+month+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+#doesnt solve
+
+# start with month dropped
+ch <- zeroinfl(number ~ year+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+
+ch1 <- zeroinfl(number ~ veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+ch2 <- zeroinfl(number ~ year+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+ch3 <- zeroinfl(number ~ year+veg+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+ch4 <- zeroinfl(number ~ year+veg+shore | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+ch5 <- zeroinfl(number ~ year+veg+shore+bottom | month+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+ch6 <- zeroinfl(number ~ year+veg+shore+bottom | year+veg+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+ch7 <- zeroinfl(number ~ year+veg+shore+bottom | year+month+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+ch8 <- zeroinfl(number ~ year+veg+shore+bottom | year+month+veg+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+ch9 <- zeroinfl(number ~ year+veg+shore+bottom | year+month+veg+shore, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
 
 lrtest(ch, ch1)
 lrtest(ch, ch2)
@@ -1358,19 +1359,39 @@ lrtest(ch, ch3)
 lrtest(ch, ch4)
 lrtest(ch, ch5)
 lrtest(ch, ch6)
-#lrtest(ch, ch7)
+lrtest(ch, ch7) #equal so drop veg from binary
 lrtest(ch, ch8)
 lrtest(ch, ch9)
-lrtest(ch, ch10)
 
-AIC(ch, ch1, ch2, ch3, ch4, ch5, ch6, ch8, ch9, ch10)
-#model C seems to be the best
+# drop veg from binary
+ch <- zeroinfl(number ~ year+veg+shore+bottom | year+month+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+
+ch1 <- zeroinfl(number ~ veg+shore+bottom | year+month+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+ch2 <- zeroinfl(number ~ year+shore+bottom | year+month+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+ch3 <- zeroinfl(number ~ year+veg+bottom | year+month+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+ch4 <- zeroinfl(number ~ year+veg+shore| year+month+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+ch5 <- zeroinfl(number ~ year+veg+shore+bottom | month+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+ch6 <- zeroinfl(number ~ year+veg+shore+bottom | year+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+ch7 <- zeroinfl(number ~ year+veg+shore+bottom | year+month+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+ch8 <- zeroinfl(number ~ year+veg+shore+bottom | year+month+shore, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+
+lrtest(ch, ch1)
+lrtest(ch, ch2)
+lrtest(ch, ch3)
+lrtest(ch, ch4)
+lrtest(ch, ch5)
+lrtest(ch, ch6)
+lrtest(ch, ch7) 
+lrtest(ch, ch8)
+
+#model Ch seems to be the best
 #All covariates are significant
+AIC(ch, ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch8)
 
 N<-nrow(ch.fl)
-EZIP <- resid(c,type="pearson")
-Dispersion <- sum(EZIP^2)/(N-77)	#==>be sure to change value for degrees of freedom based on summary output
-Dispersion #1.37.. improvement from 1.52 with negative binomial 
+EZIP <- resid(ch,type="pearson")
+Dispersion <- sum(EZIP^2)/(N-65)	#==>be sure to change value for degrees of freedom based on summary output
+Dispersion #1.24.. improvement from 1.52 with negative binomial 
 
 BestModelCH_zinb <- ch
 
@@ -2475,21 +2496,37 @@ AIC(BestModelIR, BestModelIR_zanb) #ZINB is better
 # the best models for each are below: 
 #The zero inflated models were best for each estuary except for AP. For that one, the alias two-part ZANB was best. 
 
-BestModelAP_zanb #zanb was best for AP 
-BestModelCK
-BestModelTB 
-BestModelCH
-BestModelJX
-BestModelIR 
+
+A <- zeroinfl(number ~ year +month+veg+shore | year+month+bottom+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+C= zeroinfl(number ~ year+ month+veg +bottom | year+month+veg+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+t <- zeroinfl(number ~ year+month+veg+shore | year+month, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+ch <- zeroinfl(number ~ year+veg+shore+bottom | year+month+shore+bottom, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+j <- zeroinfl(number ~ year+month+veg+shore | year+month+veg, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+i <- zeroinfl(number ~ year+month+veg | year+month+veg+shore, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
+
+BestModelAP_zinb <- A 
+BestModelCK_zinb <- C
+BestModelTB_zinb <- t
+BestModelCH_zinb <- ch
+BestModelJX_zinb <- j
+BestModelIR_zinb <- i
+
 
 #alternatives
 # BestModelAP
-# BestModelCK_zanb
-# BestModelCH_zanb
-# BestModelTB_zanb
-# BestModelJX_zanb
-# BestModelIR_zanb
+A <- hurdle(number ~ year +month+veg+shore | year+month+veg, dist='negbin', link="logit", data=ap.fl, na.action = na.exclude)
+C <- hurdle(number ~ year+ month+veg | year+month+veg+shore, dist='negbin', link="logit", data=ck.fl, na.action = na.exclude)
+t <- hurdle(number ~ year+month+veg+shore | year+month+shore, dist='negbin', link="logit", data=tb.fl, na.action = na.exclude) 
+ch <- hurdle(number ~ year+month+veg+shore+bottom | year+month+veg+shore, dist='negbin', link="logit", data=ch.fl, na.action = na.exclude) 
+j <- hurdle(number ~ veg +month | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.fl, na.action = na.exclude) 
+i <- hurdle(number ~ year+month+veg | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.fl, na.action = na.exclude) 
 
+BestModelAP_zanb <- A
+BestModelCK_zanb <- C
+BestModelTB_zanb <- t
+BestModelCH_zanb <- ch
+BestModelJX_zanb <- j
+BestModelIR_zanb <- i 
 
 ##### DETERMINE LEAST SQUARE MEANS_YOY ###########
 # DETERMINE LEAST SQUARE MEANS 
@@ -2603,7 +2640,7 @@ names(APindex) <- c("year","Total.num.trips","Mean","std.dev", "CV","Low.95","Qt
                   "Lower", "NominalMean", "NominalSD", "NominalCV" )
 APindex$year = as.numeric(APindex$year)
   
-# CK Monte Carlo ####
+      # CK Monte Carlo ####
 #making an empty matrix to fill with results 
 num.yr <- length(estimate.CK$year)
 index.dist <- matrix(data=NA,nrow=num.yr,ncol=8) 
@@ -2751,11 +2788,11 @@ IRindex$year = as.numeric(IRindex$year)
 
 #export to csv _WORK COMPUTER
 write.csv(APindex, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/AP_yoy_index.csv")
-write.csv(CKindex, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/IR_yoy_index.csv")
-write.csv(TBindex, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/JX_yoy_index.csv")
+write.csv(CKindex, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/CK_yoy_index.csv")
+write.csv(TBindex, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/TB_yoy_index.csv")
 write.csv(CHindex, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/CH_yoy_index.csv")
-write.csv(JXindex, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/TB_yoy_index.csv")
-write.csv(IRindex, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/CK_yoy_index.csv")
+write.csv(JXindex, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/JX_yoy_index.csv")
+write.csv(IRindex, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/IR_yoy_index.csv")
 
 # PLOT INDICES ####
 
@@ -2848,13 +2885,13 @@ full_ad <- rbind(ap_ad,ck_ad,tb_ad,ch_ad,jx_ad,ir_ad)
 #Removed rows when there was no shoreline variable. 
 
 full_ad <-  select(full_ad, c(number,year, month, bio_reference, bStr, bSan, bMud, bveg, Shore, bay, Zone)) %>% 
-  mutate(bottom = ifelse(full_ad$bStr ==1, "structure", ifelse(full_ad$bSan>0 | full_ad$bMud>0, "mudsand", "unknown")), 
+  mutate(season = ifelse(month<5, "spring", ifelse(month>4 & month <9, "summer", ifelse(month>=9, "fall", "Non"))), bottom = ifelse(full_ad$bStr ==1, "structure", ifelse(full_ad$bSan>0 | full_ad$bMud>0, "mudsand", "unknown")), 
          veg= ifelse(full_ad$bveg == "SAVAlg", "SAV", ifelse(full_ad$bveg == "Alg", "SAV", ifelse(full_ad$bveg =="SAV", "SAV", "Noveg"))),
          shore = ifelse(substr(full_ad$Shore,1,3)=="Eme", "Emerge", ifelse(substr(full_ad$Shore,1,3) =="Man", "Mangrove", ifelse(substr(full_ad$Shore,1,3)=="Str", "Structure", 
             ifelse(substr(full_ad$Shore, 1,3)=="Ter", "Terrestrial", "Non"))))) %>% select(-c(bStr, bSan, bMud, bveg, Shore)) %>% subset(!shore=="Non") 
 
 #Turn habitat variables into factors so they can be treated as categorical
-full_ad[,c(2,5:9)] <- lapply(full_ad[,c(2,5:9)], factor)
+full_ad[,c(2,5:10)] <- lapply(full_ad[,c(2,5:10)], factor)
 
 ap.ad <- droplevels(full_ad %>% subset(bay =='AP'))
 ck.ad <- droplevels(full_ad %>% subset(bay =='CK'))
@@ -2867,35 +2904,37 @@ ir.ad <- droplevels(full_ad %>% subset(bay =='IR'))
 
 #AP
 #month
-with(ap.ad,tapply(number, list(year,month),sum))
+xtabs(number ~month, ap.ad)
 ap.ad$month <- as.factor(as.character(ap.ad$month))
 #veg
-with(ap.ad,tapply(number, list(year,veg),sum))
+xtabs(number ~veg, ap.ad)
 #bottom
-with(ap.ad,tapply(number, list(year,bottom),sum))
+xtabs(number ~bottom, ap.ad)
 #shore
+xtabs(number ~shore, ap.ad)
 with(ap.ad,tapply(number, list(year,shore),sum))
 ap.ad <- subset(ap.ad, shore !=  "Mangrove") %>% droplevels(ap.ad$shore)
 ap.ad <- na.omit(ap.ad)
 
-
 #CK
 #month
-with(ck.ad,tapply(number, list(year,month),sum))
+xtabs(number ~ year + month, ck.ad)
 ck.ad$month <- as.factor(as.character(ck.ad$month))
 #veg
-with(ck.ad,tapply(number, list(year,veg),sum))
+xtabs(number ~year +veg, ck.ad)
 #bottom
-with(ck.ad,tapply(number, list(year,bottom),sum))
+xtabs(number ~year + bottom,ck.ad)
 ck.ad <- droplevels(subset(ck.ad, bottom != "unknown"))
 #shore 
-with(ck.ad,tapply(number, list(year,shore),sum))
+xtabs(number ~year + shore, ck.ad)
+ck.ad <- droplevels(subset(ck.ad, shore != "Terrestrial"))
 ck.ad <- na.omit(ck.ad)
 
 #TB
-with(tb.ad, tapply(number, year, sum))
-with(tb.ad,tapply(number, list(year,month),sum))
+xtabs(number ~ year + month, tb.ad)
 tb.ad$month <- as.factor(as.character(tb.ad$month))
+
+
 with(tb.ad,tapply(number, list(year,veg),sum))
 with(tb.ad,tapply(number, list(year,bottom),sum))
 tb.ad <- droplevels(subset(tb.ad, bottom != "unknown"))
@@ -2968,8 +3007,8 @@ sum((resid(apNB.ad1,type="pearson"))^2)/apNB.ad1$df.resid> 1+2*(sqrt(2/(apNB.ad1
 sum((resid(apNB.ad1,type="pearson"))^2)/apNB.ad1$df.resid> 1+3*(sqrt(2/(apNB.ad1$df.residual)))
 #model selection did not improve fit of NB model to the ap.ad data 
 
-drop1(ckNB.ad, test="Chi") #drop bottom and shore
-ckNB.ad1 <- glm.nb(number ~ year +month+veg, data=ck.ad, na.action = na.exclude)
+drop1(ckNB.ad, test="Chi") #drop bottom 
+ckNB.ad1 <- glm.nb(number ~ year +month+veg +shore, data=ck.ad, na.action = na.exclude)
 drop1(ckNB.ad1, test="Chi")
 lrtest(ckNB.ad, ckNB.ad1) #equal so go with simpler (ckNB.ad1)
 
@@ -3075,7 +3114,7 @@ AIC(tb.ad_zinb, tb.ad_zanb) #ZANB is likely best
 #AIC(jx.ad_zinb, jx.ad_zanb) #ZANB is likely best
 AIC(ir.ad_zinb, ir.ad_zanb) #ZANB is likely best
 
-# AP model selection ZINB ####
+# AP adult model selection ZINB ####
 A= zeroinfl(number ~ year+month+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.ad, na.action = na.exclude)
 
 #drop year from count
@@ -3171,75 +3210,214 @@ sum((resid(A,type="pearson"))^2)/(N-65) #1.12
 sum((resid(A,type="pearson"))^2)/(N-65) > 1+3*(sqrt(2/(N-65)))
 BestModelAP.ad_zinb <- A
 
-# CK model selection ZINB ####
+# CK adult model selection ZINB ####
 C= zeroinfl(number ~ year+month+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
 
-#drop year from count
 C1= zeroinfl(number ~ month+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
-#drop month from count
 C2= zeroinfl(number ~ year+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
-#drop veg from count
-C3= zeroinfl(number ~ year+month+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
-#drop bottom from count
-C4= zeroinfl(number ~ year+month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
-#drop shore from count
-C5= zeroinfl(number ~ year+month+veg+bottom | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
-
-#drop year from binary
-#C6= zeroinfl(number ~ year+month+veg+bottom+shore |month+veg+bottom+shore , dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
-#drop month from binary
-C7= zeroinfl(number ~ year+month+veg+bottom+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
-#drop veg from binary
+#C3= zeroinfl(number ~ year+month+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+#C4= zeroinfl(number ~ year+month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C5= zeroinfl(number ~ year+month+veg+bottom| year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C6= zeroinfl(number ~ year+month+veg+bottom+shore | month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+#C7= zeroinfl(number ~ year+month+veg+bottom+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
 C8= zeroinfl(number ~ year+month+veg+bottom+shore | year+month+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
-#drop bottom from binary
 C9= zeroinfl(number ~ year+month+veg+bottom+shore | year+month+veg+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
-#drop shore from binary
 C10= zeroinfl(number ~ year+month+veg+bottom+shore | year+month+veg+bottom, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
 
 lrtest(C, C1)
 lrtest(C, C2)
-lrtest(C, C3)
-lrtest(C, C4) #equal so drop bottom from count
-lrtest(C, C5) #equal so drop shore from count
-#lrtest(C, C6)
-lrtest(C, C7) #equal so drop month from binary
-lrtest(C, C8) #equal so drop veg from binary
-lrtest(C, C9) #equal s drop bottom from binary
-lrtest(C, C10) #equal so drop shore from binary 
+lrtest(C, C5) #drop shore from count
+lrtest(C, C6)
+lrtest(C, C8) #drop veg from binary
+lrtest(C, C9) #drop bottom from binary
+lrtest(C, C10) #drop shore from binary
 
-#drop bottom from count
-C= zeroinfl(number ~ year+month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+#drop shore from count
+C= zeroinfl(number ~ year+month+veg+bottom| year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
 
-C1= zeroinfl(number ~month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
-C2= zeroinfl(number ~ year+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
-#C3= zeroinfl(number ~ year+month+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
-C4= zeroinfl(number ~ year+month+veg | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
-C5= zeroinfl(number ~ year+month+veg+shore | month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
-C6= zeroinfl(number ~ year+month+veg+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
-C7= zeroinfl(number ~ year+month+veg+shore | year+month+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
-C8= zeroinfl(number ~ year+month+veg+shore | year+month+veg+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
-C9= zeroinfl(number ~ year+month+veg+shore | year+month+veg+bottom, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C1= zeroinfl(number ~ month+veg+bottom| year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C2= zeroinfl(number ~ year+veg+bottom| year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+#C3= zeroinfl(number ~ year+month+bottom| year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C4= zeroinfl(number ~ year+month+veg| year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C5= zeroinfl(number ~ year+month+veg+bottom| month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+#C6= zeroinfl(number ~ year+month+veg+bottom| year+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C7= zeroinfl(number ~ year+month+veg+bottom| year+month+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C8= zeroinfl(number ~ year+month+veg+bottom| year+month+veg+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C9= zeroinfl(number ~ year+month+veg+bottom| year+month+veg+bottom, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
 
 lrtest(C, C1)
 lrtest(C, C2)
-lrtest(C, C4) #equal so drop shore from count
-lrtest(C, C5) #drop year from binary
-#lrtest(C, C6)
-lrtest(C, C7) #equal so drop veg from binary
-lrtest(C, C8) #equal so drop bottom from binary
-lrtest(C, C9) #equal s drop shore from binary
+lrtest(C, C4) #drop bottom from count
+lrtest(C, C5)
+lrtest(C, C7) #drop veg from binary
+lrtest(C, C8) #drop bottom 
+lrtest(C, C9) #drop shore
 
-#drop shore from count
+#drop bottom from count
 C= zeroinfl(number ~ year+month+veg | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
 
-#C1= zeroinfl(number ~ month+veg | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
-#C2= zeroinfl(number ~ year+veg | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C1= zeroinfl(number ~ month+veg | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C2= zeroinfl(number ~ year+veg | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
 #C3= zeroinfl(number ~ year+month | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
-C4= zeroinfl(number ~ year+month+veg | month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+#C4= zeroinfl(number ~ year+month+veg | month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
 #C5= zeroinfl(number ~ year+month+veg | year+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
-C6= zeroinfl(number ~ year+month+veg | year+month+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+#C6= zeroinfl(number ~ year+month+veg | year+month+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
 C7= zeroinfl(number ~ year+month+veg | year+month+veg+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
 C8= zeroinfl(number ~ year+month+veg | year+month+veg+bottom, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+
+lrtest(C, C1)
+lrtest(C, C2)
+lrtest(C, C7) #drop bottom
+lrtest(C, C8) #drop shore
+
+#drop bottom from binary
+C= zeroinfl(number ~ year+month+veg | year+month+veg+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+
+C1= zeroinfl(number ~ month+veg | year+month+veg+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C2= zeroinfl(number ~ year+veg | year+month+veg+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+#C3= zeroinfl(number ~ year+month| year+month+veg+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+#C4= zeroinfl(number ~ year+month+veg | month+veg+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+#C5= zeroinfl(number ~ year+month+veg | year+veg+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C6= zeroinfl(number ~ year+month+veg | year+month+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C7= zeroinfl(number ~ year+month+veg | year+month+veg, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+
+lrtest(C, C1)
+lrtest(C, C2)
+lrtest(C, C6) #drop veg from binary
+lrtest(C, C7) #drop shore from binary
+
+#drop veg from binary
+C= zeroinfl(number ~ year+month+veg | year+month+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+
+#C1= zeroinfl(number ~ month+veg | year+month+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C2= zeroinfl(number ~ year+veg | year+month+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C3= zeroinfl(number ~ year+month | year+month+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C4= zeroinfl(number ~ year+month+veg | month+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C5= zeroinfl(number ~ year+month+veg | year+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+#C6= zeroinfl(number ~ year+month+veg | year+month, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+
+lrtest(C, C2)
+lrtest(C, C3) 
+lrtest(C, C5)
+
+
+
+
+
+
+
+
+ #C= zeroinfl(number ~ year+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+
+#C1= zeroinfl(number ~ veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C2= zeroinfl(number ~ year+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C3= zeroinfl(number ~ year+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C4= zeroinfl(number ~ year+veg+bottom | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+#C5= zeroinfl(number ~ year+veg+bottom+shore | month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C6= zeroinfl(number ~ year+veg+bottom+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C7= zeroinfl(number ~ year+veg+bottom+shore | year+month+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C8= zeroinfl(number ~ year+veg+bottom+shore | year+month+veg+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C9= zeroinfl(number ~ year+veg+bottom+shore | year+month+veg+bottom, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+
+#lrtest(C, C1)
+lrtest(C, C2)
+lrtest(C, C3)
+lrtest(C, C4) 
+#lrtest(C, C5) 
+lrtest(C, C6) #equal so drop month from binary
+lrtest(C, C7) 
+lrtest(C, C8) 
+lrtest(C, C9) 
+
+#drop month from binary
+C= zeroinfl(number ~ year+veg+bottom+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+
+#C1= zeroinfl(number ~ veg+bottom+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+#C2= zeroinfl(number ~ year+bottom+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+#C3= zeroinfl(number ~ year+veg+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+#C4= zeroinfl(number ~ year+veg+bottom | year+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C5= zeroinfl(number ~ year+veg+bottom+shore | veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+#C6= zeroinfl(number ~ year+veg+bottom+shore | year+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+#C7= zeroinfl(number ~ year+veg+bottom+shore | year+veg+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+#C8= zeroinfl(number ~ year+veg+bottom+shore | year+veg+bottom, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+
+lrtest(C, C5) #equal so drop year from binary
+
+#drop year from binary
+C= zeroinfl(number ~ year+veg+bottom+shore | veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+
+C1= zeroinfl(number ~ veg+bottom+shore | veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C2= zeroinfl(number ~ year+bottom+shore | veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C3= zeroinfl(number ~ year+veg+shore | veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C4= zeroinfl(number ~ year+veg+bottom | veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C5= zeroinfl(number ~ year+veg+bottom+shore | bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C6= zeroinfl(number ~ year+veg+bottom+shore | veg+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C7= zeroinfl(number ~ year+veg+bottom+shore | veg+bottom, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+
+lrtest(C, C1)
+lrtest(C, C2)
+lrtest(C, C3) #equal sp drop bottom from count
+lrtest(C, C4) #equal so drop shore from count
+lrtest(C, C5) #equal so drop veg from binary
+lrtest(C, C6)
+lrtest(C, C7) #equal so drop shore form binary
+
+#drop bottom from count
+C= zeroinfl(number ~ year+veg+shore | veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+
+C1= zeroinfl(number ~ veg+shore | veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C2= zeroinfl(number ~ year+shore | veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C3= zeroinfl(number ~ year+veg| veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C4= zeroinfl(number ~ year+veg+shore |bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C5= zeroinfl(number ~ year+veg+shore | veg+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C6= zeroinfl(number ~ year+veg+shore | veg+bottom, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+
+lrtest(C, C1)
+lrtest(C, C2)
+lrtest(C, C3) #drop shore from count
+lrtest(C, C4) #drop veg from binary
+lrtest(C, C5)
+lrtest(C, C6) #drop shore from binary
+
+#drop shore from count
+C= zeroinfl(number ~ year+veg | veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+
+C1= zeroinfl(number ~ veg | veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C2= zeroinfl(number ~ year| veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C3= zeroinfl(number ~ year+veg | bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C4= zeroinfl(number ~ year+veg | veg+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C5= zeroinfl(number ~ year+veg | veg+bottom, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+
+lrtest(C, C1)
+lrtest(C, C2)
+lrtest(C, C3) #drop veg from binary
+lrtest(C, C4)
+lrtest(C, C5) #drop shore from binary
+
+#drop veg from binary
+C= zeroinfl(number ~ year+veg | bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+
+C1= zeroinfl(number ~ veg | bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C2= zeroinfl(number ~ year| bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C3= zeroinfl(number ~ year+veg | shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+C4= zeroinfl(number ~ year+veg | bottom, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+
+lrtest(C, C1)
+lrtest(C, C2)
+lrtest(C, C3)
+lrtest(C, C4) #drop shore from bottom
+
+#drop veg from binary
+C= zeroinfl(number ~ year+veg | bottom, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+
+
+
+
+ck.ad <- as.data.frame(ck.ad %>% mutate(bin = ifelse(ck.ad$number>= 1, 1, ck.ad$number)))
+
+
+
+
 
 
 lrtest(C, C4) #equal so drop year from binary 
@@ -3313,7 +3491,7 @@ BestModelCK.ad_zinb <- C5
 
 
 
-# TB model validation ZINB ####
+# TB adult model validation ZINB ####
 #full
 t <- zeroinfl(number ~ year+month+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.ad, na.action = na.exclude) 
 #drop year
@@ -3345,17 +3523,16 @@ lrtest(t, t6)
 lrtest(t, t10) 
 
 AIC(t, t1, t2, t5, t6, t10)
-# MODEL DOES NOT CONVERGE
-#All covariates remain significant
+# All remaining covariates are significant
 
-# N<-nrow(tb.ad)
-# EZIP <- resid(t,type="pearson")
-# Dispersion <- sum(EZIP^2)/(N-71)	#==>be sure to change value for degrees of freedom based on summary output
-# Dispersion #1.19.. improvement from 1.67 with negative binomial 
+ N<-nrow(tb.ad)
+ EZIP <- resid(t,type="pearson")
+ Dispersion <- sum(EZIP^2)/(N-73)	#==>be sure to change value for degrees of freedom based on summary output
+ Dispersion #1.15.. improvement from 1.67 with negative binomial 
 
 #BestModelTB.ad_zinb <- t
 
-# CH model validation ZINB ####
+# CH adult model validation ZINB ####
 #ch <- zeroinfl(number ~ year+month+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ch.ad, na.action = na.exclude) 
 #drop year
 #ch1 <- zeroinfl(number ~ month+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ch.ad, na.action = na.exclude) 
@@ -3469,7 +3646,7 @@ Dispersion #1.18.. improvement from 1.52 with negative binomial
 
 BestModelCH.ad_zinb <- ch
 
-# JX model validation ZINB ####
+# JX adult model validation ZINB ####
 #j <- zeroinfl(number ~ year+month+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=jx.ad, na.action = na.exclude) 
 
 #drop year
@@ -3595,75 +3772,871 @@ Dispersion #1.08.. improvement from 1.34 with negative binomial
 
 BestModelJX.ad_zinb <- j2
 
-# START HERE:  IR model validation ZINB ####
+# IR adult model validation ZINB ####
+i <- zeroinfl(number ~ year+month+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+
+i1 <- zeroinfl(number ~ month+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+i2 <- zeroinfl(number ~ year+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+i3 <- zeroinfl(number ~ year+month+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+#i4 <- zeroinfl(number ~ year+month+veg+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+i5 <- zeroinfl(number ~ year+month+veg+shore | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+i6 <- zeroinfl(number ~ year+month+veg+shore+bottom | month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+i7 <- zeroinfl(number ~ year+month+veg+shore+bottom | year+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+#i8 <- zeroinfl(number ~ year+month+veg+shore+bottom | year+month+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+#i9 <- zeroinfl(number ~ year+month+veg+shore+bottom | year+month+veg+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+i10 <- zeroinfl(number ~ year+month+veg+shore+bottom | year+month+veg+shore, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+
+lrtest(i, i1)
+lrtest(i, i2)
+lrtest(i, i3)
+#lrtest(i, i4)
+lrtest(i, i5) #equal so drop bottom from count
+lrtest(i, i6)
+lrtest(i, i7)
+#lrtest(i, i8)
+#lrtest(i, i9)
+lrtest(i, i10) #equal so drop bottom from binary
+
+#drop bottom from count
+i <- zeroinfl(number ~ year+month+veg+shore | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+
+i1 <- zeroinfl(number ~ month+veg+shore | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+i2 <- zeroinfl(number ~ year+veg+shore | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+i3 <- zeroinfl(number ~ year+month+shore | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+i4 <- zeroinfl(number ~ year+month+veg | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+i5 <- zeroinfl(number ~ year+month+veg+shore | month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+i6 <- zeroinfl(number ~ year+month+veg+shore | year+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+i7 <- zeroinfl(number ~ year+month+veg+shore | year+month+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+i8 <- zeroinfl(number ~ year+month+veg+shore | year+month+veg+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+i9 <- zeroinfl(number ~ year+month+veg+shore | year+month+veg+shore, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+
+lrtest(i, i1)
+lrtest(i, i2)
+lrtest(i, i3)
+lrtest(i, i4) #equal so drop shore from count
+lrtest(i, i5) 
+lrtest(i, i6)
+lrtest(i, i7)
+lrtest(i, i8) #drop shore from binary
+lrtest(i, i9) #drop bottom from binary
+
+#drop shore from count
+i <- zeroinfl(number ~ year+month+veg | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+
+i1 <- zeroinfl(number ~ month+veg | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+i2 <- zeroinfl(number ~ year+veg | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+i3 <- zeroinfl(number ~ year+month| year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+i4 <- zeroinfl(number ~ year+month+veg |month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+i5 <- zeroinfl(number ~ year+month+veg | year+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+i6 <- zeroinfl(number ~ year+month+veg | year+month+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+i7 <- zeroinfl(number ~ year+month+veg | year+month+veg+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+i8 <- zeroinfl(number ~ year+month+veg | year+month+veg+shore, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+
+lrtest(i, i1)
+lrtest(i, i2)
+lrtest(i, i3)
+lrtest(i, i4) 
+lrtest(i, i5) 
+lrtest(i, i6)
+#lrtest(i, i7)
+#lrtest(i, i8)
+
+#all reamining covariates are significant
+
+AIC (i, i1, i2, i3, i4, i5, i6)
+#model i is best
+
+N<-nrow(ir.ad)
+EZIP <- resid(i,type="pearson")
+Dispersion <- sum(EZIP^2)/(N-67)	#==>be sure to change value for degrees of freedom based on summary output
+Dispersion #1.59
+
+BestModelIR.ad_zinb <- i
+
 
 #3. ZANB ####
+#AP adult model validation ZANB ####
+A = hurdle(number ~ year+month+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+
+A1 = hurdle(number ~ month+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A2 = hurdle(number ~ year+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A3 = hurdle(number ~ year+month+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A4 = hurdle(number ~ year+month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A5 = hurdle(number ~ year+month+veg+bottom | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A6 = hurdle(number ~ year+month+veg+bottom+shore | month+veg+bottom+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A7 = hurdle(number ~ year+month+veg+bottom+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A8 = hurdle(number ~ year+month+veg+bottom+shore | year+month+bottom+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A9 = hurdle(number ~ year+month+veg+bottom+shore | year+month+veg+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A10 = hurdle(number ~ year+month+veg+bottom+shore | year+month+veg+bottom, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+
+lrtest(A, A1)
+lrtest(A, A2)
+lrtest(A, A3) #equal so drop veg from count
+lrtest(A, A4)
+lrtest(A, A5) #equal so drop shore from count
+lrtest(A, A6)
+lrtest(A, A7)
+lrtest(A, A8)
+lrtest(A, A9) #equal so frop bottom from binary
+lrtest(A, A10)
+
+#equal so drop veg from count
+A = hurdle(number ~ year+month+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+
+A1 = hurdle(number ~ month+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A2 = hurdle(number ~ year+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A3 = hurdle(number ~ year+month+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A4 = hurdle(number ~ year+month+bottom | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A5 = hurdle(number ~ year+month+bottom+shore | month+veg+bottom+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A6 = hurdle(number ~ year+month+bottom+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A7 = hurdle(number ~ year+month+bottom+shore | year+month+bottom+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A8 = hurdle(number ~ year+month+bottom+shore | year+month+veg+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A9 = hurdle(number ~ year+month+bottom+shore | year+month+veg+bottom, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+
+lrtest(A, A1)
+lrtest(A, A2)
+lrtest(A, A3) 
+lrtest(A, A4) #equal so drop shore from count
+lrtest(A, A5) 
+lrtest(A, A6)
+lrtest(A, A7)
+lrtest(A, A8)#equal so frop bottom from binary
+lrtest(A, A9) 
+
+#equal so drop shore from count
+A = hurdle(number ~ year+month+bottom | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+
+A1 = hurdle(number ~ month+bottom | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A2 = hurdle(number ~ year+bottom | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A3 = hurdle(number ~ year+month| year+month+veg+bottom+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A4 = hurdle(number ~ year+month+bottom | month+veg+bottom+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A5 = hurdle(number ~ year+month+bottom | year+veg+bottom+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A6 = hurdle(number ~ year+month+bottom | year+month+bottom+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A7 = hurdle(number ~ year+month+bottom | year+month+veg+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A8 = hurdle(number ~ year+month+bottom | year+month+veg+bottom, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+
+lrtest(A, A1)
+lrtest(A, A2)
+lrtest(A, A3) 
+lrtest(A, A4) 
+lrtest(A, A5) 
+lrtest(A, A6)
+lrtest(A, A7)#equal so frop bottom from binary
+lrtest(A, A8)
+
+#equal so drop bottom from binary
+A = hurdle(number ~ year+month+bottom | year+month+veg+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+
+A1 = hurdle(number ~ month+bottom | year+month+veg+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A2 = hurdle(number ~ year+bottom | year+month+veg+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A3 = hurdle(number ~ year+month | year+month+veg+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A4 = hurdle(number ~ year+month+bottom | month+veg+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A5 = hurdle(number ~ year+month+bottom | year+veg+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A6 = hurdle(number ~ year+month+bottom | year+month+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+A7 = hurdle(number ~ year+month+bottom | year+month+veg, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+
+lrtest(A, A1)
+lrtest(A, A2)
+lrtest(A, A3) 
+lrtest(A, A4) 
+lrtest(A, A5) 
+lrtest(A, A6)
+lrtest(A, A7)
+
+#all covariates are significant
+#model A is best
+
+AIC (A, A1, A2, A3, A4, A5, A6)
+#model A is best
+
+N<-nrow(ap.ad)
+EZIP <- resid(A,type="pearson")
+Dispersion <- sum(EZIP^2)/(N-63)	#==>be sure to change value for degrees of freedom based on summary output
+Dispersion #1.45
+
+BestModelAP.ad_zinb <- A
 
 
-. Test the Poisson GLMs for overdispersion
-# With the Bernoulli GLM (binomial, response variable is a vector of zeros and ones) overdispersion does not ever occur (Zuur og 253) so I don't need to test for overdispersion in the .bin models. 
-dispersiontest(Full_ap_ad.pos, trafo=1)
-dispersiontest(Full_ck_ad.pos, trafo=1)
-dispersiontest(Full_tb_ad.pos, trafo=1)
-dispersiontest(Full_ch_ad.pos, trafo=1)
-dispersiontest(Full_jx_ad.pos, trafo=1)
-dispersiontest(Full_ir_ad.pos, trafo=1)
+#CK adult model validation ZANB ####
+C = hurdle(number ~ year+month+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
 
-# 3. there is evidence of overdispersion for every bay (P value less than 0.01) so use quasipoisson for Positive models (Zuur pg 226)
-Full_ap_ad.pos <- glm(number ~ year +month+veg+bottom+shore, data=ap_ad.pos, family=quasipoisson)
-Full_ck_ad.pos <- glm(number ~ year +month+veg+bottom+shore, data=ck_ad.pos, family=quasipoisson)
-Full_tb_ad.pos <- glm(number ~ year +month+veg+bottom+shore, data=tb_ad.pos, family=quasipoisson)
-Full_ch_ad.pos <- glm(number ~ year +month+veg+bottom+shore, data=ch_ad.pos, family=quasipoisson)
-Full_jx_ad.pos <- glm(number ~ year +month+veg+bottom+shore, data=jx_ad.pos, family=quasipoisson)
-Full_ir_ad.pos <- glm(number ~ year +month+veg+bottom+shore, data=ir_ad.pos, family=quasipoisson)
+C1 = hurdle(number ~ month+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+C2 = hurdle(number ~ year+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+C3 = hurdle(number ~ year+month+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+C4 = hurdle(number ~ year+month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+C5 = hurdle(number ~ year+month+veg+bottom | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+C6 = hurdle(number ~ year+month+veg+bottom+shore | month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+C7 = hurdle(number ~ year+month+veg+bottom+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+C8 = hurdle(number ~ year+month+veg+bottom+shore | year+month+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+C9 = hurdle(number ~ year+month+veg+bottom+shore | year+month+veg+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+C10 = hurdle(number ~ year+month+veg+bottom+shore | year+month+veg+bottom, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+
+lrtest(C, C1)
+lrtest(C, C2)
+lrtest(C, C3)
+lrtest(C, C4) #equal so drop bottom from count
+lrtest(C, C5) #equal so drop shore from count
+lrtest(C, C6)
+lrtest(C, C7)
+lrtest(C, C8)
+lrtest(C, C9)
+lrtest(C, C10)
+
+#drop bottom from count
+C = hurdle(number ~ year+month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+
+C1 = hurdle(number ~ month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+C2 = hurdle(number ~ year+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+C3 = hurdle(number ~ year+month+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+C4 = hurdle(number ~ year+month+veg | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+C5 = hurdle(number ~ year+month+veg+shore | month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+C6 = hurdle(number ~ year+month+veg+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+C7 = hurdle(number ~ year+month+veg+shore | year+month+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+C8 = hurdle(number ~ year+month+veg+shore | year+month+veg+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+C9 = hurdle(number ~ year+month+veg+shore | year+month+veg+bottom, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+
+lrtest(C, C1)
+lrtest(C, C2)
+lrtest(C, C3)
+lrtest(C, C4) #drop shore from count
+lrtest(C, C5) 
+lrtest(C, C6)
+lrtest(C, C7)
+lrtest(C, C8)
+lrtest(C, C9)
+
+#drop shore from count
+C = hurdle(number ~ year+month+veg | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+
+C1 = hurdle(number ~ month+veg | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+C2 = hurdle(number ~ year+veg | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+C3 = hurdle(number ~ year+month| year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+C4 = hurdle(number ~ year+month+veg | month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+C5 = hurdle(number ~ year+month+veg | year+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+C6 = hurdle(number ~ year+month+veg | year+month+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+C7 = hurdle(number ~ year+month+veg | year+month+veg+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+C8 = hurdle(number ~ year+month+veg | year+month+veg+bottom, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+
+lrtest(C, C1)
+lrtest(C, C2)
+lrtest(C, C3)
+lrtest(C, C4) 
+lrtest(C, C5) 
+lrtest(C, C6)
+lrtest(C, C7)
+lrtest(C, C8)
+
+#all covariates are significant
+#model C is best
+
+AIC (C, C1, C2, C3, C4, C5, C6)
+#model C is best
+
+N<-nrow(ck.ad)
+EZIP <- resid(C,type="pearson")
+Dispersion <- sum(EZIP^2)/(N-67)	#==>be sure to change value for degrees of freedom based on summary output
+Dispersion #1.10
+
+BestModelCK.ad_zinb <- C
+
+#TB adult model validation ZANB ####
+t = hurdle(number ~ year+month+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+
+t1 = hurdle(number ~ month+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t2 = hurdle(number ~ year+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t3 = hurdle(number ~ year+month+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t4 = hurdle(number ~ year+month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t5 = hurdle(number ~ year+month+veg+bottom | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t6 = hurdle(number ~ year+month+veg+bottom+shore | month+veg+bottom+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t7 = hurdle(number ~ year+month+veg+bottom+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t8 = hurdle(number ~ year+month+veg+bottom+shore | year+month+bottom+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t9 = hurdle(number ~ year+month+veg+bottom+shore | year+month+veg+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t10 = hurdle(number ~ year+month+veg+bottom+shore | year+month+veg+bottom, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+
+lrtest(t, t1)
+lrtest(t, t2)
+lrtest(t, t3)
+lrtest(t, t4) #equal but drop bottom from count
+lrtest(t, t5)
+lrtest(t, t6)
+lrtest(t, t7)
+lrtest(t, t8) #equal so drop veg from binary
+lrtest(t, t9) # equal so drop bottom from binary
+lrtest(t, t10) #equa so drop shore from binary
+
+#drop bottom from count
+t = hurdle(number ~ year+month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+
+t1 = hurdle(number ~ month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t2 = hurdle(number ~ year+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t3 = hurdle(number ~ year+month+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t4 = hurdle(number ~ year+month+veg | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t5 = hurdle(number ~ year+month+veg+shore | month+veg+bottom+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t6 = hurdle(number ~ year+month+veg+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t7 = hurdle(number ~ year+month+veg+shore | year+month+bottom+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t8 = hurdle(number ~ year+month+veg+shore | year+month+veg+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t9 = hurdle(number ~ year+month+veg+shore | year+month+veg+bottom, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+
+lrtest(t, t1)
+lrtest(t, t2)
+lrtest(t, t3)
+lrtest(t, t4) 
+lrtest(t, t5)
+lrtest(t, t6)
+lrtest(t, t7)#equal so drop veg from binary
+lrtest(t, t8) # equal so drop bottom from binary
+lrtest(t, t9) #equal so drop shore from binary
+
+#drop veg from binary
+t = hurdle(number ~ year+month+veg+shore | year+month+bottom+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+
+t1 = hurdle(number ~ month+veg+shore | year+month+bottom+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t2 = hurdle(number ~ year+veg+shore | year+month+bottom+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t3 = hurdle(number ~ year+month+shore | year+month+bottom+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t4 = hurdle(number ~ year+month+veg| year+month+bottom+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t5 = hurdle(number ~ year+month+veg+shore | month+bottom+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t6 = hurdle(number ~ year+month+veg+shore | year+bottom+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t7 = hurdle(number ~ year+month+veg+shore | year+month+shore, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t8 = hurdle(number ~ year+month+veg+shore | year+month+bottom, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+
+lrtest(t, t1)
+lrtest(t, t2)
+lrtest(t, t3)
+lrtest(t, t4) 
+lrtest(t, t5)
+lrtest(t, t6)
+lrtest(t, t7)
+lrtest(t, t8) #equal so drop shore from binary 
+
+#drop shore from binary
+t = hurdle(number ~ year+month+veg+shore | year+month+bottom, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+
+t1 = hurdle(number ~ month+veg+shore | year+month+bottom, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t2 = hurdle(number ~ year+veg+shore | year+month+bottom, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t3 = hurdle(number ~ year+month+shore | year+month+bottom, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t4 = hurdle(number ~ year+month+veg | year+month+bottom, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t5 = hurdle(number ~ year+month+veg+shore | month+bottom, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t6 = hurdle(number ~ year+month+veg+shore | year+bottom, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t7 = hurdle(number ~ year+month+veg+shore | year+month, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+
+lrtest(t, t1)
+lrtest(t, t2)
+lrtest(t, t3)
+lrtest(t, t4) 
+lrtest(t, t5)
+lrtest(t, t6)
+lrtest(t, t7) #drop bottom from binary
+
+#drop bottom from binary
+t = hurdle(number ~ year+month+veg+shore | year+month, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+
+t1 = hurdle(number ~ month+veg+shore | year+month, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t2 = hurdle(number ~ year+veg+shore | year+month, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t3 = hurdle(number ~ year+month+shore | year+month, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t4 = hurdle(number ~ year+month+veg | year+month, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t5 = hurdle(number ~ year+month+veg+shore | month, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+t6 = hurdle(number ~ year+month+veg+shore | year, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+
+lrtest(t, t1)
+lrtest(t, t2)
+lrtest(t, t3)
+lrtest(t, t4) 
+lrtest(t, t5)
+lrtest(t, t6)
+
+#all covariates are significant
+#model t is best
+
+AIC (t, t1, t2, t3, t4, t5, t6)
+#model C is best
+
+N<-nrow(tb.ad)
+EZIP <- resid(t,type="pearson")
+Dispersion <- sum(EZIP^2)/(N-68)	#==>be sure to change value for degrees of freedom based on summary output
+Dispersion #1.13
+
+BestModelTB.ad_zinb <- t
+
+
+#CH adult model validation ZANB ####
+#ch = hurdle(number ~ year+month+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+
+#ch1 = hurdle(number ~ month+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+#ch2 = hurdle(number ~ year+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+#ch3 = hurdle(number ~ year+month+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+ch4 = hurdle(number ~ year+month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+ch5 = hurdle(number ~ year+month+veg+bottom | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+#ch6 = hurdle(number ~ year+month+veg+bottom+shore | month+veg+bottom+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+#ch7 = hurdle(number ~ year+month+veg+bottom+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+#ch8 = hurdle(number ~ year+month+veg+bottom+shore | year+month+bottom+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+#ch9 = hurdle(number ~ year+month+veg+bottom+shore | year+month+veg+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+#ch10 = hurdle(number ~ year+month+veg+bottom+shore | year+month+veg+bottom, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+
+#many of above did not solve so using ch4 as starting which did solve
+ch = hurdle(number ~ year+month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+
+#ch1 = hurdle(number ~ month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+#ch2 = hurdle(number ~ year+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+#ch3 = hurdle(number ~ year+month+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+ch4 = hurdle(number ~ year+month+veg | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+ch5 = hurdle(number ~ year+month+veg+shore | month+veg+bottom+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+#ch6 = hurdle(number ~ year+month+veg+shore | yearveg+bottom+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+ch7 = hurdle(number ~ year+month+veg+shore | year+month+bottom+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+ch8 = hurdle(number ~ year+month+veg+shore | year+month+veg+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+ch9 = hurdle(number ~ year+month+veg+shore | year+month+veg+bottom, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+
+lrtest(ch, ch4)
+lrtest(ch, ch5) #equal so drop year from binary
+lrtest(ch, ch7)
+lrtest(ch, ch8) #equal sp drop bottom frim binary
+lrtest(ch, ch9)
+
+#drop year from binary
+ch = hurdle(number ~ year+month+veg+shore | month+veg+bottom+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+
+#ch1 = hurdle(number ~ month+veg+shore | month+veg+bottom+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+#ch2 = hurdle(number ~ year+veg+shore | month+veg+bottom+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+#ch3 = hurdle(number ~ year+month+shore | month+veg+bottom+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+ch4 = hurdle(number ~ year+month+veg | month+veg+bottom+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+ch5 = hurdle(number ~ year+month+veg+shore | veg+bottom+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+ch6 = hurdle(number ~ year+month+veg+shore | month+bottom+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+ch7 = hurdle(number ~ year+month+veg+shore | month+veg+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+ch8 = hurdle(number ~ year+month+veg+shore | month+veg+bottom, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+
+lrtest(ch, ch4)
+lrtest(ch, ch5) 
+lrtest(ch, ch6)
+lrtest(ch, ch7) #equal sp drop bottom frim binary
+lrtest(ch, ch8) 
+lrtest(ch, ch9) #equal so drop shore form bottom 
+
+#drop bottom from binary
+ch = hurdle(number ~ year+month+veg+shore | month+veg+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+
+#ch1 = hurdle(number ~ month+veg+shore | month+veg+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+#ch2 = hurdle(number ~ year+veg+shore | month+veg+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+#ch3 = hurdle(number ~ year+month+shore | month+veg+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+ch4 = hurdle(number ~ year+month+veg | month+veg+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+ch5 = hurdle(number ~ year+month+veg+shore | veg+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+ch6 = hurdle(number ~ year+month+veg+shore | month+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+ch7 = hurdle(number ~ year+month+veg+shore | month+veg, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+
+lrtest(ch, ch4)
+lrtest(ch, ch5) 
+lrtest(ch, ch6)
+lrtest(ch, ch7) 
+
+#all covariates are significant
+#model ch is best
+
+AIC (ch, ch4,ch5,ch6,ch7)
+#model ch is best
+
+N<-nrow(ch.ad)
+EZIP <- resid(ch,type="pearson")
+Dispersion <- sum(EZIP^2)/(N-59)	#==>be sure to change value for degrees of freedom based on summary output
+Dispersion #1.12
+
+BestModelCH.ad_zinb <- ch
+
+#JX adult model validation ZANB ####
+jx = hurdle(number ~ year+month+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+
+jx1 = hurdle(number ~ month+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx2 = hurdle(number ~ year+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx3 = hurdle(number ~ year+month+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx4 = hurdle(number ~ year+month+veg+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx5 = hurdle(number ~ year+month+veg+bottom | year+month+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx6 = hurdle(number ~ year+month+veg+bottom+shore | month+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx7 = hurdle(number ~ year+month+veg+bottom+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx8 = hurdle(number ~ year+month+veg+bottom+shore | year+month+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx9 = hurdle(number ~ year+month+veg+bottom+shore | year+month+veg+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx10 = hurdle(number ~ year+month+veg+bottom+shore | year+month+veg+bottom, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+
+lrtest(jx, jx1)
+lrtest(jx, jx2)
+lrtest(jx, jx3) #equal so drop veg from count
+lrtest(jx, jx4) #equal so drop bottom from count
+lrtest(jx, jx5) #equal so drop shore from count
+lrtest(jx, jx6) #equal sp drop year from count
+lrtest(jx, jx7)
+lrtest(jx, jx8)
+lrtest(jx, jx9)
+lrtest(jx, jx10)
+
+#equal so drop veg from count
+jx = hurdle(number ~ year+month+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+
+jx1 = hurdle(number ~ month+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx2 = hurdle(number ~ year+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx3 = hurdle(number ~ year+month+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx4 = hurdle(number ~ year+month+bottom | year+month+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx5 = hurdle(number ~ year+month+bottom+shore | month+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx6 = hurdle(number ~ year+month+bottom+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx7 = hurdle(number ~ year+month+bottom+shore | year+month+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx8 = hurdle(number ~ year+month+bottom+shore | year+month+veg+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx9 = hurdle(number ~ year+month+bottom+shore | year+month+veg+bottom, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+
+lrtest(jx, jx1)
+lrtest(jx, jx2)
+lrtest(jx, jx3) #equal so drop bottom from count
+lrtest(jx, jx4) #equal so drop shore from count
+lrtest(jx, jx5) #equal so drop year from count
+lrtest(jx, jx6)
+lrtest(jx, jx7)
+lrtest(jx, jx8)
+lrtest(jx, jx9)
+
+#equal so drop bottom from count
+jx = hurdle(number ~ year+month+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+
+jx1 = hurdle(number ~ month+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx2 = hurdle(number ~ year+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx3 = hurdle(number ~ year+month| year+month+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx4 = hurdle(number ~ year+month+shore | month+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx5 = hurdle(number ~ year+month+shore | year+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx6 = hurdle(number ~ year+month+shore | year+month+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx7 = hurdle(number ~ year+month+shore | year+month+veg+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx8 = hurdle(number ~ year+month+shore | year+month+veg+bottom, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+
+lrtest(jx, jx1)
+lrtest(jx, jx2)
+lrtest(jx, jx3) #equal so drop shore from count
+lrtest(jx, jx4) #equal so drop year from binary
+lrtest(jx, jx5) 
+lrtest(jx, jx6)
+lrtest(jx, jx7)
+lrtest(jx, jx8)
+
+#equal so drop shore from count
+jx = hurdle(number ~ year+month | year+month+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+
+jx1 = hurdle(number ~ month | year+month+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx2 = hurdle(number ~ year | year+month+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx3 = hurdle(number ~ year+month |month+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx4 = hurdle(number ~ year+month | year+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx5 = hurdle(number ~ year+month | year+month+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx6 = hurdle(number ~ year+month | year+month+veg+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx7 = hurdle(number ~ year+month | year+month+veg+bottom, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+
+lrtest(jx, jx1)
+lrtest(jx, jx2)
+lrtest(jx, jx3) #equal so drop year from binary
+lrtest(jx, jx4) 
+lrtest(jx, jx5) 
+lrtest(jx, jx6)
+lrtest(jx, jx7)
+
+#equal so drop year from binary
+jx = hurdle(number ~ year+month | month+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+
+jx1 = hurdle(number ~ month | month+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx2 = hurdle(number ~ year | month+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx3 = hurdle(number ~ year+month | veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx4 = hurdle(number ~ year+month | month+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx5 = hurdle(number ~ year+month | month+veg+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+jx6 = hurdle(number ~ year+month | month+veg+bottom, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+
+lrtest(jx, jx1)
+lrtest(jx, jx2)
+lrtest(jx, jx3) 
+lrtest(jx, jx4) 
+lrtest(jx, jx5) 
+lrtest(jx, jx6)
+
+#all covariates are significant
+#model jx is best
+
+AIC (jx, jx4,jx5,jx6,jx7)
+#model jx is best
+
+N<-nrow(jx.ad)
+EZIP <- resid(jx,type="pearson")
+Dispersion <- sum(EZIP^2)/(N-43)	#==>be sure to change value for degrees of freedom based on summary output
+Dispersion #1.21
+
+BestModelJX.ad_zinb <- jx
+
+
+#IR adult model validation ZANB ####
+ir = hurdle(number ~ year+month+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+
+ir1 = hurdle(number ~ month+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir2 = hurdle(number ~ year+veg+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir3 = hurdle(number ~ year+month+shore+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir4 = hurdle(number ~ year+month+veg+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir5 = hurdle(number ~ year+month+veg+shore| year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir6 = hurdle(number ~ year+month+veg+shore+bottom | month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir7 = hurdle(number ~ year+month+veg+shore+bottom | year+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir8 = hurdle(number ~ year+month+veg+shore+bottom | year+month+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir9 = hurdle(number ~ year+month+veg+shore+bottom | year+month+veg+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir10 = hurdle(number ~ year+month+veg+shore+bottom | year+month+veg+shore, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+
+lrtest(ir, ir1)
+lrtest(ir, ir2)
+lrtest(ir, ir3)
+lrtest(ir, ir4) #equal so drop shore from count
+lrtest(ir, ir5) #equal so drop bottom from count
+lrtest(ir, ir6)
+lrtest(ir, ir7)
+lrtest(ir, ir8) #equal so drop veg from count
+lrtest(ir, ir9) #equal so drop shore from count
+lrtest(ir, ir10) #equal so drop bottom from count
+
+#drop shore from count
+ir = hurdle(number ~ year+month+veg+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+
+ir1 = hurdle(number ~ month+veg+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir2 = hurdle(number ~ year+veg+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir3 = hurdle(number ~ year+month+bottom | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir4 = hurdle(number ~ year+month+veg| year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir5 = hurdle(number ~ year+month+veg+bottom | month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir6 = hurdle(number ~ year+month+veg+bottom | year+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir7 = hurdle(number ~ year+month+veg+bottom | year+month+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir8 = hurdle(number ~ year+month+veg+bottom | year+month+veg+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir9 = hurdle(number ~ year+month+veg+bottom | year+month+veg+shore, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+
+lrtest(ir, ir1)
+lrtest(ir, ir2)
+lrtest(ir, ir3)
+lrtest(ir, ir4) #equal so drop bottom from count
+lrtest(ir, ir5) 
+lrtest(ir, ir6)
+lrtest(ir, ir7) #equal sp drp veg from binary
+lrtest(ir, ir8) #equal so drop shore from binary
+lrtest(ir, ir9) #equal so drop bottom from binary 
+
+#drop bottom from count
+ir = hurdle(number ~ year+month+veg | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+
+ir1 = hurdle(number ~ month+veg | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir2 = hurdle(number ~ year+veg | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir3 = hurdle(number ~ year+month | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir4 = hurdle(number ~ year+month+veg | month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir5 = hurdle(number ~ year+month+veg | year+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir6 = hurdle(number ~ year+month+veg | year+month+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir7 = hurdle(number ~ year+month+veg | year+month+veg+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir8 = hurdle(number ~ year+month+veg | year+month+veg+shore, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+
+lrtest(ir, ir1)
+lrtest(ir, ir2)
+lrtest(ir, ir3)
+lrtest(ir, ir4) 
+lrtest(ir, ir5) 
+lrtest(ir, ir6) #drop veg from binary
+lrtest(ir, ir7) #equal sp drp shore from binary
+lrtest(ir, ir8) #equal so drop bottom from binary
+
+#drop veg from binary
+ir = hurdle(number ~ year+month+veg | year+month+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+
+ir1 = hurdle(number ~ month+veg | year+month+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir2 = hurdle(number ~ year+veg | year+month+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir3 = hurdle(number ~ year+month | year+month+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir4 = hurdle(number ~ year+month+veg | month+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir5 = hurdle(number ~ year+month+veg | year+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir6 = hurdle(number ~ year+month+veg | year+month+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir7 = hurdle(number ~ year+month+veg | year+month+shore, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+
+lrtest(ir, ir1)
+lrtest(ir, ir2)
+lrtest(ir, ir3)
+lrtest(ir, ir4) 
+lrtest(ir, ir5) 
+lrtest(ir, ir6) #drop shore from binary
+lrtest(ir, ir7) #equal sp drp bottom from binary
+
+#drop shore from binary
+ir = hurdle(number ~ year+month+veg | year+month+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+
+ir1 = hurdle(number ~ month+veg | year+month+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir2 = hurdle(number ~ year+veg | year+month+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir3 = hurdle(number ~ year+month| year+month+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir4 = hurdle(number ~ year+month+veg | month+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir5 = hurdle(number ~ year+month+veg | year+bottom, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir6 = hurdle(number ~ year+month+veg | year+month, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+
+lrtest(ir, ir1)
+lrtest(ir, ir2)
+lrtest(ir, ir3)
+lrtest(ir, ir4) 
+lrtest(ir, ir5) 
+lrtest(ir, ir6) #drop bottom from binary
+
+#drop bottom from binary
+ir = hurdle(number ~ year+month+veg | year+month, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+
+ir1 = hurdle(number ~ month+veg | year+month, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir2 = hurdle(number ~ year+veg | year+month, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir3 = hurdle(number ~ year+month| year+month, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir4 = hurdle(number ~ year+month+veg | month, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+ir5 = hurdle(number ~ year+month+veg | year, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+
+lrtest(ir, ir1)
+lrtest(ir, ir2)
+lrtest(ir, ir3)
+lrtest(ir, ir4) 
+lrtest(ir, ir5) 
+
+#all covariates are significant
+#model ir is best
+
+AIC (ir,ir1, ir2, ir3, ir4, ir5)
+#model ir is best
+
+N<-nrow(ir.ad)
+EZIP <- resid(ir,type="pearson")
+Dispersion <- sum(EZIP^2)/(N-62)	#==>be sure to change value for degrees of freedom based on summary output
+Dispersion #1.39
+
+BestModelIR.ad_zinb <- ir
 
 ##### ASSIGN FINAL MODELS_ADULT ###### 
-final_ap_ad.pos = Full_ap_ad.pos
-final_ck_ad.pos = M3_ck_ad.pos
-final_tb_ad.pos = M1_tb_ad.pos
-final_ch_ad.pos= M1_ch_ad.pos
-final_jx_ad.pos = M3_jx_ad.pos
-final_ir_ad.pos = M2_ir_ad.pos
 
-final_ap_ad.bin = M1_ap_ad.bin
-final_ck_ad.bin = Full_ck_ad.bin
-final_tb_ad.bin = M2_tb_ad.bin
-final_ch_ad.bin = M1_ch_ad.bin
-final_jx_ad.bin = M1_jx_ad.bin
-final_ir_ad.bin = M1_ir_ad.bin
+# BOTH the zinb and the zanb produce standard error estimates that are huge! 
+#zinb
+A= zeroinfl(number ~ year+bottom+month+shore | year+month+veg+shore, dist='negbin', link="logit", data=ap.ad, na.action = na.exclude)
+C= zeroinfl(number ~ year+month+veg | bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action = na.exclude)
+t <- zeroinfl(number ~ year+month+veg+bottom+shore | year+month+veg+bottom+shore, dist='negbin', link="logit", data=tb.ad, na.action = na.exclude) 
+ch <- zeroinfl(number ~ year+shore+bottom | year+month+bottom, dist='negbin', link="logit", data=ch.ad, na.action = na.exclude) 
+j2 <- zeroinfl(number ~ year | year+veg+shore, dist='negbin', link="logit", data=jx.ad, na.action = na.exclude) 
+i <- zeroinfl(number ~ year+month+veg | year+month+veg+shore+bottom, dist='negbin', link="logit", data=ir.ad, na.action = na.exclude) 
+
+BestModelAP.ad_zinb <- A
+BestModelCK.ad_zinb <- C
+BestModelTB.ad_zinb <- t
+BestModelCH.ad_zinb <- ch
+BestModelJX.ad_zinb <- j2
+BestModelIR.ad_zinb <- i
+
+#zanb
+A = hurdle(number ~ year+month+bottom | year+month+veg+shore, dist='negbin', link="logit", data=ap.ad, na.action=na.exclude)
+C = hurdle(number ~ year+month+veg | year+month+veg+bottom+shore, dist='negbin', link="logit", data=ck.ad, na.action=na.exclude)
+t = hurdle(number ~ year+month+veg+shore | year+month, dist='negbin', link="logit", data=tb.ad, na.action=na.exclude)
+ch = hurdle(number ~ year+month+veg+shore | month+veg+shore, dist='negbin', link="logit", data=ch.ad, na.action=na.exclude)
+jx = hurdle(number ~ year+month | month+veg+bottom+shore, dist='negbin', link="logit", data=jx.ad, na.action=na.exclude)
+ir = hurdle(number ~ year+month+veg | year+month, dist='negbin', link="logit", data=ir.ad, na.action=na.exclude)
+
+BestModelAP.ad_zanb <- A
+BestModelCK.ad_zanb <- C
+BestModelTB.ad_zanb <- t
+BestModelCH.ad_zanb <- ch
+BestModelJX.ad_zanb <- jx
+BestModelIR.ad_zanb <- ir
+
+#Compare ZANB to ZINB ####
+AIC(BestModelAP.ad_zanb, BestModelAP.ad_zinb, apP.ad, apNB.ad1) #zanb is better
+AIC(BestModelCK.ad_zanb, BestModelCK.ad_zinb, ckP.ad, ckNB.ad1) #zanb is better
+AIC(BestModelTB.ad_zanb, BestModelTB.ad_zinb, tbP.ad, tbNB.ad1) #zanb is better
+AIC(BestModelCH.ad_zanb, BestModelCH.ad_zinb, chNB.ad1) #zanb is better
+AIC(BestModelJX.ad_zanb, BestModelJX.ad_zinb, jxNB.ad1) #zanb is better
+AIC(BestModelIR.ad_zanb, BestModelIR.ad_zinb, irNB.ad1) #zanb is better
 
 ##### DETERMINE LEAST SQUARE MEANS_ADULT######
 # Same thing as covariate adjusted means. Basically, determine the mean value of total positive numbers 
 # of catch per year controlling for covariates (in this case it would be veg and shore variables). 
 # Use lsmeans CRAN document. 
 
-# Looking at the reference grid gives a good idea of over what levels the mean is being averaged. 
-ap_ad.rf.grid <- ref.grid(final_ap_ad.pos)
-ap_ad.bin.rf.grid <- ref.grid(final_ap_ad.bin)
 
-#Can make predictions using the reference grid. It produces a mean value of numbers based on each scenario combination.  
-test = summary(ap_ad.rf.grid)
-test_ap_ad.bin= summary(ap_ad.bin.rf.grid)
+library(dplyr)
+lsm.APad       <- lsmeans(BestModelAP.ad_zanb, "year", data = ap.ad, mode="response")
+estimate.APad <- as.data.frame(transform(summary(lsm.APad))) %>% select(year, lsmean, SE) 
+#lsmeans with alternative model type (ZINB for AP)
+alt.APad <- as.data.frame(transform(summary(lsmeans(BestModelAP.ad_zinb,"year", data = ap.ad, mode="response"))))  %>% select(year, lsmean, SE) %>% mutate(alternative.mean=lsmean) %>% select(-lsmean)
+estimate.APad$year <- as.numeric(as.character(estimate.APad$year))
 
-# Use lsmeans to determine the least square mean of positive values. 
-# Display the response scale (as opposed to the log scale which is reported for the Poisson, and the logit scale reported for the Binomial)
+lsm.CKad       <- lsmeans(BestModelCK.ad_zanb, "year", data = ck.ad, mode="response")
+estimate.CKad <- as.data.frame(transform(summary(lsm.CKad))) %>% select(year, lsmean, SE) 
+#lsmeans with alternative model type (ZANB for CK)
+alt.CKad <- as.data.frame(transform(summary(lsmeans(BestModelCK.ad_zinb,"year", data = ck.ad, mode="response"))))  %>% select(year, lsmean, SE) %>% mutate(alternative.mean=lsmean) %>% select(-lsmean)
+estimate.CKad$year <- as.numeric(as.character(estimate.CKad$year))
+
+lsm.TBad       <- lsmeans(BestModelTB.ad_zanb, "year", data = tb.ad, mode="response")
+estimate.TBad <- as.data.frame(transform(summary(lsm.TBad))) %>% select(year, lsmean, SE) 
+#lsmeans with alternative model type (ZANB for TB)
+alt.TBad <- as.data.frame(transform(summary(lsmeans(BestModelTB.ad_zinb,"year", data = tb.ad, mode="response"))))  %>% select(year, lsmean, SE) %>% mutate(alternative.mean=lsmean) %>% select(-lsmean)
+estimate.TBad$year <- as.numeric(as.character(estimate.TBad$year))
+
+lsm.CHad       <- lsmeans(BestModelCH.ad_zanb, "year", data = ch.ad, mode="response")
+estimate.CHad <- as.data.frame(transform(summary(lsm.CHad))) %>% select(year, lsmean, SE) 
+#lsmeans with alternative model type (ZANB for CH)
+alt.CHad <- as.data.frame(transform(summary(lsmeans(BestModelCH.ad_zinb,"year", data = ch.ad, mode="response"))))  %>% select(year, lsmean, SE) %>% mutate(alternative.mean=lsmean) %>% select(-lsmean)
+estimate.CHad$year <- as.numeric(as.character(estimate.CHad$year))
+
+lsm.JXad       <- lsmeans(BestModelJX.ad_zanb, "year", data = jx.ad, mode="response")
+estimate.JXad <- as.data.frame(transform(summary(lsm.JXad))) %>% select(year, lsmean, SE) 
+#lsmeans with alternative model type (ZANB for JX)
+alt.JXad <- as.data.frame(transform(summary(lsmeans(BestModelJX.ad_zinb,"year", data = jx.ad, mode="response"))))  %>% select(year, lsmean, SE) %>% mutate(alternative.mean=lsmean) %>% select(-lsmean)
+estimate.JXad$year <- as.numeric(as.character(estimate.JXad$year))
+
+lsm.IRad       <- lsmeans(BestModelIR.ad_zanb, "year", data = ir.ad, mode="response")
+estimate.IRad <- as.data.frame(transform(summary(lsm.IRad))) %>% select(year, lsmean, SE) 
+#lsmeans with alternative model type (ZANB for IR)
+alt.IRad <- as.data.frame(transform(summary(lsmeans(BestModelIR.ad_zinb,"year", data = ir.ad, mode="response"))))  %>% select(year, lsmean, SE) %>% mutate(alternative.mean=lsmean) %>% select(-lsmean)
+estimate.IRad$year <- as.numeric(as.character(estimate.IRad$year))
+
+
+NominalMeanAP  = as.vector(tapply(ap.ad$number, ap.ad$year, mean))
+NominalMeanCK  = as.vector(tapply(ck.ad$number, ck.ad$year, mean))
+NominalMeanTB  = as.vector(tapply(tb.ad$number, tb.ad$year, mean))
+NominalMeanCH  = as.vector(tapply(ch.ad$number, ch.ad$year, mean))
+NominalMeanJX  = as.vector(tapply(jx.ad$number, jx.ad$year, mean))
+NominalMeanIR  = as.vector(tapply(ir.ad$number, ir.ad$year, mean))
+
+# PLOT INDICES_adult ####
+
+library(reshape2)
+library(ggplot2)
+
+#add on the alternative index 
+APadred <- estimate.APad[,c(1,2)] %>% cbind(alt.APad$alternative.mean, NominalMeanAP) %>% melt(id=c("year"))
+CKadred <- estimate.CKad[,c(1,2)] %>% cbind(alt.CKad$alternative.mean, NominalMeanCK) %>% melt(id=c("year"))
+TBadred <- estimate.TBad[,c(1,2)] %>% cbind(alt.TBad$alternative.mean, NominalMeanTB) %>% melt(id=c("year"))
+CHadred <- estimate.CHad[,c(1,2)] %>% cbind(alt.CHad$alternative.mean, NominalMeanCH) %>% melt(id=c("year"))
+JXadred <- estimate.JXad[,c(1,2)] %>% cbind(alt.JXad$alternative.mean, NominalMeanJX) %>% melt(id=c("year"))
+IRadred <- estimate.IRad[,c(1,2)] %>% cbind(alt.IRad$alternative.mean, NominalMeanIR) %>% melt(id=c("year"))
+
+
+library(ggplot2)
+
+ggplot(APadred, aes(x=year, y=value, color=variable))+
+  geom_line()  
+
+ggplot(CKadred, aes(x=year, y=value, color=variable))+
+  geom_line()  
+
+ggplot(TBadred, aes(x=year, y=value, color=variable))+
+  geom_line()  
+
+ggplot(CHadred, aes(x=year, y=value, color=variable))+
+  geom_line()  
+
+ggplot(JXadred, aes(x=year, y=value, color=variable))+
+  geom_line()  
+
+ggplot(IRadred, aes(x=year, y=value, color=variable))+
+  geom_line()  
+
+
 
 ##### EXPORT PREDICTED INDEX (NUMBERS)_ADULT ######
 #export to csv _PERSONAL COMPUTER
 write.csv(Mean_AP_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/AP_adult_index.csv")
-write.csv(Mean_IR_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/IR_adult_index.csv")
-write.csv(Mean_JX_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/JX_adult_index.csv")
+write.csv(Mean_IR_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/CK_adult_index.csv")
+write.csv(Mean_JX_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/TB_adult_index.csv")
 write.csv(Mean_CH_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/CH_adult_index.csv")
-write.csv(Mean_TB_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/TB_adult_index.csv")
-write.csv(Mean_CK_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/CK_adult_index.csv")
+write.csv(Mean_TB_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/JX_adult_index.csv")
+write.csv(Mean_CK_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices/IR_adult_index.csv")
 
 #export to csv _WORK
-write.csv(Mean_AP_ad, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/AP_adult_index.csv")
-write.csv(Mean_IR_ad, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/IR_adult_index.csv")
-write.csv(Mean_JX_ad, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/JX_adult_index.csv")
-write.csv(Mean_CH_ad, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/CH_adult_index.csv")
-write.csv(Mean_TB_ad, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/TB_adult_index.csv")
-write.csv(Mean_CK_ad, "T:/Elizabeth Herdter/PhD_projectfiles/Data/Indices/DeltaMethod_Indices/CK_adult_index.csv")
+
+write.csv(estimate.APad, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/AP_adult_index.csv")
+write.csv(estimate.CKad, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/CK_adult_index.csv")
+write.csv(estimate.TBad, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/TB_adult_index.csv")
+write.csv(estimate.CHad, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/CH_adult_index.csv")
+write.csv(estimate.JXad, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/JX_adult_index.csv")
+write.csv(estimate.IRad, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/IR_adult_index.csv")
+
 
 ##### APPLY AGE & WEIGHT SCHEDULE TO OBTAIN PREDICTED SSB OF ADULTS #######
 #obtain proportion at age schedule from the output files of ALK_analysis.R
@@ -3685,56 +4658,56 @@ prop_IR <- read.csv("PropAtAge_IRadult_FIMdata.csv", header=T)
 #cycle through rows of the adult index data frame and multiply by the proportion at age
 
 #AP
- num.yr = length(Mean_AP_ad$Year)
+ num.yr = length(estimate.APad$year)
  num.age =length(prop_AP$Freq)
  Pred_Numbers_at_age_AP_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=num.age)) #make a dataframe for the loop to store results in
  for (i in 1:num.yr) {
-   Pred_Numbers_at_age_AP_adult[i,] <- Mean_AP_ad$Mean[i]*prop_AP$Freq
+   Pred_Numbers_at_age_AP_adult[i,] <- estimate.APad$lsmean[i]*prop_AP$Freq
  }
 colnames(Pred_Numbers_at_age_AP_adult) <- c("P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10")
 
 #CK
-num.yr = length(Mean_CK_ad$Year)
+num.yr = length(estimate.CKad$year)
 num.age =length(prop_CK$Freq)
 Pred_Numbers_at_age_CK_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=num.age)) #make a dataframe for the loop to store results in
 for (i in 1:num.yr) {
-  Pred_Numbers_at_age_CK_adult[i,] <- Mean_CK_ad$Mean[i]*prop_CK$Freq
+  Pred_Numbers_at_age_CK_adult[i,] <- estimate.CKad$lsmean[i]*prop_CK$Freq
 }
 colnames(Pred_Numbers_at_age_CK_adult) <- c("P1", "P2", "P3", "P4", "P5", "P6", "P7") 
 
 #TB
-num.yr = length(Mean_TB_ad$Year)
+num.yr = length(estimate.TBad$year)
 num.age =length(prop_TB$Freq)
 Pred_Numbers_at_age_TB_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=num.age)) #make a dataframe for the loop to store results in
 for (i in 1:num.yr) {
-  Pred_Numbers_at_age_TB_adult[i,] <- Mean_TB_ad$Mean[i]*prop_TB$Freq
+  Pred_Numbers_at_age_TB_adult[i,] <- estimate.TBad$lsmean[i]*prop_TB$Freq
 }
 colnames(Pred_Numbers_at_age_TB_adult) <- c("P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9") 
 
 #CH
-num.yr = length(Mean_CH_ad$Year)
+num.yr = length(estimate.CHad$year)
 num.age =length(prop_CH$Freq)
 Pred_Numbers_at_age_CH_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=num.age)) #make a dataframe for the loop to store results in
 for (i in 1:num.yr) {
-  Pred_Numbers_at_age_CH_adult[i,] <- Mean_CH_ad$Mean[i]*prop_CH$Freq
+  Pred_Numbers_at_age_CH_adult[i,] <- estimate.CHad$lsmean[i]*prop_CH$Freq
 }
 colnames(Pred_Numbers_at_age_CH_adult) <- c("P1", "P2", "P3", "P4", "P5", "P6", "P7")
 
 #JX
-num.yr = length(Mean_JX_ad$Year)
+num.yr = length(estimate.JXad$year)
 num.age =length(prop_JX$Freq)
 Pred_Numbers_at_age_JX_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=num.age)) #make a dataframe for the loop to store results in
 for (i in 1:num.yr) {
-  Pred_Numbers_at_age_JX_adult[i,] <- Mean_JX_ad$Mean[i]*prop_JX$Freq
+  Pred_Numbers_at_age_JX_adult[i,] <- estimate.JXad$lsmean[i]*prop_JX$Freq
 }
 colnames(Pred_Numbers_at_age_JX_adult) <- c("P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8") 
 
 #IR
-num.yr = length(Mean_IR_ad$Year) 
+num.yr = length(estimate.IRad$year) 
 num.age =length(prop_IR$Freq)
 Pred_Numbers_at_age_IR_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=num.age)) #make a dataframe for the loop to store results in
 for (i in 1:num.yr) {
-  Pred_Numbers_at_age_IR_adult[i,] <- Mean_IR_ad$Mean[i]*prop_IR$Freq
+  Pred_Numbers_at_age_IR_adult[i,] <- estimate.IRad$lsmean[i]*prop_IR$Freq
 }
 
 colnames(Pred_Numbers_at_age_IR_adult) <- c("P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9")
@@ -3748,8 +4721,27 @@ CH_weight <- read.csv("Weight_at_Age_CH_ad_FIMdata.csv", header=TRUE)
 IR_weight <- read.csv("Weight_at_Age_IR_ad_FIMdata.csv", header=TRUE)
 JX_weight <- read.csv("Weight_at_Age_JX_ad_FIMdata.csv", header=TRUE)
 
+apmxwt = 2.1812083
+AP_weight$mean_wt[8:10] = apmxwt
+
+ckmxwt=1.89
+CK_weight$mean_wt[7] =ckmxwt
+
+mxwt=1.45
+TB_weight$mean_wt[8:9] =mxwt
+
+mxwt=1.21
+CH_weight$mean_wt[7] =mxwt
+
+mxwt=2.54
+JX_weight$mean_wt[7:8] =mxwt
+
+mxwt=2.36
+IR_weight$mean_wt[9] =mxwt
+
+
 #AP
-num.yr = length(Mean_AP_ad$Year) 
+num.yr = length(estimate.APad$year) 
 num.age =length(prop_AP$Freq)
 Pred_Biomass_AP_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=num.age)) #make a dataframe for the loop to store results in
 for (i in 1:num.yr) {
@@ -3758,8 +4750,10 @@ for (i in 1:num.yr) {
 
 Pred_Biomass_AP_adult <- Pred_Biomass_AP_adult %>% mutate(sumbiomass = rowSums(Pred_Biomass_AP_adult))
 
+
+
 #CK
-num.yr = length(Mean_CK_ad$Year) 
+num.yr = length(estimate.CKad$year) 
 num.age =length(prop_CK$Freq)
 Pred_Biomass_CK_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=num.age)) #make a dataframe for the loop to store results in
 for (i in 1:num.yr) {
@@ -3769,7 +4763,7 @@ for (i in 1:num.yr) {
 Pred_Biomass_CK_adult <- Pred_Biomass_CK_adult %>% mutate(sumbiomass = rowSums(Pred_Biomass_CK_adult))
 
 #TB
-num.yr = length(Mean_TB_ad$Year) 
+num.yr = length(estimate.TBad$year) 
 num.age =length(prop_TB$Freq)
 Pred_Biomass_TB_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=num.age)) #make a dataframe for the loop to store results in
 for (i in 1:num.yr) {
@@ -3779,7 +4773,7 @@ for (i in 1:num.yr) {
 Pred_Biomass_TB_adult <- Pred_Biomass_TB_adult %>% mutate(sumbiomass = rowSums(Pred_Biomass_TB_adult))
 
 #CH
-num.yr = length(Mean_CH_ad$Year) 
+num.yr = length(estimate.CHad$year) 
 num.age =length(prop_CH$Freq)
 Pred_Biomass_CH_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=num.age)) #make a dataframe for the loop to store results in
 for (i in 1:num.yr) {
@@ -3789,7 +4783,7 @@ for (i in 1:num.yr) {
 Pred_Biomass_CH_adult <- Pred_Biomass_CH_adult %>% mutate(sumbiomass = rowSums(Pred_Biomass_CH_adult))
 
 #JX
-num.yr = length(Mean_JX_ad$Year) 
+num.yr = length(estimate.JXad$year) 
 num.age =length(prop_JX$Freq)
 Pred_Biomass_JX_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=num.age)) #make a dataframe for the loop to store results in
 for (i in 1:num.yr) {
@@ -3800,7 +4794,7 @@ Pred_Biomass_JX_adult <- Pred_Biomass_JX_adult %>% mutate(sumbiomass = rowSums(P
 
 
 #IR
-num.yr = length(Mean_IR_ad$Year) 
+num.yr = length(estimate.IRad$year) 
 num.age =length(prop_IR$Freq)
 Pred_Biomass_IR_adult <- data.frame(matrix(data=NA, nrow=num.yr, ncol=num.age)) #make a dataframe for the loop to store results in
 for (i in 1:num.yr) {
@@ -3814,28 +4808,38 @@ Pred_Biomass_IR_adult <- Pred_Biomass_IR_adult %>% mutate(sumbiomass = rowSums(P
 # First, make combined indices for YOY (Mean_AP) and Adults (Mean_AP_ad), and Adult biomass (Pred_Biomass_AP_adult)
 #I will trim the yoy data because the adult timeseries are shorter- only for CK, TB, CH, and IR
 
-AP_ind <- data.frame(cbind(Mean_AP$Mean, Mean_AP_ad$Mean, Pred_Biomass_AP_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
+#load you index so I dont have to re run all of the above
+
+APindex <- read.csv(file="U:\\PhD_projectfiles\\Exported_R_Datafiles\\Indices\\UpdatedIndices\\AP_yoy_index.csv", header=T)
+CKindex <- read.csv(file="U:\\PhD_projectfiles\\Exported_R_Datafiles\\Indices\\UpdatedIndices\\CK_yoy_index.csv", header=T)
+TBindex <- read.csv(file="U:\\PhD_projectfiles\\Exported_R_Datafiles\\Indices\\UpdatedIndices\\TB_yoy_index.csv", header=T)
+CHindex <- read.csv(file="U:\\PhD_projectfiles\\Exported_R_Datafiles\\Indices\\UpdatedIndices\\CH_yoy_index.csv", header=T)
+JXindex <- read.csv(file="U:\\PhD_projectfiles\\Exported_R_Datafiles\\Indices\\UpdatedIndices\\JX_yoy_index.csv", header=T)
+IRindex <- read.csv(file="U:\\PhD_projectfiles\\Exported_R_Datafiles\\Indices\\UpdatedIndices\\IR_yoy_index.csv", header=T)
+
+
+
+AP_ind <- data.frame(cbind(APindex$Mean, estimate.APad$lsmean, Pred_Biomass_AP_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
 names(AP_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
 plot(yoy~adult, data=AP_ind)
 
-CK_ind <- data.frame(cbind(Mean_CK$Mean[2:20], Mean_CK_ad$Mean, Pred_Biomass_CK_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
+CK_ind <- data.frame(cbind(CKindex$Mean[2:20], estimate.CKad$lsmean, Pred_Biomass_CK_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
 names(CK_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
 plot(yoy~adult, data=CK_ind)
 
-
-TB_ind <- data.frame(cbind(Mean_TB$Mean[8:27], Mean_TB_ad$Mean, Pred_Biomass_TB_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
+TB_ind <- data.frame(cbind(TBindex$Mean[8:27], estimate.TBad$lsmean, Pred_Biomass_TB_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
 names(TB_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
 plot(yoy~adult, data=TB_ind)
 
-CH_ind <- data.frame(cbind(Mean_CH$Mean[8:27], Mean_CH_ad$Mean, Pred_Biomass_CH_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
+CH_ind <- data.frame(cbind(CHindex$Mean[8:27], estimate.CHad$lsmean, Pred_Biomass_CH_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
 names(CH_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
 plot(yoy~adult, data=CH_ind)
 
-JX_ind <- data.frame(cbind(Mean_JX$Mean, Mean_JX_ad$Mean, Pred_Biomass_JX_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
+JX_ind <- data.frame(cbind(JXindex$Mean, estimate.JXad$lsmean, Pred_Biomass_JX_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
 names(JX_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
 plot(yoy~adult, data=JX_ind)
 
-IR_ind <- data.frame(cbind(Mean_IR$Mean[8:26], Mean_IR_ad$Mean, Pred_Biomass_IR_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
+IR_ind <- data.frame(cbind(IRindex$Mean[8:26], estimate.IRad$lsmean, Pred_Biomass_IR_adult$sumbiomass)) %>% mutate(logyoy=log(X1), logadult=log(X2), logadultbio=log(X3))
 names(IR_ind) <- c("yoy", "adult", "adult_bio", "logyoy", "logadult", "logadult_bio")
 plot(yoy~adult, data=IR_ind)
 
@@ -3847,7 +4851,7 @@ library(nlstools)
 ### AP STOCK RECRUITMENT Fitting #####
 ####Ricker
 srStarts(yoy ~ adult, data=AP_ind, type="Ricker") #determine starting values 
-svR_ap <- list(a=2, b=0.5) #putting starting values into a named list for later use
+svR_ap <- list(a=3, b=0.5) #putting starting values into a named list for later use
 RK <- srFuns("Ricker") #define stock recruit function that ill be using 
 srRK_ap <- nls(logyoy~log(RK(adult,a,b)), data=AP_ind, start=svR_ap) #stock recruitment function with multiplicative errors is fit with nls 
 overview(srRK_ap) #produces parameter estimates, confidence intervals, Residual sums squares
@@ -3880,73 +4884,24 @@ srI <- nls(logyoy~log(ind(adult,a)), data=AP_ind, start=svI)
 
 #test whether density independent are better than either 
 extraSS(srI, com=srRK_ap)
-extraSS(srI, com=srBH_ap)
+extraSS(srI, com=srBH_ap) #better fit than Bh
               
 #test whether models are better
 AIC(srBH_ap, srRK_ap)
+#says BH is better fit bit the plot looks like absolute crap. the b ricker was not significant
 
-#BH appears to be a better fit but the BH parameters werent significant so just export both 
-
-write.csv(data.frame(residuals(srBH_ap)) %>% mutate(year = c(1998:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_BH.csv")
-write.csv(data.frame(residuals(srRK_ap)) %>% mutate(year = c(1998:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_RK.csv")
-
-
-#CH STOCK RECRUITMENT FITTING #####
-####Ricker
-srStarts(yoy ~ adult, data=CH_ind, type="Ricker") #determine starting values 
-svR_ch <- list(a=5, b=2) #putting starting values into a named list for later use
-RK <- srFuns("Ricker") #define stock recruit function that ill be using 
-srRK_ch <- nls(logyoy~log(RK(adult,a,b)), data=CH_ind, start=svR_ch) #stock recruitment function with multiplicative errors is fit with nls 
-overview(srRK_ch) #produces parameter estimates, confidence intervals, Residual sums squares
-
-#visualize the model fit
-x=seq(0,5, length.out=999) #many S for predictions
-pR <- RK(x, a=coef(srRK_ch)) #predicted mean R for the values of S using the coefficients of the fitted model above (srRK_ap)
-xlmts=range(c(x,CH_ind$adult)) #make xlmts on the plot
-plot(yoy~adult, data=CH_ind, xlim=xlmts) #plot 
-lines(pR~x, lwd=2) #add the line of the predicted mean R
-
-##### Beverton Holt 
-srStarts(yoy~adult, data=CH_ind, type="BevertonHolt", param=1)  #determine starting values
-svR_ch <- list(a=-13, b=-19)
-BH <- srFuns("BevertonHolt")
-srBH_ch <- nls(logyoy~log(BH(adult,a,b)), data=CH_ind, start=svR_ch)
-overview(srBH_ch)
-#not significant here 
-
-#visualize the model fit
-x=seq(0,5, length.out=999) #many S for predictions
-pR <- BH(x, a=coef(srBH_ch)) #predicted mean R for the values of S using the coefficients of the fitted model above (srRK_ap)
-xlmts=range(c(x,CH_ind$adult)) #make xlmts on the plot
-plot(yoy~adult, data=CH_ind, xlim=xlmts) #plot 
-lines(pR~x, lwd=2) #add the line of the predicted mean R
-#weird
-
-##### Density Independent
-ind <- srFuns("independence")
-svI <- srStarts(yoy~adult, data=CH_ind, type= "independence")
-srI <- nls(logyoy~log(ind(adult,a)), data=CH_ind, start=svI)
-
-#test whether density independent are better than either 
-extraSS(srI, com=srRK_ch)
-extraSS(srI, com=srBH_ch)
-
-#test whether models are better
-AIC(srBH_ch, srRK_ch)  #dont believe it
-
-write.csv(data.frame(residuals(srBH_ch)) %>% mutate(year = c(1996:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_BH.csv")
-write.csv(data.frame(residuals(srRK_ch)) %>% mutate(year = c(1996:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_RK.csv")
-
+#do not export 
+#write.csv(data.frame(residuals(srBH_ap)) %>% mutate(year = c(1998:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_BH.csv")
+#write.csv(data.frame(residuals(srRK_ap)) %>% mutate(year = c(1998:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_RK.csv")
 
 #CK STOCK RECRUITMENT FITTING #####
 ####Ricker
 srStarts(yoy ~ adult, data=CK_ind, type="Ricker") #determine starting values 
-svR_ck <- list(a=0.43, b=-0.03) #putting starting values into a named list for later use
+svR_ck <- list(a=0.9, b=-0.41) #putting starting values into a named list for later use
 RK <- srFuns("Ricker") #define stock recruit function that ill be using 
 srRK_ck <- nls(logyoy~log(RK(adult,a,b)), data=CK_ind, start=svR_ck) #stock recruitment function with multiplicative errors is fit with nls 
 overview(srRK_ck) #produces parameter estimates, confidence intervals, Residual sums squares
-#overall model not significant
-
+#b parameter is not significant
 
 #visualize the model fit
 x=seq(0,5, length.out=999) #many S for predictions
@@ -3965,9 +4920,9 @@ overview(srBH_ck)
 
 #visualize the model fit
 x=seq(0,5, length.out=999) #many S for predictions
-pR <- BH(x, a=coef(srBH_ch)) #predicted mean R for the values of S using the coefficients of the fitted model above (srRK_ap)
-xlmts=range(c(x,CH_ind$adult)) #make xlmts on the plot
-plot(yoy~adult, data=CH_ind, xlim=xlmts) #plot 
+pR <- BH(x, a=coef(srBH_ck)) #predicted mean R for the values of S using the coefficients of the fitted model above (srRK_ap)
+xlmts=range(c(x,CK_ind$adult)) #make xlmts on the plot
+plot(yoy~adult, data=CK_ind, xlim=xlmts) #plot 
 lines(pR~x, lwd=2) #add the line of the predicted mean R
 #weird
 
@@ -3981,11 +4936,11 @@ extraSS(srI, com=srRK_ck) #a density independent is even better
 extraSS(srI, com=srBH_ck)
 
 #test whether models are better
-AIC(srBH_ch, srRK_ch)  #dont believe it
+AIC(srBH_ck, srRK_ck)  #both are crap
 
-#both weren't even significant 
-write.csv(data.frame(residuals(srBH_ch)) %>% mutate(year = c(1997:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_BH.csv")
-write.csv(data.frame(residuals(srRK_ch)) %>% mutate(year = c(1997:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_RK.csv")
+# #both weren't even significant. both were crap. do not export
+# write.csv(data.frame(residuals(srBH_ch)) %>% mutate(year = c(1997:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_BH.csv")
+# write.csv(data.frame(residuals(srRK_ch)) %>% mutate(year = c(1997:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_RK.csv")
 
 # TB STOCK RECRUITMENT FITTING #####
 ####Ricker
@@ -3996,7 +4951,7 @@ srRK_tb <- nls(logyoy~log(RK(adult,a,b)), data=TB_ind, start=svR_tb) #stock recr
 overview(srRK_tb) #produces parameter estimates, confidence intervals, Residual sums squares
 
 #visualize the model fit
-x=seq(0,5, length.out=999) #many S for predictions
+x=seq(0,max(TB_ind$adult), length.out=999) #many S for predictions
 pR <- RK(x, a=coef(srRK_tb)) #predicted mean R for the values of S using the coefficients of the fitted model above (srRK_ap)
 xlmts=range(c(x,TB_ind$adult)) #make xlmts on the plot
 plot(yoy~adult, data=TB_ind, xlim=xlmts) #plot 
@@ -4004,14 +4959,14 @@ lines(pR~x, lwd=2) #add the line of the predicted mean R
 
 ##### Beverton Holt 
 srStarts(yoy~adult, data=TB_ind, type="BevertonHolt")  #determine starting values
-svR_tb <- list(a=27, b=23)
+svR_tb <- list(a=-52, b=-39)
 BH <- srFuns("BevertonHolt")
 srBH_tb <- nls(logyoy~log(BH(adult,a,b)), data=TB_ind, start=svR_tb)
 overview(srBH_tb)
 #not significant here 
 
 #visualize the model fit
-x=seq(0,5, length.out=999) #many S for predictions
+x=seq(0,max(TB_ind$adult), length.out=999) #many S for predictions
 pR <- BH(x, a=coef(srBH_tb)) #predicted mean R for the values of S using the coefficients of the fitted model above (srRK_ap)
 xlmts=range(c(x,TB_ind$adult)) #make xlmts on the plot
 plot(yoy~adult, data=TB_ind, xlim=xlmts) #plot 
@@ -4030,10 +4985,103 @@ extraSS(srI, com=srBH_tb) #bh is better but its not significant
 #test whether models are better
 AIC(srBH_tb, srRK_tb)  #Ricker is better. But still isnt good. 
 
-#not great but exporting them anyway
-write.csv(data.frame(residuals(srBH_tb)) %>% mutate(year = c(1996:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_BH.csv")
-write.csv(data.frame(residuals(srRK_tb)) %>% mutate(year = c(1996:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_RK.csv")
+#not exporting. ricker is partly significant. BH is shit
+#write.csv(data.frame(residuals(srBH_tb)) %>% mutate(year = c(1996:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_BH.csv")
+#write.csv(data.frame(residuals(srRK_tb)) %>% mutate(year = c(1996:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_RK.csv")
 
+#CH STOCK RECRUITMENT FITTING #####
+####Ricker
+srStarts(yoy ~ adult, data=CH_ind, type="Ricker") #determine starting values 
+svR_ch <- list(a=15, b=5) #putting starting values into a named list for later use
+RK <- srFuns("Ricker") #define stock recruit function that ill be using 
+srRK_ch <- nls(logyoy~log(RK(adult,a,b)), data=CH_ind, start=svR_ch) #stock recruitment function with multiplicative errors is fit with nls 
+overview(srRK_ch) #produces parameter estimates, confidence intervals, Residual sums squares
+
+#visualize the model fit
+x=seq(0,max(CH_ind$adult), length.out=999) #many S for predictions
+pR <- RK(x, a=coef(srRK_ch)) #predicted mean R for the values of S using the coefficients of the fitted model above (srRK_ch)
+xlmts=range(c(x,CH_ind$adult)) #make xlmts on the plot
+plot(yoy~adult, data=CH_ind, xlim=xlmts) #plot 
+lines(pR~x, lwd=2) #add the line of the predicted mean R
+
+##### Beverton Holt 
+srStarts(yoy~adult, data=CH_ind, type="BevertonHolt", param=1)  #determine starting values
+svR_ch <- list(a=-13, b=-19)
+BH <- srFuns("BevertonHolt")
+srBH_ch <- nls(logyoy~log(BH(adult,a,b)), data=CH_ind, start=svR_ch)
+overview(srBH_ch)
+#not significant here 
+
+#visualize the model fit
+x=seq(0,max(CH_ind$adult), length.out=999) #many S for predictions
+pR <- BH(x, a=coef(srBH_ch)) #predicted mean R for the values of S using the coefficients of the fitted model above (srRK_ap)
+xlmts=range(c(x,CH_ind$adult)) #make xlmts on the plot
+plot(yoy~adult, data=CH_ind, xlim=xlmts) #plot 
+lines(pR~x, lwd=2) #add the line of the predicted mean R
+#weird
+
+##### Density Independent
+ind <- srFuns("independence")
+svI <- srStarts(yoy~adult, data=CH_ind, type= "independence")
+srI <- nls(logyoy~log(ind(adult,a)), data=CH_ind, start=svI)
+
+#test whether density independent are better than either 
+extraSS(srI, com=srRK_ch)
+extraSS(srI, com=srBH_ch)
+
+#test whether models are better
+AIC(srBH_ch, srRK_ch)  #dont believe it
+
+#both are shit. Ricker is a bit better. 
+#write.csv(data.frame(residuals(srBH_ch)) %>% mutate(year = c(1996:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_BH.csv")
+#write.csv(data.frame(residuals(srRK_ch)) %>% mutate(year = c(1996:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_RK.csv")
+
+#JX STOCK RECRUITMENT CURVE FITTING ####
+####Ricker
+srStarts(yoy ~ adult, data=JX_ind, type="Ricker") #determine starting values 
+svR_jx <- list(a=1.2, b=103) #putting starting values into a named list for later use
+RK <- srFuns("Ricker") #define stock recruit function that ill be using 
+srRK_jx <- nls(logyoy~log(RK(adult,a,b)), data=JX_ind, start=svR_jx) #stock recruitment function with multiplicative errors is fit with nls 
+overview(srRK_jx) #produces parameter estimates, confidence intervals, Residual sums squares
+#not significant here 
+
+#visualize the model fit
+x=seq(0,max(JX_ind$adult), length.out=999) #many S for predictions
+pR <- RK(x, a=coef(srRK_jx)) #predicted mean R for the values of S using the coefficients of the fitted model above (srRK_ap)
+xlmts=range(c(x,JX_ind$adult)) #make xlmts on the plot
+plot(yoy~adult, data=JX_ind, xlim=xlmts) #plot 
+lines(pR~x, lwd=2) #add the line of the predicted mean R
+
+##### Beverton Holt 
+srStarts(yoy~adult,data=JX_ind, type="BevertonHolt")  #determine starting values
+svR_jx <- list(a=0.63, b=40)
+BH <- srFuns("BevertonHolt")
+srBH_jx <- nls(logyoy~log(BH(adult,a,b)), data=JX_ind, start=svR_jx)
+overview(srBH_jx)
+#not significant here 
+
+#visualize the model fit
+x=seq(0,5, length.out=999) #many S for predictions
+pR <- BH(x, a=coef(srBH_jx)) #predicted mean R for the values of S using the coefficients of the fitted model above (srRK_ap)
+xlmts=range(c(x,JX_ind$adult)) #make xlmts on the plot
+plot(yoy~adult, data=JX_ind, xlim=xlmts) #plot 
+lines(pR~x, lwd=2) #add the line of the predicted mean R
+
+##### Density Independent
+ind <- srFuns("independence")
+svI <- srStarts(yoy~adult, data=JX_ind, type= "independence")
+srI <- nls(logyoy~log(ind(adult,a)), data=JX_ind, start=svI)
+
+#test whether density independent are better than either 
+extraSS(srI, com=srRK_jx) #independent is better
+extraSS(srI, com=srBH_jx) #independent is better
+
+#test whether models are better
+AIC(srBH_jx, srRK_jx)  #Ricker is better. But still isnt good. 
+
+#both are shit
+#write.csv(data.frame(residuals(srBH_jx)) %>% mutate(year = c(2001:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_BH.csv")
+#write.csv(data.frame(residuals(srRK_jx)) %>% mutate(year = c(2001:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_RK.csv")
 
 # IR STOCK RECRUITMENT CURVE FITTING #####
 ####Ricker
@@ -4077,57 +5125,9 @@ extraSS(srI, com=srBH_ir) #bh is better but its not significant
 #test whether models are better
 AIC(srBH_tb, srRK_tb)  #Ricker is better. But still isnt good. 
 
-#not great but exporting them anyway
-write.csv(data.frame(residuals(srBH_ir)) %>% mutate(year = c(1997:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_BH.csv")
-write.csv(data.frame(residuals(srRK_ir)) %>% mutate(year = c(1997:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_RK.csv")
-
-#JX STOCK RECRUITMENT CURVE FITTING ####
-####Ricker
-srStarts(yoy ~ adult, data=JX_ind, type="Ricker") #determine starting values 
-svR_jx <- list(a=1.2, b=103) #putting starting values into a named list for later use
-RK <- srFuns("Ricker") #define stock recruit function that ill be using 
-srRK_jx <- nls(logyoy~log(RK(adult,a,b)), data=JX_ind, start=svR_jx) #stock recruitment function with multiplicative errors is fit with nls 
-overview(srRK_jx) #produces parameter estimates, confidence intervals, Residual sums squares
-#not significant here 
-
-#visualize the model fit
-x=seq(0,5, length.out=999) #many S for predictions
-pR <- RK(x, a=coef(srRK_jx)) #predicted mean R for the values of S using the coefficients of the fitted model above (srRK_ap)
-xlmts=range(c(x,JX_ind$adult)) #make xlmts on the plot
-plot(yoy~adult, data=JX_ind, xlim=xlmts) #plot 
-lines(pR~x, lwd=2) #add the line of the predicted mean R
-
-##### Beverton Holt 
-srStarts(yoy~adult,data=JX_ind, type="BevertonHolt")  #determine starting values
-svR_jx <- list(a=0.63, b=40)
-BH <- srFuns("BevertonHolt")
-srBH_jx <- nls(logyoy~log(BH(adult,a,b)), data=JX_ind, start=svR_jx)
-overview(srBH_jx)
-#not significant here 
-
-#visualize the model fit
-x=seq(0,5, length.out=999) #many S for predictions
-pR <- BH(x, a=coef(srBH_jx)) #predicted mean R for the values of S using the coefficients of the fitted model above (srRK_ap)
-xlmts=range(c(x,JX_ind$adult)) #make xlmts on the plot
-plot(yoy~adult, data=JX_ind, xlim=xlmts) #plot 
-lines(pR~x, lwd=2) #add the line of the predicted mean R
-
-##### Density Independent
-ind <- srFuns("independence")
-svI <- srStarts(yoy~adult, data=JX_ind, type= "independence")
-srI <- nls(logyoy~log(ind(adult,a)), data=JX_ind, start=svI)
-
-#test whether density independent are better than either 
-extraSS(srI, com=srRK_jx) #independent is better
-extraSS(srI, com=srBH_jx) #independent is better
-
-#test whether models are better
-AIC(srBH_jx, srRK_jx)  #Ricker is better. But still isnt good. 
-
-#not great but exporting them anyway
-write.csv(data.frame(residuals(srBH_jx)) %>% mutate(year = c(2001:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_BH.csv")
-write.csv(data.frame(residuals(srRK_jx)) %>% mutate(year = c(2001:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_RK.csv")
-
+#Ricker is ok but continuity not going to export because I didn't export the others.... 
+#write.csv(data.frame(residuals(srBH_ir)) %>% mutate(year = c(1997:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_BH.csv")
+#write.csv(data.frame(residuals(srRK_ir)) %>% mutate(year = c(1997:2015)), "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/ap_resid_RK.csv")
 
 
 ####OLD #######################
@@ -4353,4 +5353,181 @@ for (i in 1:num.yr) {
 }
 Mean_IR <- df %>% cbind(LSM_ir.pos$year)
 colnames(Mean_IR) <- c("Mean", "SD", "Median", "MAD", "2.5%", "97.5%", "Year")
+
+# OLD _ CREATE INDEX WITH MONTE CARLO_ADULT #####
+#DO NOT DO THIS. THe standard errors of the lsmeans are fucked (can't figure out how to get them to a reasonable range)
+# so I'm just going to use the lsmeans estimates and sort of ignore the standard error for the adult
+#I only need the adult series to fit the curves so I'm giving up on figuring out the problems
+
+
+# creating the index through Monte Carlo simulations
+# Technically don't have to if you just want the estimates and the standard errors. 
+#Monte Carlo simulations are necessary here because its the only way to incorporate the lsmeans error into the estimate and 
+#then determine CV, and 95% conf intervals. Without a distribution you can't get to the confidence intervals which are what people actually care about. 
+# This is borrowed from tuning_index_update.R from Hogfish2017 at FWRI. This monte carlo method seems standard among the group. 
+
+# # AP Monte Carlo 
+# #making an empty matrix to fill with results 
+# num.yr <- length(estimate.APad$year)
+# index.dist <- matrix(data=NA,nrow=num.yr,ncol=8) 
+# num.iter=10000
+# 
+# #build the random distribution (i.e the random deviates)
+# for (i in 1:num.yr) {
+#   rand.1    <- qt(runif(num.iter,0.001,0.999),sample.sizeAPad$num.trips) 
+#   
+#   #create the distribution of the data 
+#   APdist <- estimate.APad$lsmean[i] + estimate.APad$SE[i] * rand.1 
+#   
+#   index.dist[i,1] <- mean(APdist) #take the mean of the dist (aka temp)
+#   index.dist[i,2] <- sd(APdist) #take the sd of the dist
+#   index.dist[i,3] <- sd(APdist)/mean(APdist) #create CV
+#   index.dist[i,4:8] <- quantile(APdist,probs=c(0.025,0.25,0.50,0.75,0.975))
+# }
+# Upper        <- index.dist[ ,8] - index.dist[ ,7]
+# Lower        <- index.dist[ ,5] - index.dist[ ,4]
+# NominalMean  = as.vector(tapply(ap.ad$number, ap.ad$year, mean))
+# NominalSD    = as.vector(tapply(ap.ad$number, ap.ad$year, sd))
+# NominalCV    = NominalSD /NominalMean
+# APadindex <- as.data.frame(cbind(sample.sizeAPad, index.dist, Upper, Lower, NominalMean, NominalSD, NominalCV ))
+# names(APadindex) <- c("year","Total.num.trips","Mean","std.dev", "CV","Low.95","Qtr.1","Median","Qtr.3","Up.95","Upper",
+#                     "Lower", "NominalMean", "NominalSD", "NominalCV" )
+# APadindex$year = as.numeric(APadindex$year)
+# 
+# # CK Monte Carlo
+# #making an empty matrix to fill with results 
+# num.yr <- length(estimate.CKad$year)
+# index.dist <- matrix(data=NA,nrow=num.yr,ncol=8) 
+# num.iter=10000
+# 
+# #build the random distribution (i.e the random deviates)
+# for (i in 1:num.yr) {
+#   rand.1    <- qt(runif(num.iter,0.001,0.999),sample.sizeCKad$num.trips) 
+#   
+#   #create the distribution of the data 
+#   CKdist <- estimate.CKad$lsmean[i] + estimate.CKad$SE[i] * rand.1 
+#   
+#   index.dist[i,1] <- mean(CKdist) #take the mean of the dist (aka temp)
+#   index.dist[i,2] <- sd(CKdist) #take the sd of the dist
+#   index.dist[i,3] <- sd(CKdist)/mean(CKdist) #create CV
+#   index.dist[i,4:8] <- quantile(CKdist,probs=c(0.025,0.25,0.50,0.75,0.975))
+# }
+# Upper        <- index.dist[ ,8] - index.dist[ ,7]
+# Lower        <- index.dist[ ,5] - index.dist[ ,4]
+# NominalMean  = as.vector(tapply(ck.ad$number, ck.ad$year, mean))
+# NominalSD    = as.vector(tapply(ck.ad$number, ck.ad$year, sd))
+# NominalCV    = NominalSD /NominalMean
+# CKadindex <- as.data.frame(cbind(sample.sizeCKad, index.dist, Upper, Lower, NominalMean, NominalSD, NominalCV ))
+# names(CKadindex) <- c("year","Total.num.trips","Mean","std.dev", "CV","Low.95","Qtr.1","Median","Qtr.3","Up.95","Upper",
+#                     "Lower", "NominalMean", "NominalSD", "NominalCV" )
+# CKadindex$year = as.numeric(CKadindex$year)
+# 
+# # TB Monte Carlo
+# num.yr <- length(estimate.TBad$year)
+# index.dist <- matrix(data=NA,nrow=num.yr,ncol=8) 
+# num.iter=10000
+# 
+# #build the random distribution (i.e the random deviates)
+# for (i in 1:num.yr) {
+#   rand.1    <- qt(runif(num.iter,0.001,0.999),sample.sizeTBad$num.trips) 
+#   
+#   #create the distribution of the data 
+#   TBdist <- estimate.TBad$lsmean[i] + estimate.TBad$SE[i] * rand.1 
+#   
+#   index.dist[i,1] <- mean(TBdist) #take the mean of the dist (aka temp)
+#   index.dist[i,2] <- sd(TBdist) #take the sd of the dist
+#   index.dist[i,3] <- sd(TBdist)/mean(TBdist) #create CV
+#   index.dist[i,4:8] <- quantile(TBdist,probs=c(0.025,0.25,0.50,0.75,0.975))
+# }
+# Upper        <- index.dist[ ,8] - index.dist[ ,7]
+# Lower        <- index.dist[ ,5] - index.dist[ ,4]
+# NominalMean  = as.vector(tapply(tb.ad$number, tb.ad$year, mean))
+# NominalSD    = as.vector(tapply(tb.ad$number, tb.ad$year, sd))
+# NominalCV    = NominalSD /NominalMean
+# TBadindex <- as.data.frame(cbind(sample.sizeTBad, index.dist, Upper, Lower, NominalMean, NominalSD, NominalCV ))
+# names(TBadindex) <- c("year","Total.num.trips","Mean","std.dev", "CV","Low.95","Qtr.1","Median","Qtr.3","Up.95","Upper",
+#                     "Lower", "NominalMean", "NominalSD", "NominalCV" )
+# TBadindex$year = as.numeric(TBadindex$year)
+# 
+# # CH Monte Carlo
+# num.yr <- length(estimate.CHad$year)
+# index.dist <- matrix(data=NA,nrow=num.yr,ncol=8) 
+# num.iter=10000
+# 
+# #build the random distribution (i.e the random deviates)
+# for (i in 1:num.yr) {
+#   rand.1    <- qt(runif(num.iter,0.001,0.999),sample.sizeCHad$num.trips) 
+#   
+#   #create the distribution of the data 
+#   CHdist <- estimate.CHad$lsmean[i] + estimate.CHad$SE[i] * rand.1 
+#   
+#   index.dist[i,1] <- mean(CHdist) #take the mean of the dist (aka temp)
+#   index.dist[i,2] <- sd(CHdist) #take the sd of the dist
+#   index.dist[i,3] <- sd(CHdist)/mean(CHdist) #create CV
+#   index.dist[i,4:8] <- quantile(CHdist,probs=c(0.025,0.25,0.50,0.75,0.975))
+# }
+# Upper        <- index.dist[ ,8] - index.dist[ ,7]
+# Lower        <- index.dist[ ,5] - index.dist[ ,4]
+# NominalMean  = as.vector(tapply(ch.ad$number, ch.ad$year, mean))
+# NominalSD    = as.vector(tapply(ch.ad$number, ch.ad$year, sd))
+# NominalCV    = NominalSD /NominalMean
+# CHadindex <- as.data.frame(cbind(sample.sizeCHad, index.dist, Upper, Lower, NominalMean, NominalSD, NominalCV ))
+# names(CHadindex) <- c("year","Total.num.trips","Mean","std.dev", "CV","Low.95","Qtr.1","Median","Qtr.3","Up.95","Upper",
+#                     "Lower", "NominalMean", "NominalSD", "NominalCV" )
+# CHadindex$year = as.numeric(CHadindex$year)
+# 
+# # JX Monte Carlo 
+# num.yr <- length(estimate.JXad$year)
+# index.dist <- matrix(data=NA,nrow=num.yr,ncol=8) 
+# num.iter=10000
+# 
+# #build the random distribution (i.e the random deviates)
+# for (i in 1:num.yr) {
+#   rand.1    <- qt(runif(num.iter,0.001,0.999),sample.sizeJXad$num.trips) 
+#   
+#   #create the distribution of the data 
+#   JXdist <- estimate.JXad$lsmean[i] + estimate.JXad$SE[i] * rand.1 
+#   
+#   index.dist[i,1] <- mean(JXdist) #take the mean of the dist (aka temp)
+#   index.dist[i,2] <- sd(JXdist) #take the sd of the dist
+#   index.dist[i,3] <- sd(JXdist)/mean(JXdist) #create CV
+#   index.dist[i,4:8] <- quantile(JXdist,probs=c(0.025,0.25,0.50,0.75,0.975))
+# }
+# Upper        <- index.dist[ ,8] - index.dist[ ,7]
+# Lower        <- index.dist[ ,5] - index.dist[ ,4]
+# NominalMean  = as.vector(tapply(jx.fl$number, jx.fl$year, mean))
+# NominalSD    = as.vector(tapply(jx.fl$number, jx.fl$year, sd))
+# NominalCV    = NominalSD /NominalMean
+# JXadindex <- as.data.frame(cbind(sample.sizeJXad, index.dist, Upper, Lower, NominalMean, NominalSD, NominalCV ))
+# names(JXadindex) <- c("year","Total.num.trips","Mean","std.dev", "CV","Low.95","Qtr.1","Median","Qtr.3","Up.95","Upper",
+#                     "Lower", "NominalMean", "NominalSD", "NominalCV" )
+# JXadindex$year = as.numeric(JXadindex$year)
+# 
+# # IR Monte Carlo
+# 
+# num.yr <- length(estimate.IRad$year)
+# index.dist <- matrix(data=NA,nrow=num.yr,ncol=8) 
+# num.iter=10000
+# 
+# #build the random distribution (i.e the random deviates)
+# for (i in 1:num.yr) {
+#   rand.1    <- qt(runif(num.iter,0.001,0.999),sample.sizeIRad$num.trips) 
+#   
+#   #create the distribution of the data 
+#   IRdist <- estimate.IRad$lsmean[i] + estimate.IRad$SE[i] * rand.1 
+#   
+#   index.dist[i,1] <- mean(IRdist) #take the mean of the dist (aka temp)
+#   index.dist[i,2] <- sd(IRdist) #take the sd of the dist
+#   index.dist[i,3] <- sd(IRdist)/mean(IRdist) #create CV
+#   index.dist[i,4:8] <- quantile(IRdist,probs=c(0.025,0.25,0.50,0.75,0.975))
+# }
+# Upper        <- index.dist[ ,8] - index.dist[ ,7]
+# Lower        <- index.dist[ ,5] - index.dist[ ,4]
+# NominalMean  = as.vector(tapply(ir.ad$number, ir.ad$year, mean))
+# NominalSD    = as.vector(tapply(ir.ad$number, ir.ad$year, sd))
+# NominalCV    = NominalSD /NominalMean
+# IRadindex <- as.data.frame(cbind(sample.sizeIRad, index.dist, Upper, Lower, NominalMean, NominalSD, NominalCV ))
+# names(IRadindex) <- c("year","Total.num.trips","Mean","std.dev", "CV","Low.95","Qtr.1","Median","Qtr.3","Up.95","Upper",
+#                     "Lower", "NominalMean", "NominalSD", "NominalCV" )
+# IRadindex$year = as.numeric(IRadindex$year)
 
