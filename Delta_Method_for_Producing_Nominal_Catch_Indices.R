@@ -1391,7 +1391,7 @@ AIC(ch, ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch8)
 N<-nrow(ch.fl)
 EZIP <- resid(ch,type="pearson")
 Dispersion <- sum(EZIP^2)/(N-65)	#==>be sure to change value for degrees of freedom based on summary output
-Dispersion #1.24.. improvement from 1.52 with negative binomial 
+Dispersion #1.22.. improvement from 1.52 with negative binomial 
 
 BestModelCH_zinb <- ch
 
@@ -2304,7 +2304,7 @@ lrtest(j, j6)
 lrtest(j, j7)
 
 #all remaining covariates are significant
-AIC(j, j1, j2, j3, j4, j5,j6, j7, j8, j9) #AIC says j is best
+AIC(j, j1, j2, j3, j4, j5,j6, j7) #AIC says j is best
 
 BestModelJX_zanb <- j
 
@@ -2418,14 +2418,14 @@ sum((resid(BestModelJX_zanb,type="pearson"))^2)/(N-71) > 1+3*(sqrt(2/(N-71)))
 #good fit! 
 
 #7. Compare ZINB to ZANB ####
-AIC(BestModelAP, BestModelAP_zanb) #ZANB is better
-AIC(BestModelCK, BestModelCK_zanb) #ZINB is better
-AIC(BestModelTB, BestModelTB_zanb) #ZINB is better
-AIC(BestModelCH, BestModelCH_zanb) #ZINB is better
-AIC(BestModelJX, BestModelJX_zanb) #ZINB is better
-AIC(BestModelIR, BestModelIR_zanb) #ZINB is better
+AIC(apP, BestModelAP_zinb, BestModelAP_zanb) #ZANB is better
+AIC(ckP,BestModelCK_zinb, BestModelCK_zanb) #ZINB is better
+AIC(tbP, BestModelTB_zinb, BestModelTB_zanb) #ZINB is better
+AIC(chP, BestModelCH_zinb, BestModelCH_zanb) #ZANB is better
+AIC(jxP, BestModelJX_zinb, BestModelJX_zanb) #ZINB is better
+AIC(irP, BestModelIR_zinb, BestModelIR_zanb) #ZINB is better
 
-#for every case except for AP, the zero inflated model is better. 
+#for every case except for AP and CH, the zero inflated model is better. 
 
 ##### MODEL SELECTION BINARY w/ DROP1 command_YOY ######
 # # pg 253 Zuur
@@ -2556,10 +2556,10 @@ estimate.TB <- as.data.frame(transform(summary(lsm.TB))) %>% select(year, lsmean
 #lsmeans with alternative model type (ZANB for TB)
 alt.TB <- as.data.frame(transform(summary(lsmeans(BestModelTB_zanb,"year", data = tb.fl, mode="response"))))  %>% select(year, lsmean, SE) %>% mutate(alternative.mean=lsmean) %>% select(-lsmean)
 
-lsm.CH       <- lsmeans(BestModelCH_zinb, "year", data = ch.fl, mode="response")
+lsm.CH       <- lsmeans(BestModelCH_zanb, "year", data = ch.fl, mode="response")
 estimate.CH <- as.data.frame(transform(summary(lsm.CH))) %>% select(year, lsmean, SE) 
 #lsmeans with alternative model type (ZANB for CH)
-alt.CH <- as.data.frame(transform(summary(lsmeans(BestModelCH_zanb,"year", data = ch.fl, mode="response"))))  %>% select(year, lsmean, SE) %>% mutate(alternative.mean=lsmean) %>% select(-lsmean)
+alt.CH <- as.data.frame(transform(summary(lsmeans(BestModelCH_zinb,"year", data = ch.fl, mode="response"))))  %>% select(year, lsmean, SE) %>% mutate(alternative.mean=lsmean) %>% select(-lsmean)
 
 lsm.JX       <- lsmeans(BestModelJX_zinb, "year", data = jx.fl, mode="response")
 estimate.JX <- as.data.frame(transform(summary(lsm.JX))) %>% select(year, lsmean, SE) 
@@ -2799,13 +2799,25 @@ write.csv(IRindex, "U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndi
 library(reshape2)
 library(ggplot2)
 
+
+APindex <- read.csv("U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/AP_yoy_index.csv", header=T)
+CKindex <- read.csv("U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/CK_yoy_index.csv", header=T)
+TBindex <- read.csv("U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/TB_yoy_index.csv", header=T)
+CHindex <- read.csv("U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/CH_yoy_index.csv", header=T)
+IRindex <- read.csv("U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/IR_yoy_index.csv", header=T)
+JXindex <- read.csv("U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices/JX_yoy_index.csv", header=T)
+
+
+
+                      
+                      
 #add on the alternative index 
-APred <- APindex[,c(1,3,13)] %>% cbind(alt.AP$alternative.mean) %>% melt(id=c("year"))
-CKred <- CKindex[,c(1,3,13)] %>% cbind(alt.CK$alternative.mean) %>% melt(id=c("year"))
-TBred <- TBindex[,c(1,3,13)] %>% cbind(alt.TB$alternative.mean) %>% melt(id=c("year"))
-CHred <- CHindex[,c(1,3,13)] %>% cbind(alt.CH$alternative.mean) %>% melt(id=c("year"))
-JXred <- JXindex[,c(1,3,13)] %>% cbind(alt.JX$alternative.mean) %>% melt(id=c("year"))
-IRred <- IRindex[,c(1,3,13)] %>% cbind(alt.IR$alternative.mean) %>% melt(id=c("year"))
+APred <- APindex[,c(2,4,14)] %>% cbind(alt.AP$alternative.mean) %>% melt(id=c("year"))
+CKred <- CKindex[,c(2,4,14)] %>% cbind(alt.CK$alternative.mean) %>% melt(id=c("year"))
+TBred <- TBindex[,c(2,4,14)] %>% cbind(alt.TB$alternative.mean) %>% melt(id=c("year"))
+CHred <- CHindex[,c(2,4,14)] %>% cbind(alt.CH$alternative.mean) %>% melt(id=c("year"))
+JXred <- JXindex[,c(2,4,14)] %>% cbind(alt.JX$alternative.mean) %>% melt(id=c("year"))
+IRred <- IRindex[,c(2,4,14)] %>% cbind(alt.IR$alternative.mean) %>% melt(id=c("year"))
 
 
 library(ggplot2)

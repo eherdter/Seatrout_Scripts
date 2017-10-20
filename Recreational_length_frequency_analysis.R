@@ -48,30 +48,30 @@ mrip <- read_sas("mrip_lens_20042015.sas7bdat")
 # chose data from 2000 on because of major regulatory changes 
 
 mrfss_AP <- subset(read_sas("mrfss_lens_8115.sas7bdat"), CNTY %in% c(5,33,37,45,65,77,91,113,123,129,131,133) & YEAR>=2000 & YEAR <= 2003) %>% mutate(tl = (1.00467*flmm+0.04850)/10) %>% filter(!is.na(tl)) %>% mutate(bay=rep("AP",2234)) 
-  mrfss_AP <- subset(mrfss_AP, select=c(tl, bay))
+  mrfss_AP <- droplevels(subset(mrfss_AP, select=c(tl, bay)))
 mrfss_TB <- subset(read_sas("mrfss_lens_8115.sas7bdat"), CNTY %in% c(53,101,57,103,81) & YEAR>=2000 & YEAR<= 2003) %>% mutate(tl = (1.00467*flmm+0.04850)/10) %>% filter(!is.na(tl)) %>% mutate(bay=rep("TB",1741))
-  mrfss_TB <- subset(mrfss_TB, select=c(tl, bay))
+  mrfss_TB <- droplevels(subset(mrfss_TB, select=c(tl, bay)))
 mrfss_CH <- subset(read_sas("mrfss_lens_8115.sas7bdat"), CNTY %in% c(27,115,7,15,71,21,87,51) & YEAR>=2000 & YEAR<= 2003) %>% mutate(tl = (1.00467*flmm+0.04850)/10) %>% filter(!is.na(tl))%>% mutate(bay=rep("CH",1085))
-  mrfss_CH <- subset(mrfss_CH, select=c(tl, bay))
+  mrfss_CH <- droplevels(subset(mrfss_CH, select=c(tl, bay)))
 mrfss_CK <- subset(read_sas("mrfss_lens_8115.sas7bdat"), CNTY %in% c(75,29,17,1) & YEAR>=2000 & YEAR<= 2003) %>% mutate(tl = (1.00467*flmm+0.04850)/10) %>% filter(!is.na(tl))%>% mutate(bay=rep("CK",1225))
-  mrfss_CK <- subset(mrfss_CK, select=c(tl, bay))
+  mrfss_CK <- droplevels(subset(mrfss_CK, select=c(tl, bay)))
 mrfss_JX <- subset(read_sas("mrfss_lens_8115.sas7bdat"), CNTY %in% c(19,31,35,89,107,109) & YEAR>=2000 & YEAR<= 2003) %>% mutate(tl = (1.00467*flmm+0.04850)/10) %>% filter(!is.na(tl))%>% mutate(bay=rep("JX",291))
-  mrfss_JX <- subset(mrfss_JX, select=c(tl, bay))
+  mrfss_JX <- droplevels(subset(mrfss_JX, select=c(tl, bay)))
 mrfss_IR <- subset(read_sas("mrfss_lens_8115.sas7bdat"), CNTY %in% c(9,11,25,61,85,99,111,127) & YEAR>=2000 & YEAR <=2003) %>% mutate(tl = (1.00467*flmm+0.04850)/10) %>% filter(!is.na(tl))%>% mutate(bay=rep("IR",812))
-  mrfss_IR <- subset(mrfss_IR, select=c(tl, bay))
+  mrfss_IR <- droplevels(subset(mrfss_IR, select=c(tl, bay)))
   
 mrip_AP <- subset(read_sas("mrip_lens_20042015.sas7bdat"), CNTY %in% c(5,33,37,45,65,77,91,113,123,129,131,133)) %>% mutate(tl = (1.00467*LNGTH+0.04850)/10) %>% filter(!is.na(tl)) %>% mutate(bay=rep("AP",9265))
-  mrip_AP <- subset(mrip_AP, select=c(tl, bay))
+  mrip_AP <- droplevels(subset(mrip_AP, select=c(tl, bay)))
 mrip_TB <- subset(read_sas("mrip_lens_20042015.sas7bdat"), CNTY %in% c(53,101,57,103,81)) %>% mutate(tl = (1.00467*LNGTH+0.04850)/10) %>% filter(!is.na(tl)) %>% mutate(bay=rep("TB",8220))
-  mrip_TB <- subset(mrip_TB, select=c(tl, bay))
+  mrip_TB <- droplevels(subset(mrip_TB, select=c(tl, bay)))
 mrip_CH <- subset(read_sas("mrip_lens_20042015.sas7bdat"), CNTY %in% c(27,115,7,15,71,21,87,51)) %>% mutate(tl = (1.00467*LNGTH+0.04850)/10) %>% filter(!is.na(tl))%>% mutate(bay=rep("CH",4832))
-  mrip_CH <- subset(mrip_CH, select=c(tl, bay))
+  mrip_CH <- droplevels(subset(mrip_CH, select=c(tl, bay)))
 mrip_CK <- subset(read_sas("mrip_lens_20042015.sas7bdat"), CNTY %in% c(75,29,17,1)) %>% mutate(tl = (1.00467*LNGTH+0.04850)/10) %>% filter(!is.na(tl))%>% mutate(bay=rep("CK",5613))
-  mrip_CK <- subset(mrip_CK, select=c(tl, bay))
+  mrip_CK <- droplevels(subset(mrip_CK, select=c(tl, bay)))
 mrip_JX <- subset(read_sas("mrip_lens_20042015.sas7bdat"), CNTY %in% c(19,31,35,89,107,109)) %>% mutate(tl = (1.00467*LNGTH+0.04850)/10) %>% filter(!is.na(tl))%>% mutate(bay=rep("JX",1510))
-  mrip_JX <- subset(mrip_JX, select=c(tl, bay))
+  mrip_JX <- droplevels(subset(mrip_JX, select=c(tl, bay)))
 mrip_IR <- subset(read_sas("mrip_lens_20042015.sas7bdat"), CNTY %in% c(9,11,25,61,85,99,111,127)) %>% mutate(tl = (1.00467*LNGTH+0.04850)/10) %>% filter(!is.na(tl))%>% mutate(bay=rep("IR",2595))
-  mrip_IR <- subset(mrip_IR, select=c(tl, bay))
+  mrip_IR <- droplevels(subset(mrip_IR, select=c(tl, bay)))
 
 # COMBINE MRFSS And MRIP DATA
 
@@ -84,6 +84,8 @@ IR <- rbind(mrfss_IR, mrip_IR)
 
 All= rbind(AP, TB, CK, CH, JX, IR)
 All$bay <- as.factor(All$bay)
+All <- na.omit(All)
+
 All_sum <- summarise(group_by(All, bay), N = length(tl), mean_tl = mean(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(tl))))
 
 
@@ -265,21 +267,21 @@ ALL$bay <- as.factor(ALL$bay)
 (ALL_lf <- xtabs(~bay+lcat5, data=ALL))
 
 #multiple comparisons are conducted by isolating pairs of groups, accumulating p-values for each pair and then adjusting the p values for multiple comparisons
-ps_ALL<- c(chisq.test(ALL_lf[1:2,])$p.value, #Ap to CH
-            chisq.test(ALL_lf[1:3,])$p.value, #AP to CK
-            chisq.test(ALL_lf[1:4,])$p.value, #AP to IR
-            chisq.test(ALL_lf[1:5,])$p.value, #AP to JX
-            chisq.test(ALL_lf[1:6,])$p.value, #AP to TB
-            chisq.test(ALL_lf[2:3,])$p.value, #CH to CK
-            chisq.test(ALL_lf[2:4,])$p.value, #CH to IR
-            chisq.test(ALL_lf[2:5,])$p.value, #CH to JX
-            chisq.test(ALL_lf[2:6,])$p.value, #CH to TB
-            chisq.test(ALL_lf[3:4,])$p.value, #CK to IR
-            chisq.test(ALL_lf[3:5,])$p.value, #CK to JX
-            chisq.test(ALL_lf[3:6,])$p.value, #CK to TB
-            chisq.test(ALL_lf[4:5,])$p.value, #IR to JX
-            chisq.test(ALL_lf[4:6,])$p.value, #IR to TB
-            chisq.test(ALL_lf[5:6,])$p.value) #JX to TB
+ps_ALL<- c(chisq.test(ALL_lf[1:2,])$p.value, #Ap to CH X-squared = 100.06, df = 6, p-value < 0.00000000000000022
+            chisq.test(ALL_lf[1:3,])$p.value, #AP to CK X-squared = 152.07, df = 12, p-value < 0.00000000000000022
+            chisq.test(ALL_lf[1:4,])$p.value, #AP to IR X-squared = 702.63, df = 18, p-value < 0.00000000000000022
+            chisq.test(ALL_lf[1:5,])$p.value, #AP to JX X-squared = 773.19, df = 24, p-value < 0.00000000000000022
+            chisq.test(ALL_lf[1:6,])$p.value, #AP to TB X-squared = 954.13, df = 30, p-value < 0.00000000000000022
+            chisq.test(ALL_lf[2:3,])$p.value, #CH to CK X-squared = 75.102, df = 6, p-value = 0.00000000000003656
+            chisq.test(ALL_lf[2:4,])$p.value, #CH to IR X-squared = 555.33, df = 12, p-value < 0.00000000000000022
+            chisq.test(ALL_lf[2:5,])$p.value, #CH to JX X-squared = 655.97, df = 18, p-value < 0.00000000000000022
+            chisq.test(ALL_lf[2:6,])$p.value, #CH to TB X-squared = 769.09, df = 24, p-value < 0.00000000000000022
+            chisq.test(ALL_lf[3:4,])$p.value, #CK to IR X-squared = 481.84, df = 6, p-value < 0.00000000000000022
+            chisq.test(ALL_lf[3:5,])$p.value, #CK to JX X-squared = 566.06, df = 12, p-value < 0.00000000000000022
+            chisq.test(ALL_lf[3:6,])$p.value, #CK to TB X-squared = 723.83, df = 18, p-value < 0.00000000000000022
+            chisq.test(ALL_lf[4:5,])$p.value, #IR to JX X-squared = 174.63, df = 6, p-value < 0.00000000000000022
+            chisq.test(ALL_lf[4:6,])$p.value, #IR to TB X-squared = 397.14, df = 12, p-value < 0.00000000000000022
+            chisq.test(ALL_lf[5:6,])$p.value) #JX to TB X-squared = 145.54, df = 6, p-value < 0.00000000000000022
 
 p.adjust(ps_ALL)
 
@@ -363,12 +365,5 @@ length_IR <- ggplot(IR, aes(x=tl))+
   annotate("text", x=60, y= .13, label="IR", size=10)
 
 
-# ONE WAY ANOVA to determine if there are significant differences among estuary-specific mean lengths ####
-#determine if there is significnat difference in  length among estuaries
-
-plot(tl~bay, data=All)
-results=aov(tl~bay, data=All)
-summary(results)
-TukeyHSD(results, conf.level=0.95)
 
 

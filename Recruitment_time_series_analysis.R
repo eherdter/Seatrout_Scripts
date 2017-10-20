@@ -24,7 +24,7 @@ library(MARSS) #for DFA
 library(dplyr)
 
 setwd("~/Desktop/PhD project/Projects/Seatrout/Data/Indices/DeltaMethod Indices")
-setwd("U:/PhD_projectfiles/Exported_R_Datafiles/Indices/DeltaMethod_Indices")
+setwd("U:/PhD_projectfiles/Exported_R_Datafiles/Indices/UpdatedIndices")
 
 ##### 1. IMPORT INDICES #################################
 # IMPORT INDICES
@@ -32,41 +32,41 @@ setwd("U:/PhD_projectfiles/Exported_R_Datafiles/Indices/DeltaMethod_Indices")
 # and select the year, assign bay name,
 # scale each index (z score, 0 mean 1 unit variance)
 
-AP<- subset(read.csv("AP_yoy_index.csv", header=T), Year>1998, select=c(Year, Mean)) %>% mutate(Est= rep("AP",17)) #1997 seems like a crazy outlier so I removed it becuse it was affecting the scaled mean values 
-  names(AP) <- c("Year", "Mean", "Est") #assign names, est as in estuary not estimate
+AP<- subset(read.csv("AP_yoy_index.csv", header=T), year>1998, select=c(year, Mean)) %>% mutate(Est= rep("AP",17)) #1997 seems like a crazy outlier so I removed it becuse it was affecting the scaled mean values 
+  names(AP) <- c("year", "Mean", "Est") #assign names, est as in estuary not estimate
   AP$Est <- as.factor(AP$Est) #turn bay into a factor
  AP$Mean_scaled<-  as.numeric(scale(AP$Mean, scale=TRUE)) #z-score (mean= 0, var=1), as.numeric is important for full_join command below. doesnt like it when it isnt a true numeric
   # ap does not have a riv component because of so many 1 or 0 positive trips in the FIM data. The csv is available but its mostly NaNs
 
- CK<- subset(read.csv("CK_yoy_index.csv", header=T), select=c(Year, Mean)) %>% mutate(Est= rep("CK",20)) 
- names(CK) <- c("Year", "Mean", "Est") #assign names, est as in estuary not estimate
+ CK<- subset(read.csv("CK_yoy_index.csv", header=T), select=c(year, Mean)) %>% mutate(Est= rep("CK",20)) 
+ names(CK) <- c("year", "Mean", "Est") #assign names, est as in estuary not estimate
  CK$Est <- as.factor(CK$Est) #turn bay into a factor
  CK$Mean_scaled<-  as.numeric(scale(CK$Mean, scale=TRUE)) #z-score (mean= 0, var=1), as.numeric is important for full_join command below. doesnt like it when it isnt a true numeric
  
- TB<- subset(read.csv("TB_yoy_index.csv", header=T), select=c(Year, Mean)) %>% mutate(Est= rep("TB",27)) 
- names(TB) <- c("Year", "Mean", "Est") #assign names, est as in estuary not estimate
+ TB<- subset(read.csv("TB_yoy_index.csv", header=T), select=c(year, Mean)) %>% mutate(Est= rep("TB",27)) 
+ names(TB) <- c("year", "Mean", "Est") #assign names, est as in estuary not estimate
  TB$Est <- as.factor(TB$Est) #turn bay into a factor
  TB$Mean_scaled<-  as.numeric(scale(TB$Mean, scale=TRUE)) #z-score (mean= 0, var=1), as.numeric is important for full_join command below. doesnt like it when it isnt a true numeric
  
 
- CH<- subset(read.csv("CH_yoy_index.csv", header=T), select=c(Year, Mean)) %>% mutate(Est= rep("CH",27)) 
- names(CH) <- c("Year", "Mean", "Est") #assign names, est as in estuary not estimate
+ CH<- subset(read.csv("CH_yoy_index.csv", header=T), select=c(year, Mean)) %>% mutate(Est= rep("CH",27)) 
+ names(CH) <- c("year", "Mean", "Est") #assign names, est as in estuary not estimate
  CH$Est <- as.factor(CH$Est) #turn bay into a factor
  CH$Mean_scaled<-  as.numeric(scale(CH$Mean, scale=TRUE)) #z-score (mean= 0, var=1), as.numeric is important for full_join command below. doesnt like it when it isnt a true numeric
  
- IR<- subset(read.csv("IR_yoy_index.csv", header=T), select=c(Year, Mean)) %>% mutate(Est= rep("IR",26)) 
- names(IR) <- c("Year", "Mean", "Est") #assign names, est as in estuary not estimate
+ IR<- subset(read.csv("IR_yoy_index.csv", header=T), select=c(year, Mean)) %>% mutate(Est= rep("IR",26)) 
+ names(IR) <- c("year", "Mean", "Est") #assign names, est as in estuary not estimate
  IR$Est <- as.factor(IR$Est) #turn bay into a factor
  IR$Mean_scaled<-  as.numeric(scale(IR$Mean, scale=TRUE)) #z-score (mean= 0, var=1), as.numeric is important for full_join command below. doesnt like it when it isnt a true numeric
  
 
- JX<- subset(read.csv("JX_yoy_index.csv", header=T), select=c(Year, Mean)) %>% mutate(Est= rep("JX",15)) 
- names(JX) <- c("Year", "Mean", "Est") #assign names, est as in estuary not estimate
+ JX<- subset(read.csv("JX_yoy_index.csv", header=T), select=c(year, Mean)) %>% mutate(Est= rep("JX",15)) 
+ names(JX) <- c("year", "Mean", "Est") #assign names, est as in estuary not estimate
  JX$Est <- as.factor(JX$Est) #turn bay into a factor
  JX$Mean_scaled<-  as.numeric(scale(JX$Mean, scale=TRUE)) #z-score (mean= 0, var=1), as.numeric is important for full_join command below. doesnt like it when it isnt a true numeric
  
 
-All <- rbind(AP,CH,CK,IR,JX, TB)
+All <- rbind(AP,CH,CK,IR,JX,TB)
 All_NW <- rbind(AP, CK)
 All_SW <- rbind(TB, CH)
 All_East <- rbind(IR, JX)
@@ -78,13 +78,13 @@ All_East <- rbind(IR, JX)
 # might do this with ggplot
 library(ggplot2)
 
-ggplot(All, aes(x=Year, y=Mean_scaled, group=Est)) + #color=est
-        #geom_line(aes(linetype=Est), size =.5)+ # make line types based on the different labels- this will be our workaround because in a few stps we will specify the first label (obserseved) be a blank line (therefore a scatter plot)
-        geom_line(aes(color=Est), size=0.5)+
-      geom_point(aes(color=Est), size=2) + #, color=bay))+ # groups the points together correctly and then gives them a unique shape them differently based on the line type 
-      ylab("LSMean estimate- YOY per haul- Scaled") +
-      xlab("Year")+ 
-  scale_y_continuous(limits=c(-2.5,4.5))+
+All_mean <- ggplot(All, aes(x=year, y=Mean, group=Est)) + #color=est
+  #geom_line(aes(linetype=Est), size =.5)+ # make line types based on the different labels- this will be our workaround because in a few stps we will specify the first label (obserseved) be a blank line (therefore a scatter plot)
+  geom_line(aes(color=Est), size=0.5)+
+  geom_point(aes(color=Est), size=2) + #, color=bay))+ # groups the points together correctly and then gives them a unique shape them differently based on the line type 
+  ylab("LSMean estimate- YOY per haul") +
+  xlab("Year")+ 
+  scale_y_continuous(limits=c(-0.5,8.5))+
   scale_x_continuous(limits=c(1989, 2015), breaks=seq(1989, 2015, 2))+
   scale_colour_discrete(name="Location")+
   theme(panel.grid.minor=element_blank(), 
@@ -97,14 +97,85 @@ ggplot(All, aes(x=Year, y=Mean_scaled, group=Est)) + #color=est
         plot.title=element_text(size=14))
 
 
+All_scaled <- ggplot(All, aes(x=year, y=Mean_scaled, group=Est)) + #color=est
+        #geom_line(aes(linetype=Est), size =.5)+ # make line types based on the different labels- this will be our workaround because in a few stps we will specify the first label (obserseved) be a blank line (therefore a scatter plot)
+        geom_line(aes(color=Est), size=0.5)+
+      geom_point(aes(color=Est), size=2) + #, color=bay))+ # groups the points together correctly and then gives them a unique shape them differently based on the line type 
+      ylab("LSMean estimate- YOY per haul- Scaled") +
+      xlab("Year")+ 
+  scale_y_continuous(limits=c(-2,4.5))+
+  scale_x_continuous(limits=c(1989, 2015), breaks=seq(1989, 2015, 2))+
+  scale_colour_discrete(name="Location")+
+  theme(panel.grid.minor=element_blank(), 
+        panel.grid.major=element_blank(), 
+        panel.background=element_rect(colour="black", fill="white"),
+        axis.title.x =element_text(colour="black"),
+        axis.text.x = element_text(colour="black"),
+        axis.title.y =element_text(colour="black"),
+        axis.text.y = element_text(colour="black"),
+        plot.title=element_text(size=14))
 
-ggplot(All_NW, aes(x=Year, y=Mean, group=Est)) + #color=est
+#multiplot function
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+  
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  
+  numPlots = length(plots)
+  
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                     ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+  
+  if (numPlots==1) {
+    print(plots[[1]])
+    
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+
+multiplot(All_mean, All_scaled, cols=1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ggplot(All_NW, aes(x=year, y=Mean, group=Est)) + #color=est
   #geom_line(aes(linetype=Est), size =.5)+ # make line types based on the different labels- this will be our workaround because in a few stps we will specify the first label (obserseved) be a blank line (therefore a scatter plot)
   geom_line(aes(color=Est), size=1)+
   geom_point(aes(color=Est), size=2.5) + #, color=bay))+ # groups the points together correctly and then gives them a unique shape them differently based on the line type 
   ylab("LSMean  #/haul") +
   xlab("Year")+ 
-  scale_y_continuous(limits=c(-0.5,2), breaks=seq(-0.5,2, 0.5))+
+  scale_y_continuous(limits=c(-0.5,5), breaks=seq(-0.5,5, 0.5))+
   scale_x_continuous(limits=c(1995, 2015), breaks=seq(1996, 2015, 3))+
   scale_colour_discrete(name="Location")+
   theme(panel.grid.minor=element_blank(), 
@@ -184,24 +255,37 @@ ggplot(JX, aes(x=Year, y=Mean, group=Est)) + #color=est
 
 
 #plot each index separately but have to turn year into numeric
+#also plotted in Delta_Method R script
 AP$Year <- as.numeric(AP$Year)
 
-plot(Mean~Year, data=AP, type="l")
-plot(Mean~Year, data=CK, type='l')
-plot(Mean~Year, data=TB, type='l')
-plot(Mean~Year, data=CH, type='l')
-plot(Mean~Year, data=JX, type='l')
-plot(Mean~Year, data=IR, type='l')
+
+plot(Mean~year, data=AP, type="l")
+plot(Mean_scaled~year, data=CK, type='l')
+plot(Mean~year, data=TB, type='l')
+plot(Mean~year, data=CH, type='l')
+plot(Mean~year, data=JX, type='l')
+plot(Mean~year, data=IR, type='l')
 
 #### 8. TEST INDICES FOR LINEAR TRENDS #####
-
-summary(lm(Mean ~ Year, data=AP))
-summary(lm(Mean ~ Year, data=CK))
-summary(lm(Mean ~ Year, data=TB))
-summary(lm(Mean ~ Year, data=CH))
-summary(lm(Mean ~ Year, data=JX))
-summary(lm(Mean ~ Year, data=IR))
+#some linear trends are present for only two estuaries. This may not matter in duture steps because the other steps are done with the scaled mean values
+summary(lm(Mean ~ year, data=AP))
+summary(lm(Mean ~ year, data=CK))
+summary(lm(Mean ~ year, data=TB))
+summary(lm(Mean ~ year, data=CH))
+summary(lm(Mean ~ year, data=JX))
+summary(lm(Mean ~ year, data=IR))
 #some have slight linear trends but the adjusted R squared values are really small <0.25 
+
+#test scaled indices for linear trends
+summary(lm(Mean_scaled ~ year, data=AP))
+summary(lm(Mean_scaled ~ year, data=CK))
+summary(lm(Mean_scaled ~ year, data=TB))
+summary(lm(Mean_scaled ~ year, data=CH))
+summary(lm(Mean_scaled ~ year, data=JX))
+summary(lm(Mean_scaled ~ year, data=IR))
+
+
+
 
 
 ##### 3. LAGGED SCATTERPLOTS OF EACH TIMESERIES#######
@@ -212,22 +296,22 @@ summary(lm(Mean ~ Year, data=IR))
 # Such nonlinear dependence might not be effectively summarized by other methods (such as the acf function)
 
 #1A.1 Determine Critical level of correlation for 95% significance (alpha = 0.5) r= 0+- 2/sqrt(N)
-#AP = +-2/sqrt(18)= 0.47
-#CH = +-2/sqrt(27)= 0.38
-#CK = +-2/sqrt(20)= 0.44
+#AP = +-2/sqrt(17)= 0.48
+#CH = +-2/sqrt(27)= 0.38 1989 ->
+#CK = +-2/sqrt(20)= 0.44 1996- > 
 #IR = +- 2/sqrt(26) =0.39
 #TB = +- 2/sqrt(27) = 0.38 ***
-#Jx= +- 2/sqrt(14) = 0.53
+#JX= +- 2/sqrt(14) = 0.53
 
 #unload dplyr
 detach("package:dplyr", unload=TRUE)
 library(astsa)
-lag1.plot(AP, 4, corr=TRUE)
-lag1.plot(CH, 4, corr=TRUE)
-lag1.plot(CK, 4, corr=TRUE)
-lag1.plot(IR, 4, corr=TRUE)
-lag1.plot(TB, 4, corr=TRUE) #autocorrelation at 1st and 2nd lag
-lag1.plot(JX, 4, corr=TRUE)
+lag1.plot(AP, 3, corr=TRUE) #autocorrelated up to third lag
+lag1.plot(CH[8:27,], 4, corr=TRUE) #autocorrelated up to 3rd lag
+lag1.plot(CK, 4, corr=TRUE) #autocorrelated to 3rd lag
+lag1.plot(IR, 5, corr=TRUE) #autocorrelated to 6th lag
+lag1.plot(TB, 5, corr=TRUE) #autocorrelation at 1st and 2nd lag
+lag1.plot(JX, 3, corr=TRUE) #autocorrelated to 2nd lag
 
 #1B. ACF and correlograms
 acf2(AP$Mean)
@@ -238,8 +322,12 @@ acf2(TB$Mean)
 acf2(JX$Mean)
 
 
-#little evidence of interseries correlation so can use standard significance test for pairwise correlations
+#MOdified Chelton ####
+#adjust degrees of freedom to number of independent pairs (determine at what lag each series becomse uncorrelated)
+# use this table and the corr value to reevaulate significance
+# http://users.sussex.ac.uk/~grahamh/RM1web/Pearsonstable.pdf
 
+#moderate evidence for auto correlation so maybe cant use normal significance tests for pairwise correlations??
 
 ## 4.PEARSON CORRELATION TESTS######
 # PEARSON CORRELATION
@@ -258,17 +346,17 @@ jx_min <- subset(JX, select=(-Est))
 # For some reason full_join stops working after 4 dataframes at which point it starts duplicating things so 
 # I just made two and joined them together
 
-ind1 <- full_join(ap_min, ch_min, by='Year') %>% 
-            full_join(.,ck_min, by='Year' ) 
-names(ind1) <- c("Year", "AP","AP_Scaled" , "CH", "CH_Scaled", "CK", "CK_Scaled")
+ind1 <- full_join(ap_min, ch_min, by='year') %>% 
+            full_join(.,ck_min, by='year' ) 
+names(ind1) <- c("year", "AP","AP_Scaled" , "CH", "CH_Scaled", "CK", "CK_Scaled")
 
-ind2 <-  full_join(tb_min,ir_min, by='Year' ) %>%
-            full_join(.,jx_min, by='Year' ) 
-names(ind2) <- c("Year","TB","TB_Scaled", "IR", "IR_Scaled", "JX", "JX_Scaled" )
+ind2 <-  full_join(tb_min,ir_min, by='year' ) %>%
+            full_join(.,jx_min, by='year' ) 
+names(ind2) <- c("year","TB","TB_Scaled", "IR", "IR_Scaled", "JX", "JX_Scaled" )
 
-ind_Year <- full_join(ind1, ind2, by='Year')
+ind_Year <- full_join(ind1, ind2, by='year')
 
-mat<- as.matrix(arrange(ind_Year, Year)) #arrange the data,frame by year and then turn into a matrix
+mat<- as.matrix(arrange(ind_Year, year)) #arrange the data,frame by year and then turn into a matrix
 mattest=mat[,-1] #remove the first column which is the year to just have a matrix of scaled indices
 
 
@@ -296,7 +384,8 @@ n_mat_scl <- (as.data.frame(n_mat_ALL %>% select(2,4,6,8,10,12)))[c(2,4,6,8,10,1
 #unwrap each matrix
 library(gdata)
 rho_vec <- as.data.frame(lowerTriangle(rho_mat, diag=FALSE, byrow=FALSE))
-p_vec   <- as.data.frame(lowerTriangle(P_mat, diag=FALSE, byrow=FALSE))
+p_vec   <- lowerTriangle(P_mat, diag=FALSE, byrow=FALSE)
+p.adjust(p_vec)
 
 #produce sample number (impt for fitting the nls function and weighting by sample number in Medoid_GC_NLSfit_plot.R)
 n_mat <- as.data.frame(lowerTriangle(n_mat, diag=FALSE, byrow=FALSE)) 
@@ -311,6 +400,15 @@ data.frame(rho_P_vec)
 colnames(rho_P_vec)<-  c("rho", "P", "N")
 ## export the rho_dataset to be used by Medoid_GC_NLSfit_plot.R when comparing great circle distances to rho
 write.csv(rho_P_vec, "U:/PhD_projectfiles/Exported_R_Datafiles/Rho_P_vector.csv")
+
+
+corr()
+
+
+
+
+
+
 
 
 ### 5. CLUSTER ANALYSIS####
@@ -472,9 +570,9 @@ for(i in 1:length(spp)){
 
 
 
-###################################################
+
 ### code chunk number 29: Cs23_plotfacloadings
-###################################################
+
 spp = rownames(dat.z)
 minZ = 0.05
 ylims = c(-1.1*max(abs(Z.rot)), 1.1*max(abs(Z.rot)))
@@ -491,9 +589,9 @@ for(i in 1:best.model$m) {
 } # end i loop
 
 
-###################################################
+
 ### code chunk number 30: Cs24_plottrends
-###################################################
+
 # get ts of trends
 ts.trends = t(trends.rot)
 par(mfrow=c(ceiling(dim(ts.trends)[2]/2),2), mar=c(3,4,1.5,0.5), oma=c(0.4,1,1,1))
@@ -518,9 +616,9 @@ for(i in 1:dim(ts.trends)[2]) {
 } # end i loop (trends)
 
 
-###################################################
+
 ### code chunk number 31: Cs25_plotbestfits
-###################################################
+
 par.mat=coef(best.fit, type="matrix")
 fit.b = par.mat$Z %*% best.fit$states + matrix(par.mat$A, nrow=N.ts, ncol=TT)
 spp = rownames(dat.z)
