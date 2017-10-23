@@ -34,18 +34,18 @@ age0 <- subset(age0, select=-c(TL..mm.))
 # IRpend age0 dataframe with NA bay
 # then turn the NA bay into the specific bay that would match for each
 
-Agelength_TB<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="TB" & tl>14 & program=='FIM', select=c( bay, tl, final_age, date))) %>% filter(!is.na(final_age)) %>% 
-          mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("TB", 2168)) #, as.fact=TRUE))- can include this when determing ALK below but the smoothed ALK needs to be the nonfactored version of the length categorization variable. 
-Agelength_AP<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="AP" & tl>0 & program == 'FIM', select=c( bay, tl, final_age, date))) %>% filter(!is.na(final_age)) %>% 
-          mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("AP", 1515)) #, as.fact=TRUE))
-Agelength_CK<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="CK" & tl>0 & program=='FIM', select=c( bay, tl, final_age, date))) %>% filter(!is.na(final_age)) %>% 
-          mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("CK", 1158)) # as.fact=TRUE))
-Agelength_CH<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="CH" & tl>0 & program=='FIM', select=c( bay, tl, final_age, date))) %>% filter(!is.na(final_age)) %>% 
-          mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("CH", 1380))# as.fact=TRUE))
-Agelength_IR<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="IR" & tl>0 & program=='FIM', select=c( bay, tl, final_age, date))) %>% filter(!is.na(final_age)) %>% 
-          mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("IR", 3043))# as.fact=TRUE))
-Agelength_JX<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="JX" & tl>0 & program=='FIM', select=c( bay, tl, final_age, date))) %>% filter(!is.na(final_age)) %>% 
-          mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("JX", 1085))# as.fact=TRUE))
+Agelength_TB<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="TB" & tl>14 & final_age >0 & program=='FIM', select=c( bay, tl, final_age, date))) %>% filter(!is.na(final_age)) %>% 
+          mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("TB", 2035)) #, as.fact=TRUE))- can include this when determing ALK below but the smoothed ALK needs to be the nonfactored version of the length categorization variable. 
+Agelength_AP<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="AP" & tl>0 & final_age >0 & program == 'FIM', select=c( bay, tl, final_age, date))) %>% filter(!is.na(final_age)) %>% 
+          mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("AP", 1421)) #, as.fact=TRUE))
+Agelength_CK<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="CK" & tl>0 & final_age >0 & program=='FIM', select=c( bay, tl, final_age, date))) %>% filter(!is.na(final_age)) %>% 
+          mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("CK", 1048)) # as.fact=TRUE))
+Agelength_CH<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="CH" & tl>0 & final_age >0 & program=='FIM', select=c( bay, tl, final_age, date))) %>% filter(!is.na(final_age)) %>% 
+          mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("CH", 1328))# as.fact=TRUE))
+Agelength_IR<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="IR" & tl>0 & final_age >0 & program=='FIM', select=c( bay, tl, final_age, date))) %>% filter(!is.na(final_age)) %>% 
+          mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("IR", 2930))# as.fact=TRUE))
+Agelength_JX<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="JX" & tl>0 & final_age >0 & program=='FIM', select=c( bay, tl, final_age, date))) %>% filter(!is.na(final_age)) %>% 
+          mutate(tl=tl/10, lcat2 =lencat(tl, w=1)) %>%rbind(age0) %>% mutate(bay=rep("JX", 1020))# as.fact=TRUE))
 
 
 
@@ -67,9 +67,9 @@ bootTB <- nlsBoot(fitTB)
 confint(bootTB) #, plot=TRUE)
 
 # 95% LCI    95% UCI
-# Linf 45.3305524 47.3152843
-# K     0.5649566  0.6675422
-# t0   -0.6417029 -0.5026602
+# Linf 41.54687362 42.4521489
+# K     1.25258759  1.4040895
+# t0    0.03200544  0.0826317
 
 #Visualize the model fit
 # - plot the best-fit VBGF with confidence intervals on top of the observed data
@@ -93,10 +93,10 @@ coef(fitAP)
 bootAP <- nlsBoot(fitAP)
 confint(bootAP) #, plot=TRUE)
 
-# 95% LCI    95% UCI
-# Linf 50.5370318 53.4374288
-# K     0.5179205  0.6170628
-# t0   -0.4593537 -0.3389652
+# 95% LCI     95% UCI
+# Linf 46.878365576 48.38449621
+# K     0.874009111  0.99885236
+# t0   -0.007496384  0.05852243
 
 x <- seq(0,9, length.out=100) # ages for prediction
 AP_pred <- vbTyp(x, Linf=coef(fitAP)) #predicted lengths
@@ -112,10 +112,10 @@ coef(fitCK)
 bootCK <- nlsBoot(fitCK)
 confint(bootCK) #, plot=TRUE)
 
-# 95% LCI    95% UCI
-# Linf 49.2435157 54.1656694
-# K     0.4723081  0.6276932
-# t0   -0.6442767 -0.4577431
+# 95% LCI     95% UCI
+# Linf 43.99012512 45.64073597
+# K     1.12842441  1.29351522
+# t0    0.04542966  0.09576885
 
 x <- seq(0,9, length.out=100) # ages for prediction
 CK_pred <- vbTyp(x, Linf=coef(fitCK)) #predicted lengths
@@ -130,10 +130,10 @@ coef(fitCH)
 bootCH <- nlsBoot(fitCH)
 confint(bootCH) #, plot=TRUE)
 
-# 95% LCI    95% UCI
-# Linf 43.3497080 45.2817667
-# K     0.7406442  0.8930349
-# t0   -0.3203599 -0.2089275
+# 95% LCI     95% UCI
+# Linf 41.23849994 42.32673242
+# K     1.25632886  1.43022834
+# t0    0.04767128  0.09585322
 
 x <- seq(0,9, length.out=100) # ages for prediction
 CH_pred <- vbTyp(x, Linf=coef(fitCH)) #predicted lengths
@@ -149,9 +149,9 @@ bootIR <- nlsBoot(fitIR)
 confint(bootIR) #, plot=TRUE)
 # 
 # 95% LCI    95% UCI
-# Linf 54.2941867 58.4007511
-# K     0.3284347  0.4035553
-# t0   -0.8796486 -0.6684325
+# Linf 48.8269549 51.1158977
+# K     0.5469929  0.6519876
+# t0   -0.3015149 -0.1589514
 
 x <- seq(0,9, length.out=100) # ages for prediction
 IR_pred <- vbTyp(x, Linf=coef(fitIR)) #predicted lengths
@@ -166,10 +166,10 @@ coef(fitJX)
 bootJX <- nlsBoot(fitJX)
 confint(bootJX) #, plot=TRUE)
 
-# 95% LCI    95% UCI
-# Linf 43.0470322 47.0805813
-# K     0.5751090  0.7640616
-# t0   -0.4987555 -0.3327195
+# 95% LCI   95% UCI
+# Linf 38.20193625 39.622566
+# K     1.39953830  1.628236
+# t0    0.05568952  0.100464
 
 
 x <- seq(0,9, length.out=100) # ages for prediction
@@ -200,8 +200,8 @@ library(ggplot2)
 
 VonB_Comparative <- ggplot(data= pred_all, aes(x=x, y=pred, group=bay))+  
   geom_line() + #aes(linetype=bay), size =.5)+ # make line types based on the different labels- this will be our workaround because in a few stps we will specify the first label (obserseved) be a blank line (therefore a scatter plot)
-  geom_line(aes(color=bay), size=1.5)+
-  #geom_point(aes(shape=bay), size=2) + #, color=bay))+ # groups the points together correctly and then gives them a unique shape them differently based on the line type 
+  #geom_line(aes(color=bay), size=1.5)+
+  geom_point(aes(shape=bay), size=2) + #, color=bay))+ # groups the points together correctly and then gives them a unique shape them differently based on the line type 
   #scale_shape_manual(values=c(0,1,2, 3, 4, 5,6,7,8 ))+
   #scale_linetype_manual(values=c('solid', 'dashed', 'dotted'))+
   scale_y_continuous(limits=c(0,60), breaks= seq(0,60,10))+
@@ -247,7 +247,7 @@ vb0 <- tl~Linf*(1-exp(-K*(final_age-t0)))
 #Define starting values for each model scenario
 ###############################################
 sv0 <- vbStarts(tl~final_age, data=Agelength_TB) #using the TB dataframe as a starter
-sv0$Linf= 72
+sv0$Linf= 50
 sv0$K = 0.3
 sv0$t0 = -0.1
 svLKt <- Map(rep,sv0,c(2,2,2))
@@ -340,7 +340,7 @@ lrt(fitLK, fitLt, fitKt, com=fitLKt, com.name="All pars diff", sim.names=c("Linf
 cbind(AIC(fitLKt,fitLK,fitLt,fitKt, fitL, fitK, fitt, fit0), BIC(fitLKt, fitLK, fitLt, fitKt, fitL, fitK, fitt, fit0))
 #Lowest:
 # #       df      AIC df      BIC
-# fitLKt  7 75503.79  7 75555.27
+# fitLK   6 22568.78  6 22605.44
 
 
 #################################################################
@@ -362,7 +362,10 @@ lrt(fit0, com=fitLKt, com.name="All pars differ", sim.name="No pars differ")
 cbind(AIC(fitLKt,fitLK,fitLt,fitKt, fitL, fitK, fitt, fit0), BIC(fitLKt, fitLK, fitLt, fitKt, fitL, fitK, fitt, fit0))
 #Lowest:
 # df      AIC df      BIC
-# fitLKt  7 90412.66  7 90465.41
+# fitL    5 21809.18  5 21839.78
+#fitK    5 21808.97  5 21839.57
+#fitt    5 21808.85  5 21839.45
+#fit0    4 21808.25  4 21832.73
 
 #TBAP
 fitLKt <- nls(vbLKt, data=Agelength_TBAP, start=svLKt)
@@ -379,7 +382,8 @@ lrt(fit0, com=fitLKt, com.name="All pars differ", sim.name="No pars differ")
 cbind(AIC(fitLKt,fitLK,fitLt,fitKt, fitL, fitK, fitt, fit0), BIC(fitLKt, fitLK, fitLt, fitKt, fitL, fitK, fitt, fit0))
 #Lowest:
 # df      AIC df      BIC
-# fitLKt  7 87299.69  7 87352.24
+# fitLKt  7 22566.44  7 22609.48
+# fitLK   6 22566.46  6 22603.35
 
 
 #TBJX
@@ -397,7 +401,8 @@ lrt(fit0, com=fitLKt, com.name="All pars differ", sim.name="No pars differ")
 cbind(AIC(fitLKt,fitLK,fitLt,fitKt, fitL, fitK, fitt, fit0), BIC(fitLKt, fitLK, fitLt, fitKt, fitL, fitK, fitt, fit0))
 #Lowest:
 # df      AIC df      BIC
-# fitLKt  7 74170.11  7 74221.48
+# fitLKt  7 19730.15  7 19772.32
+# fitLK   6 19729.45  6 19765.60
 
 #TBIR
 fitLKt <- nls(vbLKt, data=Agelength_TBIR, start=svLKt)
@@ -414,7 +419,7 @@ lrt(fit0, com=fitLKt, com.name="All pars differ", sim.name="No pars differ")
 cbind(AIC(fitLKt,fitLK,fitLt,fitKt, fitL, fitK, fitt, fit0), BIC(fitLKt, fitLK, fitLt, fitKt, fitL, fitK, fitt, fit0))
 #Lowest:
 # df      AIC df      BIC
-# fitLKt   6 131645.2  7 131700.4
+# fitLKt  7 33832.90  7 33878.47
 
 #CKCH
 fitLKt <- nls(vbLKt, data=Agelength_CKCH, start=svLKt)
@@ -431,7 +436,7 @@ lrt(fit0, com=fitLKt, com.name="All pars differ", sim.name="No pars differ")
 cbind(AIC(fitLKt,fitLK,fitLt,fitKt, fitL, fitK, fitt, fit0), BIC(fitLKt, fitLK, fitLt, fitKt, fitL, fitK, fitt, fit0))
 #Lowest:
 # df      AIC df      BIC
-# fitLKt   7 34053.47  7 34099.21
+# fitLK   6 15209.74  6 15244.38
 
 #CKAP
 fitLKt <- nls(vbLKt, data=Agelength_CKAP, start=svLKt)
@@ -448,7 +453,7 @@ lrt(fit0, com=fitLKt, com.name="All pars differ", sim.name="No pars differ")
 cbind(AIC(fitLKt,fitLK,fitLt,fitKt, fitL, fitK, fitt, fit0), BIC(fitLKt, fitLK, fitLt, fitKt, fitL, fitK, fitt, fit0))
 #Lowest:
 # df      AIC df      BIC
-# fitLKt  7 31019.14  7 31064.34
+# fitLKt  7 15977.29  7 16017.97
 
 
 #CKJX
@@ -466,8 +471,7 @@ lrt(fit0, com=fitLKt, com.name="All pars differ", sim.name="No pars differ")
 cbind(AIC(fitLKt,fitLK,fitLt,fitKt, fitL, fitK, fitt, fit0), BIC(fitLKt, fitLK, fitLt, fitKt, fitL, fitK, fitt, fit0))
 #lowest:
 # df      AIC df      BIC
-# fitLKt  7 17800.56  7 17841.67
-# fitLK   6 17803.66  6 17838.90
+# fitLK   6 13116.66  6 13150.46
 
 
 #CKIR
@@ -485,7 +489,7 @@ lrt(fit0, com=fitLKt, com.name="All pars differ", sim.name="No pars differ")
 cbind(AIC(fitLKt,fitLK,fitLt,fitKt, fitL, fitK, fitt, fit0), BIC(fitLKt, fitLK, fitLt, fitKt, fitL, fitK, fitt, fit0))
 #Lowest:
 # df      AIC df      BIC
-# fitLKt  7 74754.55  7 74805.53
+# fitLKt  7 27244.87  7 27288.89
 
 #CHAP
 fitLKt <- nls(vbLKt, data=Agelength_CHAP, start=svLKt)
@@ -502,8 +506,8 @@ lrt(fit0, com=fitLKt, com.name="All pars differ", sim.name="No pars differ")
 cbind(AIC(fitLKt,fitLK,fitLt,fitKt, fitL, fitK, fitt, fit0), BIC(fitLKt, fitLK, fitLt, fitKt, fitL, fitK, fitt, fit0))
 #Lowest:
 # df      AIC df      BIC
-#fitLKt  7 45929.66  7 45977.62
-#fitLK   6 45930.26  6 45971.37
+#fitLKt  7 27244.87  7 27288.89
+
 
 #CHJX
 fitLKt <- nls(vbLKt, data=Agelength_CHJX, start=svLKt)
@@ -520,8 +524,8 @@ lrt(fit0, com=fitLKt, com.name="All pars differ", sim.name="No pars differ")
 cbind(AIC(fitLKt,fitLK,fitLt,fitKt, fitL, fitK, fitt, fit0), BIC(fitLKt, fitLK, fitLt, fitKt, fitL, fitK, fitt, fit0))
 #Lowest:
 # df      AIC df      BIC
-# fitLKt  7 32742.65  7 32788.13
-# fitLK   6 32743.79  6 32782.78
+# fitLK   6 14919.18  6 14953.75
+
 
 #CHIR
 fitLKt <- nls(vbLKt, data=Agelength_CHIR, start=svLKt)
@@ -538,7 +542,7 @@ lrt(fit0, com=fitLKt, com.name="All pars differ", sim.name="No pars differ")
 cbind(AIC(fitLKt,fitLK,fitLt,fitKt, fitL, fitK, fitt, fit0), BIC(fitLKt, fitLK, fitLt, fitKt, fitL, fitK, fitt, fit0))
 #Lowest:
 # df      AIC df      BIC
-# fitLKt  7 89811.60  7 89863.92
+# fitLKt  7 29066.00  7 29110.49
 
 #APJX
 fitLKt <- nls(vbLKt, data=Agelength_APJX, start=svLKt)
@@ -555,7 +559,7 @@ lrt(fit0, com=fitLKt, com.name="All pars differ", sim.name="No pars differ")
 cbind(AIC(fitLKt,fitLK,fitLt,fitKt, fitL, fitK, fitt, fit0), BIC(fitLKt, fitLK, fitLt, fitKt, fitL, fitK, fitt, fit0))
 #Lowest:
 # df      AIC df      BIC
-# fitLKt  7 29692.38  7 29737.31
+# fitLKt  7 15694.29  7 15734.89
 
 #APIR
 fitLKt <- nls(vbLKt, data=Agelength_APIR, start=svLKt)
@@ -572,7 +576,7 @@ lrt(fit0, com=fitLKt, com.name="All pars differ", sim.name="No pars differ")
 cbind(AIC(fitLKt,fitLK,fitLt,fitKt, fitL, fitK, fitt, fit0), BIC(fitLKt, fitLK, fitLt, fitKt, fitL, fitK, fitt, fit0))
 #Lowest:
 # df      AIC df      BIC
-# fitLKt  7 86881.09  7 86933.20
+# fitLKt  7 29782.81  7 29827.46
 
 #JXIR
 fitLKt <- nls(vbLKt, data=Agelength_JXIR, start=svLKt)
@@ -589,7 +593,7 @@ lrt(fit0, com=fitLKt, com.name="All pars differ", sim.name="No pars differ")
 cbind(AIC(fitLKt,fitLK,fitLt,fitKt, fitL, fitK, fitt, fit0), BIC(fitLKt, fitLK, fitLt, fitKt, fitL, fitK, fitt, fit0))
 #Lowest:
 # df      AIC df      BIC
-# fitLKt  7 73466.40  7 73517.26
+# fitLKt  7 26993.29  7 27037.26
 
 ###########################################
 # PLOT COMPARITIVE CURVES
@@ -597,14 +601,14 @@ cbind(AIC(fitLKt,fitLK,fitLt,fitKt, fitL, fitK, fitt, fit0), BIC(fitLKt, fitLK, 
 
 library(grid)
 
-VonB_Comparative <- ggplot(data= df_comparative_rearrange, aes(x=x, y=y, group=Label))+  
+VonB_Comparative <- ggplot(data= pred_all, aes(x=x, y=pred, group=bay))+  
   #geom_line(aes(linetype=Label), size =.5)+ # make line types based on the different labels- this will be our workaround because in a few stps we will specify the first label (obserseved) be a blank line (therefore a scatter plot)
-  geom_line(aes(color=Label))+
-  geom_point(aes(shape=Label, color=Label))+ # groups the points together correctly and then gives them a unique shape them differently based on the line type 
+  geom_line(aes(color=bay))+
+  geom_point(aes(shape=bay, color=bay))+ # groups the points together correctly and then gives them a unique shape them differently based on the line type 
   scale_shape_manual(values=c(0,1,2, 3, 4, 5,6,7,8 ))+
   #scale_linetype_manual(values=c('solid', 'dashed', 'dotted'))+
   #scale_y_continuous(limits=c(0,100), breaks= seq(0,100,10))+
-  scale_x_continuous(limits=c(0,30), breaks=seq(0,30,5))+
+  scale_x_continuous(limits=c(0,10), breaks=seq(0,10,1))+
   xlab("Age (years)")+
   ylab("Fork Length (cm)")+
   theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(), 									
