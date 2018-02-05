@@ -6,7 +6,7 @@
 # 3. Statistical comparison of bay-bay length frequencies. 
 #     - K-S test
 #     - Chi-Square Test
-###############################################################
+
 
 # ******Note about sample sizes affecting results of hypothesis testing:
 # http://stats.stackexchange.com/questions/47498/mann-whitney-u-test-and-k-s-test-with-unequal-sample-sizes
@@ -85,6 +85,7 @@ IR <- rbind(mrfss_IR, mrip_IR)
 All= rbind(AP, TB, CK, CH, JX, IR)
 All$bay <- as.factor(All$bay)
 All <- na.omit(All)
+All$bay <- factor(All$bay, levels=c("AP", "CK", "TB", "CH", "JX", "IR"))
 
 All_sum <- summarise(group_by(All, bay), N = length(tl), mean_tl = mean(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(tl))))
 
@@ -92,9 +93,8 @@ All_sum <- summarise(group_by(All, bay), N = length(tl), mean_tl = mean(tl), sd_
 N = nrow(AP) +nrow(TB) +nrow(CK) +nrow(CH) +nrow(JX) +nrow(IR)
 
 
-######################
-#PLOT ECDF (empirical cumulative distribution function) - used for K-S test
-######################
+#PLOT ECDF #### (empirical cumulative distribution function) - used for K-S test
+
 
 #MRFSS
 clr<- c("black", "gray50", "red", "blue", "green", "pink")
@@ -124,13 +124,12 @@ plot(ecdf(IR$tl), add=TRUE, do.points=FALSE, verticals=TRUE, col=clr[5], col.01l
 plot(ecdf(JX$tl), add=TRUE, do.points=FALSE, verticals=TRUE, col=clr[6], col.01line=NULL)
 
 test <- ecdf(TB$tl)
-#########################################                                                                  
-#AMONG GROUP STATISTICAL COMPARISONS
-#########################################
+                                                               
+#AMONG GROUP STATISTICAL COMPARISONS ####
 
-####################
-#First with K-S Test
-####################
+
+#First with K-S Test ####
+
 # used to determine whether ECDF are the same between two groups and can detect differences in location, dispersion and shape of the ditrubtions
 #bootstrapped version of the K-S test that is insensitive to ties with noncontinuous data is implemented in ks.boot
 ks<- c(ks.boot(mrfss_TB$tl, mrfss_CK$tl, nboots=1000)$p.value, ks.boot(mrfss_TB$tl, mrfss_CH$tl, nboots=5000)$p.value)
@@ -198,7 +197,6 @@ p.adjust(ks_ALL)
 
 
 # Chi-Square Test #####
-###########################
 # used to test for differences in length frequencies among different groups (among, times, locations or gears)
 # chi square will generally fail where the contingency table contains zeroes or very small frequencies 
 #  so best to make the length categories to ensure appropriate sample size 
@@ -364,6 +362,43 @@ length_IR <- ggplot(IR, aes(x=tl))+
         plot.title=element_text(size=14))+
   annotate("text", x=60, y= .13, label="IR", size=10)
 
+#CROSSBAR PLOT for mean and standard error ####
 
+MinMeanSEMMax <- function(x) {
+  
+  v <- c(mean(x) - sd(x)/sqrt(length(x)), mean(x), mean(x) + sd(x)/sqrt(length(x)))
+  
+  names(v) <- c("ymin", "y", "ymax")
+  
+  v
+  
+}
+
+
+
+
+length <- ggplot(All, aes(bay, tl)) +
+  
+  stat_summary(fun.data=MinMeanSEMMax, geom="crossbar", colour="black") + 
+  
+  scale_y_continuous(breaks=seq(42,46,0.5), labels=seq(42,46,0.5))+
+  
+  xlab("Estuary")+
+  
+  ylab("Total Length (cm) ")+
+  
+  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(), 									
+        
+        panel.background=element_rect(fill='white', colour='black'),
+        
+        axis.title.y = element_text(colour="black", size=20), # changing font of y axis title
+        
+        axis.title.x = element_text(colour="black", size=20),
+        
+        axis.text.x=element_text(colour="black", size=16), #changing  colour and font of x axis text
+        
+        axis.text.y=element_text(colour="black", size=16))  #changing colour and font of y axis
+
+#plot.title=element_text(size=14), # changing size of plot title)
 
 

@@ -98,7 +98,8 @@ Agelength_JX$year = as.factor(Agelength_JX$year)
 
 # BASIC DATA SUMMARIZATION ####
 #total sample number of FIM data
-All= rbind(Agelength_TB, Agelength_AP, Agelength_CK, Agelength_CH, Agelength_IR, Agelength_JX) 
+All= rbind(Agelength_AP, Agelength_CK, Agelength_TB, Agelength_CH, Agelength_JX, Agelength_IR) 
+
 str(All <- na.omit(All))
 
 
@@ -614,6 +615,59 @@ lines(mn~final_age, data=IR_sumlen, lwd=2, lty=2)
 plot(tl~final_age, data=Agelength_JX, pch=19, col=rgb(0,0,0,1/10), xlab="Age", ylab= "Total Length (cm)", ylim=c(0,80), xlim=c(0,9))
 lines(mn~final_age, data=JX_sumlen, lwd=2, lty=2)
 #change scale of x axis
+
+#CROSSBAR PLOT for mean and standard error ####
+
+MinMeanSEMMax <- function(x) {
+  v <- c(mean(x) - sd(x)/sqrt(length(x)), mean(x), mean(x) + sd(x)/sqrt(length(x)))
+  names(v) <- c("ymin", "y", "ymax")
+  v
+}
+
+
+All_min <- subset(All, sex %in% c("F", "M"))
+labels <- c(F="Female", M="Male")
+
+
+age <- ggplot(All_min, aes(bay, final_age)) +
+  stat_summary(fun.data=MinMeanSEMMax, geom="crossbar", colour="black") + 
+  scale_y_continuous(breaks=seq(1.5,3,0.5), labels=seq(1.5,3,0.5))+
+  facet_grid(sex ~., labeller=labeller(sex=labels)) +
+  xlab("Estuary")+
+  ylab("Age")+
+  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(), 									
+        panel.background=element_rect(fill='white', colour='black'),
+        axis.title.y = element_text(colour="black", size=20), # changing font of y axis title
+        axis.title.x = element_text(colour="black", size=20),
+        axis.text.x=element_text(colour="black", size=16), #changing  colour and font of x axis text
+        axis.text.y=element_text(colour="black", size=16),
+        strip.text.y = element_text(size=16))  #changing colour and font of y axis
+
+#plot.title=element_text(size=14), # changing size of plot title)
+
+#ggtitle("Crossbar plot: Mean-1SEM, Mean, Mean+1SEM")
+length <- ggplot(All_min, aes(bay, tl)) +
+  stat_summary(fun.data=MinMeanSEMMax, geom="crossbar", colour="black") + 
+  #scale_y_continuous(breaks=seq(1.5,3,0.5), labels=seq(1.5,3,0.5))+
+  facet_grid(sex ~., labeller=labeller(sex=labels)) +
+  xlab("Estuary")+
+  ylab("Total Length (cm) ")+
+  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(), 									
+        panel.background=element_rect(fill='white', colour='black'),
+        axis.title.y = element_text(colour="black", size=20), # changing font of y axis title
+        axis.title.x = element_text(colour="black", size=20),
+        axis.text.x=element_text(colour="black", size=16), #changing  colour and font of x axis text
+        axis.text.y=element_text(colour="black", size=16),
+        strip.text.y = element_text(size=16))  #changing colour and font of y axis
+
+#plot.title=element_text(size=14), # changing size of plot title)
+
+
+
+
+
+
+
 
 
 # PRODUCE SMOOTHED ALKS #####
