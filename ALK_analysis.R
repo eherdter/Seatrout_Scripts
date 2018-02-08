@@ -46,7 +46,18 @@ setwd("U:/PhD_projectfiles/Raw_Data/Age_Length_Data")
 # turn tl from mm to cm
 # create length categories with FSA package
 
-test <- read.csv("ALK_Bay_and_weight.csv", header=T)
+testNE <- read.csv("ALK_Bay_and_weight.csv", header=T) %>% subset(program == "FIM" & troutreg =="NE")
+#JX
+
+testSE <- read.csv("ALK_Bay_and_weight.csv", header=T) %>% subset(program == "FIM" & troutreg =="SE")
+#N. Indian River, St. Sebastian River,  Tequesta
+
+testNW <- read.csv("ALK_Bay_and_weight.csv", header=T) %>% subset(program == "FIM" & troutreg =="NW")
+#AP, BB, CK, FW, AB
+#App, Big Bend, Cedar Key, Santa Rosa Sound, AB
+
+testSW <- read.csv("ALK_Bay_and_weight.csv", header=T) %>% subset(program == "FIM" & troutreg =="SW")
+#CH, Sarasota Bay, TB, Florida Bay, Estero Bay 
 
 Agelength_TB<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="TB" & tl>14 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10, sl=sl/10, lcat2 =lencat(tl, w=2)) #, as.fact=TRUE))- can include this when determing ALK below but the smoothed ALK needs to be the nonfactored version of the length categorization variable. 
 Agelength_TB$sex[which(Agelength_TB$sex == "m")] = "M"
@@ -96,6 +107,43 @@ Agelength_JX = mutate(Agelength_JX, year = strftime(DateNew, format="%Y")) %>% d
 Agelength_JX$year = as.factor(Agelength_JX$year) 
 
 
+#Explore other bays/estuaries ####
+
+#Tequesta (Souther Indian River lagoon)
+Agelength_TQ<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="TQ" & tl>0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=2)) # as.fact=TRUE))
+Agelength_TQ$date=as.character(Agelength_TQ$date)
+Agelength_TQ$DateNew = as.POSIXct(strptime(Agelength_TQ$date, format="%d-%B-%y", tz="")) 
+Agelength_TQ = mutate(Agelength_TQ, year = strftime(DateNew, format="%Y")) %>% dplyr::select(-date, -DateNew)
+Agelength_TQ$year = as.factor(Agelength_TQ$year) 
+
+#how many observations by year 
+table(Agelength_TQ$year)
+length_TQ<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="TQ" & tl>0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=2)) # as.fact=TRUE))
+age_TQ<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="TQ" & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=2)) # as.fact=TRUE))
+
+#Sarasota Bay (part of SW)
+Agelength_SB<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="SB" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=2)) # as.fact=TRUE))
+Agelength_SB$date=as.character(Agelength_SB$date)
+Agelength_SB$DateNew = as.POSIXct(strptime(Agelength_SB$date, format="%d-%B-%y", tz="")) 
+Agelength_SB = mutate(Agelength_SB, year = strftime(DateNew, format="%Y")) %>% dplyr::select(-date, -DateNew)
+Agelength_SB$year = as.factor(Agelength_SB$year) 
+
+table(Agelength_SB$year)
+
+
+
+
+
+#Florida Bay (part of SW)
+Agelength_KY<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="KY" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=2)) # as.fact=TRUE))
+#Estero bay (part of SW)
+Agelength_EB<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="EB" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=2)) # as.fact=TRUE))
+
+nrow(Agelength_TQ) #321
+nrow(Agelength_SB) #46
+nrow(Agelength_KY) #66
+nrow(Agelength_EB) #8
+
 # BASIC DATA SUMMARIZATION ####
 #total sample number of FIM data
 All= rbind(Agelength_AP, Agelength_CK, Agelength_TB, Agelength_CH, Agelength_JX, Agelength_IR) 
@@ -114,7 +162,7 @@ max(All$tl)
 #summarize the entire set and group by sex and then bay
 Combined_sum <- dplyr::summarize(group_by(All, sex,bay), mean_tl=mean(tl), sd_tl=sd(tl), se_tl= sd_tl/(sqrt(length(final_age))),min_tl=min(tl), max_tl=max(tl), mean_age=mean(final_age), median_age=median(final_age),sd_age= sd(final_age), se_age=sd_age/sqrt(length(final_age)), min_age= min(final_age), max_age=max(final_age))
 
-Combined_sum_year <- summarize(group_by(All,bay ), min_year=min(year), max_year=max(year))
+Combined_sum_year <- summarize(group_by(All,bay), min_year=min(year), max_year=max(year))
 
 #summarize each to get sex ratios etc. 
 TB_sum <- summarise(Agelength_TB,mean_age=mean(final_age), median_age=median(final_age),sd_age= sd(final_age), se_age=sd_age/sqrt(length(final_age)), mean_tl = mean(tl), min_tl=min(tl), max_tl=max(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(final_age))), prop_F=nrow(subset(Agelength_TB, sex=="F"))/length(final_age),prop_M=nrow(subset(Agelength_TB, sex=="M"))/length(final_age), N_F=nrow(subset(Agelength_TB, sex=="F")), N_M=nrow(subset(Agelength_TB, sex=="M")), totN =N_F+N_M)
@@ -127,7 +175,35 @@ All_sum <- rbind(TB_sum, AP_sum, CH_sum, CK_sum, IR_sum, JX_sum) %>% mutate(bay=
 rownames(All_sum) <- c("TB", "AP", "CH", "CK", "IR", "JX")
 
 
-#CHI SQ TEST To test differencs in final age between bays #####
+#limit minimum length to that in the recreational data set and THEN do summarization to compare. 
+
+AL_TB <- subset(Agelength_TB, tl>24)
+AL_AP <- subset(Agelength_AP, tl>20)
+AL_CH <- subset(Agelength_CH, tl>26)
+AL_CK<- subset(Agelength_CK, tl>26)
+AL_IR<- subset(Agelength_IR, tl>26)
+AL_JX<- subset(Agelength_JX, tl>26)
+
+AL_all <- rbind(AL_TB, AL_AP, AL_CH, AL_CK, AL_IR, AL_JX)
+AL_sum <- AL_all %>% group_by(bay) %>% summarise(mean_age=mean(final_age), median_age=median(final_age),sd_age= sd(final_age), se_age=sd_age/sqrt(length(final_age)), mean_tl = mean(tl), min_tl=min(tl), max_tl=max(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(final_age))))
+
+# TWO WAY ANOVA ####
+# test for differences in age by bay and sex
+All_MF <- droplevels(subset(All, sex %in% c("M", "F")))
+
+aov <- aov(final_age ~ bay + sex, data= All_MF)
+summary(aov)
+plot(aov)
+
+# Tukey test
+TukeyHSD(aov)
+
+aov2 <- aov(tl ~ bay + sex, data= All_MF)
+TukeyHSD(aov2)
+
+# test for differences in tl by bay and sex
+
+#CHI SQ TEST To test differencs in age distribution between bays #####
 #non-parameteric like anova is below so it doesnt assume normality of the age distribution
 #can do a test of variance to determine whether can use anova
 #anova assumes homogenous variances
@@ -194,7 +270,7 @@ pdf <- as.data.frame(p.adjust(ps_age))
 
 #all significantly different excpet for TB to AP and CH and IR
 
-#CHI SQ TEST To test differencs in Total Length between bays #####
+#CHI SQ TEST To test differencs in length distribution between bays #####
 #test for equal variances
 var.test(Agelength_TB$tl, Agelength_AP$tl)
 var.test(Agelength_TB$tl, Agelength_CK$tl)
@@ -628,13 +704,19 @@ MinMeanSEMMax <- function(x) {
 All_min <- subset(All, sex %in% c("F", "M"))
 labels <- c(F="Female", M="Male")
 
+File <- ("U:/PhD_projectfiles/Figures/age_crossbar.tiff")
+if (file.exists(File)) stop(File, " already exists")
+dir.create(dirname(File), showWarnings = FALSE)
 
-age <- ggplot(All_min, aes(bay, final_age)) +
+tiff(File, units="in", width=5, height=5, res=300)
+
+
+ggplot(All_min, aes(bay, final_age)) +
   stat_summary(fun.data=MinMeanSEMMax, geom="crossbar", colour="black") + 
   scale_y_continuous(breaks=seq(1.5,3,0.5), labels=seq(1.5,3,0.5))+
   facet_grid(sex ~., labeller=labeller(sex=labels)) +
-  xlab("Estuary")+
-  ylab("Age")+
+  xlab("Area")+
+  ylab("Age (yrs)")+
   theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(), 									
         panel.background=element_rect(fill='white', colour='black'),
         axis.title.y = element_text(colour="black", size=20), # changing font of y axis title
@@ -642,15 +724,24 @@ age <- ggplot(All_min, aes(bay, final_age)) +
         axis.text.x=element_text(colour="black", size=16), #changing  colour and font of x axis text
         axis.text.y=element_text(colour="black", size=16),
         strip.text.y = element_text(size=16))  #changing colour and font of y axis
+dev.off()
 
 #plot.title=element_text(size=14), # changing size of plot title)
 
-#ggtitle("Crossbar plot: Mean-1SEM, Mean, Mean+1SEM")
-length <- ggplot(All_min, aes(bay, tl)) +
+
+
+File <- ("U:/PhD_projectfiles/Figures/FIM_length_crossbar.tiff")
+#if (file.exists(File)) stop(File, " already exists")
+dir.create(dirname(File), showWarnings = FALSE)
+
+tiff(File, units="in", width=5, height=5, res=300)
+
+
+ ggplot(All_min, aes(bay, tl)) +
   stat_summary(fun.data=MinMeanSEMMax, geom="crossbar", colour="black") + 
-  #scale_y_continuous(breaks=seq(1.5,3,0.5), labels=seq(1.5,3,0.5))+
+  scale_y_continuous(breaks=seq(32.5,42,1.5), labels=seq(32.5,42,1.5))+
   facet_grid(sex ~., labeller=labeller(sex=labels)) +
-  xlab("Estuary")+
+  xlab("Area")+
   ylab("Total Length (cm) ")+
   theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(), 									
         panel.background=element_rect(fill='white', colour='black'),
@@ -661,7 +752,7 @@ length <- ggplot(All_min, aes(bay, tl)) +
         strip.text.y = element_text(size=16))  #changing colour and font of y axis
 
 #plot.title=element_text(size=14), # changing size of plot title)
-
+dev.off()
 
 
 
@@ -1018,6 +1109,74 @@ write.csv(Weight_at_Age_TB_ad, "U:/PhD_projectfiles/Exported_R_Datafiles/Weight_
 write.csv(Weight_at_Age_CH_ad, "U:/PhD_projectfiles/Exported_R_Datafiles/Weight_at_Age_CH_ad_FIMdata.csv")
 write.csv(Weight_at_Age_JX_ad, "U:/PhD_projectfiles/Exported_R_Datafiles/Weight_at_Age_JX_ad_FIMdata.csv")
 write.csv(Weight_at_Age_IR_ad, "U:/PhD_projectfiles/Exported_R_Datafiles/Weight_at_Age_IR_ad_FIMdata.csv")
+
+
+
+# TESTING ####
+annuli <- read.csv("U:/PhD_projectfiles/Raw_Data/Age_Length_Data/Access_Tables/annulimeasurements.csv", header=T) %>% dplyr::select(SpecimenNumber, itis, nodc, common_name, Ref)
+bio <- read.csv("U:/PhD_projectfiles/Raw_Data/Age_Length_Data/Access_Tables/biology.csv", header=T) %>% rename(SpecimenNumber=specimennumber) %>% dplyr::select(SpecimenNumber, Ref, sl, fl, tl, lengthunits, wt_total, wtunits_total, sex, final_age)
+field <- read.csv("U:/PhD_projectfiles/Raw_Data/Age_Length_Data/Access_Tables/field.csv", header=T) %>% dplyr::select(program, date, bay, troutreg, project,Ref)
+
+#annuli and bio link together by specimen number and Ref
+
+#field is linked to bio by Ref
+
+new <- left_join(annuli, bio, by=c("SpecimenNumber", "Ref"))
+new2 <- left_join(new, field, by="Ref")
+
+Agelength_TB<- droplevels(subset(new2, bay=="TB" & tl>14 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10, sl=sl/10, lcat2 =lencat(tl, w=2)) #, as.fact=TRUE))- can include this when determing ALK below but the smoothed ALK needs to be the nonfactored version of the length categorization variable. 
+Agelength_TB$sex[which(Agelength_TB$sex == "m")] = "M"
+Agelength_TB$sex <- droplevels(Agelength_TB$sex)
+
+#change date format into a factor so that I can do summary statistics by year later on
+Agelength_TB$date=as.character(Agelength_TB$date)
+Agelength_TB$DateNew = as.POSIXct(strptime(Agelength_TB$date, format="%d-%B-%y", tz=""))  #B is the selection for when month is spelled out
+Agelength_TB = mutate(Agelength_TB, year = strftime(DateNew, format="%Y")) %>% dplyr::select(c(-date, -DateNew))
+Agelength_TB$year = as.factor(Agelength_TB$year)
+
+
+
+
+
+MinMeanSEMMax <- function(x) {
+  v <- c(mean(x) - sd(x)/sqrt(length(x)), mean(x), mean(x) + sd(x)/sqrt(length(x)))
+  names(v) <- c("ymin", "y", "ymax")
+  v
+}
+
+
+All_min <- subset(All, sex %in% c("F", "M"))
+labels <- c(F="Female", M="Male")
+
+
+age <- ggplot(All_min, aes(bay, final_age)) +
+  stat_summary(fun.data=MinMeanSEMMax, geom="crossbar", colour="black") + 
+  scale_y_continuous(breaks=seq(1.5,3,0.5), labels=seq(1.5,3,0.5))+
+  facet_grid(sex ~., labeller=labeller(sex=labels)) +
+  xlab("Estuary")+
+  ylab("Age")+
+  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(), 									
+        panel.background=element_rect(fill='white', colour='black'),
+        axis.title.y = element_text(colour="black", size=20), # changing font of y axis title
+        axis.title.x = element_text(colour="black", size=20),
+        axis.text.x=element_text(colour="black", size=16), #changing  colour and font of x axis text
+        axis.text.y=element_text(colour="black", size=16),
+        strip.text.y = element_text(size=16))  #changing colour and font of y axis
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # OLD ANOVAS #####
