@@ -78,6 +78,7 @@ All_East <- rbind(IR, JX)
 # might do this with ggplot
 library(ggplot2)
 
+
 All_mean <- ggplot(All, aes(x=year, y=Mean, group=Est)) + #color=est
   #geom_line(aes(linetype=Est), size =.5)+ # make line types based on the different labels- this will be our workaround because in a few stps we will specify the first label (obserseved) be a blank line (therefore a scatter plot)
   geom_line(aes(color=Est), size=0.5)+
@@ -152,10 +153,15 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
   }
 }
 
+File <- ("U:/PhD_projectfiles/Figures/abundance_timeseries_multiplot.tiff")
+if (file.exists(File)) stop(File, " already exists")
+dir.create(dirname(File), showWarnings = FALSE)
+
+tiff(File, units="in", width=7, height=7, res=300)
 
 multiplot(All_mean, All_scaled, cols=1)
 
-
+dev.off()
 
 
 
