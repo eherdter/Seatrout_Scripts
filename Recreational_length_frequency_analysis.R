@@ -87,8 +87,8 @@ All$bay <- as.factor(All$bay)
 All <- na.omit(All)
 All$bay <- factor(All$bay, levels=c("AP", "CK", "TB", "CH", "JX", "IR"))
 
-All_sum <- summarise(group_by(All, bay), N = length(tl), mean_tl = mean(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(tl))))
-
+All_sum <- summarise(group_by(All, bay), N = length(tl), mean_tl = mean(tl), min_tl=min(tl), max_tl=max(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(tl))))
+Rec_sum <- All_sum
 
 N = nrow(AP) +nrow(TB) +nrow(CK) +nrow(CH) +nrow(JX) +nrow(IR)
 
@@ -375,30 +375,26 @@ MinMeanSEMMax <- function(x) {
 }
 
 
+#https://stackoverflow.com/questions/27817546/how-to-save-a-plot-in-r-in-a-subdirectory-of-the-working-directory
 
+File <- ("U:/PhD_projectfiles/Figures/rec_length_crossbar.tiff")
+if (file.exists(File)) stop(File, " already exists")
+dir.create(dirname(File), showWarnings = FALSE)
 
-length <- ggplot(All, aes(bay, tl)) +
-  
+tiff(File, units="in", width=5, height=5, res=300)
+
+ ggplot(All, aes(bay, tl)) +
   stat_summary(fun.data=MinMeanSEMMax, geom="crossbar", colour="black") + 
-  
   scale_y_continuous(breaks=seq(42,46,0.5), labels=seq(42,46,0.5))+
-  
-  xlab("Estuary")+
-  
+  xlab("Area")+
   ylab("Total Length (cm) ")+
-  
   theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(), 									
-        
         panel.background=element_rect(fill='white', colour='black'),
-        
         axis.title.y = element_text(colour="black", size=20), # changing font of y axis title
-        
         axis.title.x = element_text(colour="black", size=20),
-        
         axis.text.x=element_text(colour="black", size=16), #changing  colour and font of x axis text
-        
         axis.text.y=element_text(colour="black", size=16))  #changing colour and font of y axis
 
 #plot.title=element_text(size=14), # changing size of plot title)
 
-
+dev.off()
