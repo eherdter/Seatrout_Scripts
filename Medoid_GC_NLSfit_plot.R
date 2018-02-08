@@ -232,14 +232,20 @@ t$X <- as.character(t$X)
 
 t_mut <- t %>% mutate(label=paste(X, y_short))
 
+File <- ("U:/PhD_projectfiles/Figures/correlation_distance.tiff")
+if (file.exists(File)) stop(File, " already exists")
+dir.create(dirname(File), showWarnings = FALSE)
 
-rhobydis <- ggplot(data=t_mut, aes(x=x, y=y, label = label))+geom_point()+ 
+tiff(File, units="in", width=8, height=8, res=300)
+
+ggplot(data=t_mut, aes(x=x, y=y, label = label))+geom_point()+ 
   geom_smooth(method="nls",formula=y ~exp(-(x/v)), method.args=list(start=c(v=150)), aes(weight=N), se=FALSE, color="black", size=1)+                                           
   ylab("Correlation") +
   xlab(" Great Circle Distance (km)")+ 
   geom_vline(xintercept = 128.46, linetype="dotted", size=1.5, color="red")+
   geom_text(aes(label= label), vjust=1.5, hjust=0.5)+
   scale_x_continuous(limits=c(75,500))+
+  #scale_y_continuous(limits=c(-0.3, 0.5, 0.1))+
   theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(),  
         panel.background=element_rect(fill='white', colour='black'),                                                    
         axis.text.x=element_text(colour="black", size=14), #changing  colour of x axis
@@ -250,7 +256,7 @@ rhobydis <- ggplot(data=t_mut, aes(x=x, y=y, label = label))+geom_point()+
         legend.text=element_text(size=14))
 #+
 #  annotate("text", x=90, y=-0.35, label="(A)", size=5, family="Times New Roman")
-
+dev.off()
 
 
 
