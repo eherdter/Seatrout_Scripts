@@ -1,0 +1,716 @@
+---
+title: "R Notebook for Age Length Key Analysis"
+output:
+  html_notebook: default
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE)
+
+```
+
+
+### __Main Objectives of this script__ 
+ 1. Imports otolith data. Summarizes data, mean age, mean length, sd and se and total sample number.   
+ 2. Makes bay-specific observed ALK, calculates some summary statistics.  
+ 3. Makes bay specific smoothed (modeled) ALK with multinomial modeling methods in Ogle (87-).
+ 4. Likelihood ratio testing to do among group statistical comparisons - Ogle (102-103)
+ 5. Plots observed and smoothed ALK for each bay. 
+ 6. Calculates proportional age distribution
+ 7. Determines mean length -at-age (otolith database) and produces plots
+ 8. One way anova to determine if the mean lengths (and mean ages) of males and females are significantly different among estuaries
+ 9. T test to determine whether there is a significant difference between male and female age for each estuary
+ 10. T test to determine whether there is a significant difference in male and female length for each estuary.
+11.Calculates proportional age distribution for ADULTS to be used in Delta_Method script (different from #6)
+12. Calculates weight at age for ADULTS to be used in Delta_Method script
+
+### _Start Here_ ####
+Load packages and set my working directory.
+```{r warning=FALSE, message=FALSE}
+library(FSA)
+library(magrittr)
+library(nnet)
+library(plotrix)
+library(haven)
+library(ggplot2)
+library(scales)
+library(fishmethods) #masking select from dplyr 
+library(dplyr)
+library(gridExtra)
+```
+
+#### 1. LOAD DATA & DO SOME WRANGLING ####
+ 1. load the csv file
+2. subset by which bay I want
+3. subset the FIM program 
+4. make sure I have just the "aged sample"
+5. turn mm to cm
+6. select just a few variables to make it more manageable
+7. then drop the remaining bay levels still sticking around (droplevels)
+8. turn tl from mm to cm
+9. create length categories with FSA package
+
+_Note: Because each dataset has its peculiarities I did this for each dataset and not within a loop or function_
+
+```{r warning=FALSE, message=FALSE}
+setwd("U:/PhD_projectfiles/Raw_Data/Age_Length_Data")
+Agelength_TB<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="TB" & tl>14 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10, sl=sl/10, lcat2 =lencat(tl, w=2)) %>% filter(sex %in% c("m", "M", "F")) #, as.fact=TRUE))- can include this when determing ALK below but the smoothed ALK needs to be the nonfactored version of the length categorization variable. 
+Agelength_TB$sex[which(Agelength_TB$sex == "m")] = "M"
+Agelength_TB$sex <- droplevels(Agelength_TB$sex)
+
+```
+
+
+Change date format into a factor so that I can do summary statistics by year later on
+```{r}
+Agelength_TB$date=as.character(Agelength_TB$date)
+Agelength_TB$DateNew = as.POSIXct(strptime(Agelength_TB$date, format="%d-%B-%y", tz=""))  #B is the selection for when month is spelled out
+Agelength_TB = mutate(Agelength_TB, year = strftime(DateNew, format="%Y")) %>% dplyr::select(c(-date, -DateNew))
+Agelength_TB$year = as.factor(Agelength_TB$year)
+
+```
+Now do the same thing for other estuaries. R code will not be displayed because it was fairly similar.
+
+```{r echo=FALSE, warning=FALSE}
+setwd("U:/PhD_projectfiles/Raw_Data/Age_Length_Data")
+Agelength_AP<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="AP" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10, sl=sl/10, lcat2 =lencat(tl, w=2))%>% filter(sex %in% c("m", "M", "F")) #, as.fact=TRUE))
+
+Agelength_AP$date=as.character(Agelength_AP$date)
+Agelength_AP$DateNew = as.POSIXct(strptime(Agelength_AP$date, format="%d-%B-%y", tz="")) 
+Agelength_AP = mutate(Agelength_AP, year = strftime(DateNew, format="%Y")) %>% dplyr::select(-date, -DateNew)
+Agelength_AP$year = as.factor(Agelength_AP$year) 
+
+Agelength_CK<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="CK" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10, sl=sl/10,lcat2 =lencat(tl, w=2)) %>% filter(sex %in% c("m", "M", "F")) # as.fact=TRUE))
+
+Agelength_CK$date=as.character(Agelength_CK$date)
+Agelength_CK$DateNew = as.POSIXct(strptime(Agelength_CK$date, format="%d-%B-%y", tz="")) 
+Agelength_CK = mutate(Agelength_CK, year = strftime(DateNew, format="%Y")) %>% dplyr::select(-date, -DateNew)
+Agelength_CK$year = as.factor(Agelength_CK$year) 
+
+Agelength_CH<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="CH" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=2)) %>% filter(sex %in% c("m", "f", "M", "F"))# as.fact=TRUE))
+Agelength_CH$sex[which(Agelength_CH$sex == "f")] = "F"
+Agelength_CH$sex <- droplevels(Agelength_CH$sex)
+
+Agelength_CH$date=as.character(Agelength_CH$date)
+Agelength_CH$DateNew = as.POSIXct(strptime(Agelength_CH$date, format="%d-%B-%y", tz="")) 
+Agelength_CH = mutate(Agelength_CH, year = strftime(DateNew, format="%Y")) %>% dplyr::select(-date, -DateNew)
+Agelength_CH$year = as.factor(Agelength_CH$year) 
+
+Agelength_IR<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="IR" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=2)) %>% filter(sex %in% c("m", "f", "M", "F")) # as.fact=TRUE))
+
+Agelength_IR$date=as.character(Agelength_IR$date)
+Agelength_IR$DateNew = as.POSIXct(strptime(Agelength_IR$date, format="%d-%B-%y", tz="")) 
+Agelength_IR = mutate(Agelength_IR, year = strftime(DateNew, format="%Y")) %>% dplyr::select(-date, -DateNew)
+Agelength_IR$year = as.factor(Agelength_IR$year) 
+
+Agelength_JX<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_weight.csv", header=T)), bay=="JX" & tl>0 & final_age >0 & program== 'FIM', select=c(sex,SpecimenNumber, bay, tl,sl, final_age, wt_total, date, program))) %>% mutate(tl=tl/10,sl=sl/10, lcat2 =lencat(tl, w=2)) %>% filter(sex %in% c("m","f", "M", "F")) # as.fact=TRUE))
+
+Agelength_JX$date=as.character(Agelength_JX$date)
+Agelength_JX$DateNew = as.POSIXct(strptime(Agelength_JX$date, format="%d-%B-%y", tz="")) 
+Agelength_JX = mutate(Agelength_JX, year = strftime(DateNew, format="%Y")) %>% dplyr::select(-date, -DateNew)
+Agelength_JX$year = as.factor(Agelength_JX$year) 
+
+```
+#### 2. Basic data summarization#### 
+```{r}
+#total sample number of FIM data
+All= rbind(Agelength_AP, Agelength_CK, Agelength_TB, Agelength_CH, Agelength_JX, Agelength_IR) #omits na
+All <- na.omit(All)
+```
+
+```{r echo=FALSE}
+#Age proportion under 3 years
+All_3under = subset(All, final_age <=3)
+Proprotion3under <- nrow(All_3under)/nrow(All)
+
+#Min, max length
+min(All$tl)
+max(All$tl)
+
+```
+
+```{r}
+#summarize the entire set and group by sex and then bay
+Combined_sum <- dplyr::summarize(group_by(All, sex,bay), mean_tl=mean(tl), sd_tl=sd(tl), se_tl= sd_tl/(sqrt(length(final_age))),min_tl=min(tl), max_tl=max(tl), mean_age=mean(final_age), median_age=median(final_age),sd_age= sd(final_age), se_age=sd_age/sqrt(length(final_age)), min_age= min(final_age), max_age=max(final_age))
+
+Combined_sum
+
+
+```
+
+
+Summarize each to get sex ratios etc. 
+
+``` {r}
+#an example with Tampa Bay data
+TB_sum <- summarise(Agelength_TB %>% filter(sex %in% c("M", "F")),mean_age=mean(final_age), median_age=median(final_age),sd_age= sd(final_age), se_age=sd_age/sqrt(length(final_age)), mean_tl = mean(tl), median_tl = median(tl), min_tl=min(tl), max_tl=max(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(final_age))), prop_F=nrow(subset(Agelength_TB, sex=="F"))/length(final_age),prop_M=nrow(subset(Agelength_TB, sex=="M"))/length(final_age), N_F=nrow(subset(Agelength_TB, sex=="F")), N_M=nrow(subset(Agelength_TB, sex=="M")), totN =N_F+N_M)
+```
+Now for all other estuaries but code not displayed. 
+
+```{r echo=FALSE}
+AP_sum <- summarise(Agelength_AP %>% filter(sex %in% c("M", "F")),mean_age=mean(final_age), median_age=median(final_age),sd_age= sd(final_age), se_age=sd_age/sqrt(length(final_age)), mean_tl = mean(tl), median_tl = median(tl),min_tl=min(tl), max_tl=max(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(final_age))), prop_F=nrow(subset(Agelength_AP, sex=="F"))/length(final_age),prop_M=nrow(subset(Agelength_AP, sex=="M"))/length(final_age), N_F=nrow(subset(Agelength_AP, sex=="F")), N_M=nrow(subset(Agelength_AP, sex=="M")), totN =N_F+N_M)
+CH_sum <- summarise(droplevels(Agelength_CH %>% filter(sex %in% c("M", "F"))),mean_age=mean(final_age), median_age=median(final_age),sd_age= sd(final_age), se_age=sd_age/sqrt(length(final_age)), mean_tl = mean(tl), median_tl = median(tl),min_tl=min(tl), max_tl=max(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(final_age))), prop_F=nrow(subset(Agelength_CH, sex=="F"))/length(final_age),prop_M=nrow(subset(Agelength_CH, sex=="M"))/length(final_age), N_F=nrow(subset(Agelength_CH, sex=="F")), N_M=nrow(subset(Agelength_CH, sex=="M")), totN =N_F+N_M)
+
+CK_sum <- summarise(Agelength_CK %>% filter(sex %in% c("M", "F")),mean_age=mean(final_age), median_age=median(final_age),sd_age= sd(final_age), se_age=sd_age/sqrt(length(final_age)), mean_tl = mean(tl), median_tl = median(tl),min_tl=min(tl), max_tl=max(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(final_age))), prop_F=nrow(subset(Agelength_CK, sex=="F"))/length(final_age),prop_M=nrow(subset(Agelength_CK, sex=="M"))/length(final_age), N_F=nrow(subset(Agelength_CK, sex=="F")), N_M=nrow(subset(Agelength_CK, sex=="M")), totN =N_F+N_M)
+IR_sum <- summarise(Agelength_IR %>% filter(sex %in% c("M", "F")),mean_age=mean(final_age), median_age=median(final_age),sd_age= sd(final_age), se_age=sd_age/sqrt(length(final_age)), mean_tl = mean(tl), median_tl = median(tl),min_tl=min(tl), max_tl=max(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(final_age))), prop_F=nrow(subset(Agelength_IR, sex=="F"))/length(final_age),prop_M=nrow(subset(Agelength_IR, sex=="M"))/length(final_age), N_F=nrow(subset(Agelength_IR, sex=="F")), N_M=nrow(subset(Agelength_IR, sex=="M")), totN =N_F+N_M)
+JX_sum <- summarise(Agelength_JX %>% filter(sex %in% c("M", "F")),mean_age=mean(final_age), median_age=median(final_age),sd_age= sd(final_age), se_age=sd_age/sqrt(length(final_age)), mean_tl = mean(tl), median_tl = median(tl),min_tl=min(tl), max_tl=max(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(final_age))), prop_F=nrow(subset(Agelength_JX, sex=="F"))/length(final_age),prop_M=nrow(subset(Agelength_JX, sex=="M"))/length(final_age), N_F=nrow(subset(Agelength_JX, sex=="F")), N_M=nrow(subset(Agelength_JX, sex=="M")), totN =N_F+N_M)
+```
+Add them together and make sure rownames are added
+```{r}
+All_sum <- rbind(AP_sum, CK_sum, TB_sum, CH_sum, JX_sum, IR_sum) 
+rownames(All_sum) <- c("AP", "CK", "TB", "CH", "JX", "IR")
+```
+
+
+```{r echo=FALSE}
+#limit minimum length to that in the recreational data set and THEN do summarization to compare. 
+
+AL_TB <- subset(Agelength_TB, tl>24) 
+AL_AP <- subset(Agelength_AP, tl>20)
+AL_CH <- subset(Agelength_CH, tl>26)
+AL_CK<- subset(Agelength_CK, tl>26)
+AL_IR<- subset(Agelength_IR, tl>26)
+AL_JX<- subset(Agelength_JX, tl>26)
+
+AL_all <- rbind(AL_TB, AL_AP, AL_CH, AL_CK, AL_IR, AL_JX)
+AL_sum <- AL_all %>% group_by(bay) %>% summarise(mean_age=mean(final_age), median_age=median(final_age),sd_age= sd(final_age), se_age=sd_age/sqrt(length(final_age)), mean_tl = mean(tl), median_tl = median(tl), min_tl=min(tl), max_tl=max(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(tl))))
+
+```
+
+#### TWO WAY ANOVAS ###
+To test for differences in age and length by bay and sex. 
+
+```{r}
+All_MF <- droplevels(subset(All, sex %in% c("M", "F")))
+
+#differences in final age and length by estuary and sex
+aov <- aov(final_age ~ sex + bay, data= All_MF)
+summary(aov)
+#Tukey's test for pairwise comparison
+TukeyHSD(aov)
+
+
+aov2 <- aov(tl ~ bay + sex, data= All_MF)
+summary(aov2)
+TukeyHSD(aov2)
+
+#differences in final age and length by sex within each estuary
+summary(aov(final_age ~  sex, data= AL_TB))
+summary(aov(final_age ~  sex, data= AL_AP))
+summary(aov(final_age ~  sex, data= AL_CK))
+summary(aov(final_age ~  sex, data= AL_CH))
+summary(aov(final_age ~  sex, data= AL_JX))
+summary(aov(final_age ~  sex, data= AL_IR))
+
+summary(aov(tl ~  sex, data= AL_TB))
+summary(aov(tl  ~  sex, data= AL_AP))
+summary(aov(tl  ~  sex, data= AL_CK))
+summary(aov(tl  ~  sex, data= AL_CH))
+summary(aov(tl  ~  sex, data= AL_JX))
+summary(aov(tl  ~  sex, data= AL_IR))
+```
+
+
+#CHI SQ TEST To test differencs in age distribution between bays #####
+non-parameteric like anova is below so it doesnt assume normality of the age distribution  
+can do a test of variance to determine whether can use anova  
+anova assumes homogenous variances  
+test for variances  
+H0= ratio of variances is equal to 1   
+Ha = ratio of variances is not equal to 1  
+
+```{r warning=FALSE}
+var.test(Agelength_TB$final_age, Agelength_AP$final_age) #equal variances
+var.test(Agelength_TB$final_age, Agelength_CK$final_age)
+var.test(Agelength_TB$final_age, Agelength_CH$final_age)
+var.test(Agelength_TB$final_age, Agelength_IR$final_age) 
+var.test(Agelength_TB$final_age, Agelength_JX$final_age)
+var.test(Agelength_AP$final_age, Agelength_CK$final_age)
+var.test(Agelength_AP$final_age, Agelength_CH$final_age) 
+var.test(Agelength_AP$final_age, Agelength_IR$final_age)
+var.test(Agelength_AP$final_age, Agelength_JX$final_age) #equal variances
+var.test(Agelength_CK$final_age, Agelength_CH$final_age)
+var.test(Agelength_CK$final_age, Agelength_IR$final_age)
+var.test(Agelength_CK$final_age, Agelength_JX$final_age)
+var.test(Agelength_CH$final_age, Agelength_IR$final_age)
+var.test(Agelength_CH$final_age, Agelength_JX$final_age)
+var.test(Agelength_IR$final_age, Agelength_JX$final_age)
+
+#mostly all variances are unequal so use a chi squared test
+
+#truncate to less than 8 to satisfy requirements of the test
+ALL_to7 <- All %>% subset(final_age<8)
+(age_freq <- xtabs(~bay+final_age, data=ALL_to7))
+
+chisq.test(age_freq[1:2,]) 
+chisq.test(age_freq[1:3,]) 
+chisq.test(age_freq[1:4,]) 
+chisq.test(age_freq[1:5,]) 
+chisq.test(age_freq[1:6,]) 
+chisq.test(age_freq[2:3,]) 
+chisq.test(age_freq[2:4,]) 
+chisq.test(age_freq[2:5,]) 
+chisq.test(age_freq[2:6,]) 
+chisq.test(age_freq[3:4,])
+chisq.test(age_freq[3:5,]) 
+chisq.test(age_freq[3:6,]) 
+chisq.test(age_freq[4:5,]) 
+chisq.test(age_freq[4:6,]) 
+chisq.test(age_freq[5:6,]) 
+```
+
+```{r warning=FALSE}
+#Adjusting p-values for the multople comparisons
+ps_age<- c(chisq.test(age_freq[1:2,])$p.value,
+           chisq.test(age_freq[1:3,])$p.value,
+           chisq.test(age_freq[1:4,])$p.value,
+           chisq.test(age_freq[1:5,])$p.value,
+           chisq.test(age_freq[1:6,])$p.value,
+           chisq.test(age_freq[2:3,])$p.value,
+           chisq.test(age_freq[2:4,])$p.value,
+           chisq.test(age_freq[2:5,])$p.value,
+           chisq.test(age_freq[2:6,])$p.value,
+           chisq.test(age_freq[3:4,])$p.value,
+           chisq.test(age_freq[3:5,])$p.value,
+           chisq.test(age_freq[3:6,])$p.value,
+           chisq.test(age_freq[4:5,])$p.value,
+           chisq.test(age_freq[4:6,])$p.value,
+           chisq.test(age_freq[5:6,])$p.value)
+
+pdf <- as.data.frame(p.adjust(ps_age))
+
+#all significantly different excpet for TB to AP and CH and IR
+```
+
+###CHI SQ TEST To test differencs in length distribution between bays
+test for equal variances
+```{r warning=FALSE}
+var.test(Agelength_TB$tl, Agelength_AP$tl)
+var.test(Agelength_TB$tl, Agelength_CK$tl)
+var.test(Agelength_TB$tl, Agelength_CH$tl)
+var.test(Agelength_TB$tl, Agelength_IR$tl) #equal variances
+var.test(Agelength_TB$tl, Agelength_JX$tl)
+var.test(Agelength_AP$tl, Agelength_CK$tl)
+var.test(Agelength_AP$tl, Agelength_CH$tl) #equal variances
+var.test(Agelength_AP$tl, Agelength_IR$tl)
+var.test(Agelength_AP$tl, Agelength_JX$tl)
+var.test(Agelength_CK$tl, Agelength_CH$tl)
+var.test(Agelength_CK$tl, Agelength_IR$tl)
+var.test(Agelength_CK$tl, Agelength_JX$tl)
+var.test(Agelength_CH$tl, Agelength_IR$tl)
+var.test(Agelength_CH$tl, Agelength_JX$tl)
+var.test(Agelength_IR$tl, Agelength_JX$tl)
+
+#unequal variances so will use chi.squared again
+
+#truncate lengths to satisfy requirements
+All_len_freq_30to58 <- All %>% subset(lcat2>=32 & lcat2<= 58)
+(len_freq <- xtabs(~bay+lcat2, data=All_len_freq_30to58))
+
+chisq.test(len_freq[1:2,]) 
+chisq.test(len_freq[1:3,]) 
+chisq.test(len_freq[1:4,]) 
+chisq.test(len_freq[1:5,]) 
+chisq.test(len_freq[1:6,]) 
+chisq.test(len_freq[2:3,]) 
+chisq.test(len_freq[2:4,]) 
+chisq.test(len_freq[2:5,]) 
+chisq.test(len_freq[2:6,]) 
+chisq.test(len_freq[3:4,]) 
+chisq.test(len_freq[3:5,]) 
+chisq.test(len_freq[3:6,]) 
+chisq.test(len_freq[4:5,]) 
+chisq.test(len_freq[4:6,]) 
+chisq.test(len_freq[5:6,]) 
+
+
+ps_length <- c(chisq.test(len_freq[1:2,])$p.value, 
+chisq.test(len_freq[1:3,])$p.value, 
+chisq.test(len_freq[1:4,])$p.value, 
+chisq.test(len_freq[1:5,])$p.value, 
+chisq.test(len_freq[1:6,])$p.value, 
+chisq.test(len_freq[2:3,])$p.value, 
+chisq.test(len_freq[2:4,])$p.value, 
+chisq.test(len_freq[2:5,])$p.value, 
+chisq.test(len_freq[2:6,])$p.value, 
+chisq.test(len_freq[3:4,])$p.value, 
+chisq.test(len_freq[3:5,])$p.value, 
+chisq.test(len_freq[3:6,])$p.value, 
+chisq.test(len_freq[4:5,])$p.value, 
+chisq.test(len_freq[4:6,])$p.value, 
+chisq.test(len_freq[5:6,])$p.value) 
+
+plength <- as.data.frame(p.adjust(ps_length))
+
+
+```
+
+### MAKE ALKS ####
+Make table with observed total numbers at length by age 
+```{r}
+(rawfreq_TB <- xtabs(~lcat2+final_age, data=Agelength_TB)) 
+#rawfreq_TB_test_df <- as.data.frame(as.matrix(xtabs(~lcat2+final_age, data=TB_test)))
+# there appears to be a fish that was assigned an age of 3 but is in the 0-2 length category. Going to remove this because its probably a typo. Specified in above subsetting step as tl>20mm =(2cm).   
+colSums(rawfreq_TB) #number of lengths obs per age
+rowSums(rawfreq_TB) #number age obs per length
+```
+Now do for other estuaries
+```{r echo=FALSE}
+(rawfreq_AP <- xtabs(~lcat2+final_age, data=Agelength_AP)) 
+rowSums(rawfreq_AP)
+colSums(rawfreq_AP)
+(rawfreq_CK <- xtabs(~lcat2+final_age, data=Agelength_CK)) 
+rowSums(rawfreq_CK)
+colSums(rawfreq_CK)
+(rawfreq_CH <- xtabs(~lcat2+final_age, data=Agelength_CH)) 
+rowSums(rawfreq_CH)
+colSums(rawfreq_CH)
+(rawfreq_IR <- xtabs(~lcat2+final_age, data=Agelength_IR)) 
+rowSums(rawfreq_IR)
+colSums(rawfreq_IR)
+(rawfreq_JX <- xtabs(~lcat2+final_age, data=Agelength_JX))
+rowSums(rawfreq_JX)
+colSums(rawfreq_JX)
+
+```
+
+### MAKE OBSERVED ALK FROM ABOVE TABLES #####
+
+The conditional proportions that form the ALK are calculated by dividing ecah cell of the frequency table by the sum of the corresponding row. 
+These row proportions are constructed by submitting the xtabs() object to prop.table() and including margin=1 to indicate that the proportions are computed by row (page 92). 
+
+The alkPlot command used for plotting the observed ALK is unable to extend the x axis to the bounds of c(0,80) because xlim is not working. 
+ Therefore, in order to produce a plot with an x axis that can span from 0-80 (like what is happening with the length frequency and the smoothed ALK)
+ I need to add in "observed" proportions for length categories that were not sampled. 
+ I could have added them to the original data frame but I was concerned that in the process of proportion calculations the extra entries would
+ affect the proportions or result in proportions that I didn't want. The smoothing process can estimate proportions outside of the range but I wanted 
+ to keep the observed plot with just the proportions from the observed data. Therefore, I added in the zero proportion data by writing and editing
+ a csv file which I then read below. 
+
+```{r}
+as.data.frame.matrix((prop.table(rawfreq_TB, margin=1))) %>% write.csv("U:/PhD_projectfiles/Exported_R_Datafiles/alk_TB.csv")
+alk_TB <- read.csv("U:/PhD_projectfiles/Exported_R_Datafiles/alk_TB_edit.csv", row.names=1)
+names(alk_TB) <- c(1,2,3,4,5,6,7,8,9)
+round(alk_TB,3)
+
+```
+Now do the same with all of the others
+```{r echo=FALSE}
+as.data.frame.matrix((prop.table(rawfreq_CH, margin=1))) %>% write.csv("U:/PhD_projectfiles/Exported_R_Datafiles/alk_CH.csv")
+alk_CH <- read.csv("U:/PhD_projectfiles/Exported_R_Datafiles/alk_CH_edit.csv", row.names=1)
+names(alk_CH) <- c(1,2,3,4,5,6,7)
+round(alk_CH,3)
+
+as.data.frame.matrix((prop.table(rawfreq_CK, margin=1))) %>% write.csv("U:/PhD_projectfiles/Exported_R_Datafiles/alk_CK.csv")
+alk_CK <- read.csv("U:/PhD_projectfiles/Exported_R_Datafiles/alk_CK_edit.csv", row.names=1)
+names(alk_CK) <- c(1,2,3,4,5,6,7)
+round(alk_CK,3)
+
+as.data.frame.matrix((prop.table(rawfreq_AP, margin=1))) %>% write.csv("U:/PhD_projectfiles/Exported_R_Datafiles/alk_AP.csv")
+alk_AP <- read.csv("U:/PhD_projectfiles/Exported_R_Datafiles/alk_AP_edit.csv", row.names=1)
+names(alk_AP) <- c(1,2,3,4,5,6,7,8,9,10)
+round(alk_AP,3)
+
+as.data.frame.matrix((prop.table(rawfreq_JX, margin=1))) %>% write.csv("U:/PhD_projectfiles/Exported_R_Datafiles/alk_JX.csv")
+alk_JX <- read.csv("U:/PhD_projectfiles/Exported_R_Datafiles/alk_JX_edit.csv", row.names=1)
+names(alk_JX) <- c(1,2,3,4,5,6,7,8)
+round(alk_JX,3)
+
+as.data.frame.matrix((prop.table(rawfreq_IR, margin=1))) %>% write.csv("U:/PhD_projectfiles/Exported_R_Datafiles/alk_IR.csv")
+alk_IR <- read.csv("U:/PhD_projectfiles/Exported_R_Datafiles/alk_IR_edit.csv", row.names=1)
+names(alk_IR) <- c(1,2,3,4,5,6,7,8,9)
+round(alk_IR,3)
+```
+
+### Apply Proportional Age Distribution and Mean Length at Age
+ 1. Proportional age distribution  
+ 2. Mean length-at-age. (otolith database)
+
+```{r}
+#Proportional age distribution
+  # might need to make sure I add some dummy data for bays that don't have equal number of ages
+ad_TB <- xtabs(~final_age, data=Agelength_TB)
+round(prop.table(ad_TB), 3)
+```
+Now do for other estuaries
+
+```{r echo=FALSE}
+
+ad_CK <- xtabs(~final_age, data=Agelength_CK)
+round(prop.table(ad_CK), 3)
+
+ad_CH <- xtabs(~final_age, data=Agelength_CH)
+round(prop.table(ad_CH), 3)
+
+ad_AP <- xtabs(~final_age, data=Agelength_AP)
+round(prop.table(ad_AP), 3)
+
+ad_IR <- xtabs(~final_age, data=Agelength_IR)
+round(prop.table(ad_IR), 3)
+
+ad_JX <- xtabs(~final_age, data=Agelength_JX)
+round(prop.table(ad_JX), 3)
+```
+
+#### Mean Length-at-age stats for each
+```{r}
+TB_sumlen <- Agelength_TB %>% group_by(final_age) %>% summarize(n=validn(tl), mn=mean(tl, na.rm=TRUE),
+                                                    sd=sd(tl, na.rm=TRUE), se=se(tl, na.rm=TRUE)) %>%
+                                                    as.data.frame()
+```
+Now do the rest of the estuaries
+```{r echo=FALSE}
+CK_sumlen <- Agelength_CK %>% group_by(final_age) %>% summarize(n=validn(tl), mn=mean(tl, na.rm=TRUE),
+                                                    sd=sd(tl, na.rm=TRUE), se=se(tl, na.rm=TRUE)) %>%
+                                                    as.data.frame()                                       
+
+CH_sumlen <- Agelength_CH %>% group_by(final_age) %>% summarize(n=validn(tl), mn=mean(tl, na.rm=TRUE),
+                                                    sd=sd(tl, na.rm=TRUE), se=se(tl, na.rm=TRUE)) %>%
+                                                    as.data.frame()                                        
+                                       
+ AP_sumlen <- Agelength_AP %>% group_by(final_age) %>% summarize(n=validn(tl), mn=mean(tl, na.rm=TRUE),
+                                                    sd=sd(tl, na.rm=TRUE), se=se(tl, na.rm=TRUE)) %>%
+                                                    as.data.frame()
+                                        
+IR_sumlen <- Agelength_IR %>% group_by(final_age) %>% summarize(n=validn(tl), mn=mean(tl, na.rm=TRUE),
+                                                   sd=sd(tl, na.rm=TRUE), se=se(tl, na.rm=TRUE)) %>%
+                                                   as.data.frame() 
+                                       
+JX_sumlen <- Agelength_JX %>% group_by(final_age) %>% summarize(n=validn(tl), mn=mean(tl, na.rm=TRUE),
+                                                  sd=sd(tl, na.rm=TRUE), se=se(tl, na.rm=TRUE)) %>%
+                                                  as.data.frame()   
+
+```
+
+### MULTIPLOT AGE HISTOGRAMS
+
+```{r}
+age_AP <- ggplot(Agelength_AP, aes(x=final_age))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.4))+  ## plotting in percent frequency
+  scale_x_continuous(name="Age (years)", limits=c(0,11), breaks=seq(1,10,1), labels=c(1,2,3,4,5,6,7,8,9,"10+"))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24, family="Times New Roman"), #changing  colour of x axisaxis.text.y=element_text(colour="black"), #changing colour of y acis
+        axis.text.y=element_text(colour="black", size=24, family="Times New Roman"), #changing colour of y acis
+        axis.title.x=element_text(size=24, family="Times New Roman"),
+        axis.title.y=element_text(size=24, family="Times New Roman"),
+        plot.title=element_text(size=14))+
+  annotate("text", x=10, y=.35, label="AP", size=10, family="Times New Roman")
+
+age_AP
+```
+Now do the others
+
+```{r echo=FALSE}
+
+age_CK <- ggplot(Agelength_CK, aes(x=final_age))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.45))+  ## plotting in percent frequency
+  scale_x_continuous(name="Age (years)", limits=c(0,11), breaks=seq(1,10,1), labels=c(1,2,3,4,5,6,7,8,9,"10+"))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24, family="Times New Roman"), #changing  colour of x axisaxis.text.y=element_text(colour="black"), #changing colour of y acis
+        axis.text.y=element_text(colour="black", size=24, family="Times New Roman"), #changing colour of y acis
+        axis.title.x=element_text(size=24, family="Times New Roman"),
+        axis.title.y=element_text(size=24, family="Times New Roman"),
+        plot.title=element_text(size=14))+
+  annotate("text", x=10, y=.35, label="CK", size=10, family="Times New Roman")
+
+age_CK
+
+age_TB <- ggplot(Agelength_TB, aes(x=final_age))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.4))+  ## plotting in percent frequency
+  scale_x_continuous(name="Age (years)", limits=c(0,11), breaks=seq(1,10,1), labels=c(1,2,3,4,5,6,7,8,9,"10+"))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24, family="Times New Roman"), #changing  colour of x axisaxis.text.y=element_text(colour="black"), #changing colour of y acis
+        axis.text.y=element_text(colour="black", size=24, family="Times New Roman"), #changing colour of y acis
+        axis.title.x=element_text(size=24, family="Times New Roman"),
+        axis.title.y=element_text(size=24, family="Times New Roman"),
+        plot.title=element_text(size=14))+
+  annotate("text", x=10, y=.35, label="TB", size=10, family="Times New Roman")
+
+age_TB
+
+age_CH <- ggplot(Agelength_CH, aes(x=final_age))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.4))+  ## plotting in percent frequency
+  scale_x_continuous(name="Age (years)", limits=c(0,11), breaks=seq(1,10,1), labels=c(1,2,3,4,5,6,7,8,9,"10+"))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24, family="Times New Roman"), #changing  colour of x axisaxis.text.y=element_text(colour="black"), #changing colour of y acis
+        axis.text.y=element_text(colour="black", size=24, family="Times New Roman"), #changing colour of y acis
+        axis.title.x=element_text(size=24, family="Times New Roman"),
+        axis.title.y=element_text(size=24, family="Times New Roman"),
+        plot.title=element_text(size=14))+
+  annotate("text", x=10, y=.35, label="CH", size=10, family="Times New Roman")
+age_CH
+
+age_JX <- ggplot(Agelength_JX, aes(x=final_age))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.45))+  ## plotting in percent frequency
+  scale_x_continuous(name="Age (years)", limits=c(0,11), breaks=seq(1,10,1), labels=c(1,2,3,4,5,6,7,8,9,"10+"))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24, family="Times New Roman"), #changing  colour of x axisaxis.text.y=element_text(colour="black"), #changing colour of y acis
+        axis.text.y=element_text(colour="black", size=24, family="Times New Roman"), #changing colour of y acis
+        axis.title.x=element_text(size=24, family="Times New Roman"),
+        axis.title.y=element_text(size=24, family="Times New Roman"),
+        plot.title=element_text(size=14))+
+  annotate("text", x=10, y=.35, label="JX", size=10, family="Times New Roman")
+age_JX
+age_IR <- ggplot(Agelength_IR, aes(x=final_age))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.4))+  ## plotting in percent frequency
+  scale_x_continuous(name="Age (years)", limits=c(0,11), breaks=seq(1,10,1), labels=c(1,2,3,4,5,6,7,8,9,"10+"))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24, family="Times New Roman"), #changing  colour of x axisaxis.text.y=element_text(colour="black"), #changing colour of y acis
+        axis.text.y=element_text(colour="black", size=24, family="Times New Roman"), #changing colour of y acis
+        axis.title.x=element_text(size=24, family="Times New Roman"),
+        axis.title.y=element_text(size=24, family="Times New Roman"),
+        plot.title=element_text(size=14))+
+  annotate("text", x=10, y=.35, label="IR", size=10, family="Times New Roman")
+
+age_IR
+```
+
+```{r echo=FALSE}
+#MULTIPLOT FUNCTION #####
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+  
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  
+  numPlots = length(plots)
+  
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                     ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+  
+  if (numPlots==1) {
+    print(plots[[1]])
+    
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+
+multiplot()
+```
+### MULTIPLOT LENGTH HISTOGRAMS 
+
+```{r}
+length_AP <- ggplot(Agelength_AP, aes(x=tl))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.10), breaks=seq(0,.10, .02))+  ## plotting in percent frequency
+  scale_x_continuous(name="Length (cm)", limits=c(0,80), breaks=seq(0,80,20))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24, family="Times New Roman"), #changing  colour of x axisaxis.text.y=element_text(colour="black"), #changing colour of y acis
+        axis.text.y=element_text(colour="black", size=24, family="Times New Roman"), #changing colour of y acis
+        axis.title.x=element_text(size=24, family="Times New Roman"),
+        axis.title.y=element_text(size=24, family="Times New Roman"),
+        plot.title=element_text(size=14))+
+  annotate("text", x=65, y= .08, label="AP", size=10, family="Times New Roman")
+length_AP
+```
+Now make plots for others. 
+
+```{r echo=FALSE}
+length_CK <- ggplot(Agelength_CK, aes(x=tl))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.10), breaks=seq(0,.10, .02))+  ## plotting in percent frequency
+  scale_x_continuous(name="Length (cm)", limits=c(0,80), breaks=seq(0,80,20))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24, family="Times New Roman"), #changing  colour of x axisaxis.text.y=element_text(colour="black"), #changing colour of y acis
+        axis.text.y=element_text(colour="black", size=24, family="Times New Roman"), #changing colour of y acis
+        axis.title.x=element_text(size=24, family="Times New Roman"),
+        axis.title.y=element_text(size=24, family="Times New Roman"),
+        plot.title=element_text(size=14))+
+  annotate("text", x=65, y= .08, label="CK", size=10, family="Times New Roman")
+
+length_CK
+
+length_TB <- ggplot(Agelength_TB, aes(x=tl))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.10), breaks=seq(0,.10, .02))+  ## plotting in percent frequency
+  scale_x_continuous(name="Length (cm)", limits=c(0,80), breaks=seq(0,80,20))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24, family="Times New Roman"), #changing  colour of x axisaxis.text.y=element_text(colour="blaTB"), #changing colour of y acis
+        axis.text.y=element_text(colour="black", size=24, family="Times New Roman"), #changing colour of y acis
+        axis.title.x=element_text(size=24, family="Times New Roman"),
+        axis.title.y=element_text(size=24, family="Times New Roman"),
+        plot.title=element_text(size=14))+
+  annotate("text", x=65, y= .08, label="TB", size=10, family="Times New Roman")
+length_TB
+
+length_CH <- ggplot(Agelength_CH, aes(x=tl))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.10), breaks=seq(0,.10, .02))+  ## plotting in percent frequency
+  scale_x_continuous(name="Length (cm)", limits=c(0,80), breaks=seq(0,80,20))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24, family="Times New Roman"), #changing  colour of x axisaxis.text.y=element_text(colour="blaCH"), #changing colour of y acis
+        axis.text.y=element_text(colour="black", size=24, family="Times New Roman"), #changing colour of y acis
+        axis.title.x=element_text(size=24, family="Times New Roman"),
+        axis.title.y=element_text(size=24, family="Times New Roman"),
+        plot.title=element_text(size=14))+
+  annotate("text", x=65, y= .08, label="CH", size=10, family="Times New Roman")
+length_CH
+length_JX <- ggplot(Agelength_JX, aes(x=tl))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.10), breaks=seq(0,.10, .02))+  ## plotting in percent frequency
+  scale_x_continuous(name="Length (cm)", limits=c(0,80), breaks=seq(0,80,20))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24, family="Times New Roman"), #JXanging  colour of x axisaxis.text.y=element_text(colour="blaJX"), #JXanging colour of y acis
+        axis.text.y=element_text(colour="black", size=24, family="Times New Roman"), #JXanging colour of y acis
+        axis.title.x=element_text(size=24, family="Times New Roman"),
+        axis.title.y=element_text(size=24, family="Times New Roman"),
+        plot.title=element_text(size=14))+
+  annotate("text", x=65, y= .08, label="JX", size=10, family="Times New Roman")
+length_JX
+
+length_IR <- ggplot(Agelength_IR, aes(x=tl))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.10), breaks=seq(0,.10, .02))+  ## plotting in percent frequency
+  scale_x_continuous(name="Length (cm)", limits=c(0,80), breaks=seq(0,80,20))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24, family="Times New Roman"), #IRanging  colour of x axisaxis.text.y=element_text(colour="blaIR"), #IRanging colour of y acis
+        axis.text.y=element_text(colour="black", size=24, family="Times New Roman"), #IRanging colour of y acis
+        axis.title.x=element_text(size=24, family="Times New Roman"),
+        axis.title.y=element_text(size=24, family="Times New Roman"),
+        plot.title=element_text(size=14))+
+  annotate("text", x=65, y= .08, label="IR", size=10, family="Times New Roman")
+
+length_IR
+```
+
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
