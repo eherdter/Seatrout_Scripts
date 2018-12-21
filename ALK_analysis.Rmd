@@ -1,9 +1,6 @@
 ---
 title: "R Notebook for Age Length Key Analysis"
-output:
-  html_notebook: default
-  html_document: default
-  pdf_document: default
+output: rmarkdown::github_document
 ---
 
 ```{r setup, include=FALSE}
@@ -486,7 +483,7 @@ JX_sumlen <- Agelength_JX %>% group_by(final_age) %>% summarize(n=validn(tl), mn
 
 ### MULTIPLOT AGE HISTOGRAMS
 
-```{r}
+```{r warning=FALSE}
 age_AP <- ggplot(Agelength_AP, aes(x=final_age))+ 
   geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
   scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.4))+  ## plotting in percent frequency
@@ -504,7 +501,7 @@ age_AP
 ```
 Now do the others
 
-```{r echo=FALSE}
+```{r echo=FALSE, warning=FALSE}
 
 age_CK <- ggplot(Agelength_CK, aes(x=final_age))+ 
   geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-.5, fill="white", color="black")+    # plotting in percent frequency
@@ -618,11 +615,11 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 }
 
 
-multiplot()
+#multiplot()
 ```
 ### MULTIPLOT LENGTH HISTOGRAMS 
 
-```{r}
+```{r warning =FALSE}
 length_AP <- ggplot(Agelength_AP, aes(x=tl))+ 
   geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
   scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.10), breaks=seq(0,.10, .02))+  ## plotting in percent frequency
@@ -639,7 +636,7 @@ length_AP
 ```
 Now make plots for others. 
 
-```{r echo=FALSE}
+```{r echo=FALSE, warning=FALSE}
 length_CK <- ggplot(Agelength_CK, aes(x=tl))+ 
   geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
   scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.10), breaks=seq(0,.10, .02))+  ## plotting in percent frequency
