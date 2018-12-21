@@ -210,7 +210,7 @@ summary(aov(tl  ~  sex, data= AL_IR))
 ```
 
 
-#CHI SQ TEST To test differencs in age distribution between bays #####
+###CHI SQ TEST To test differencs in age distribution between bays #####
 non-parameteric like anova is below so it doesnt assume normality of the age distribution  
 can do a test of variance to determine whether can use anova  
 anova assumes homogenous variances  
@@ -707,6 +707,524 @@ length_IR <- ggplot(Agelength_IR, aes(x=tl))+
   annotate("text", x=65, y= .08, label="IR", size=10, family="Times New Roman")
 
 length_IR
+```
+
+```{r}
+#CROSSBAR PLOT for mean and standard error ####
+
+MinMeanSEM196Max <- function(x) {
+  v <- c(mean(x) - (sd(x)/sqrt(length(x))*1.96), mean(x), mean(x) + (sd(x)/sqrt(length(x))*1.96))
+  names(v) <- c("ymin", "y", "ymax")
+  v
+}
+
+
+
+All_min <- subset(All, sex %in% c("F", "M"))
+labels <- c(F="Female", M="Male")
+
+levels(All_min$bay) <- c("W1_AP", "W2_CK", "W3_TB", "W4_CH", "E1_JX", "E2_IR")
+
+File <- ("U:/PhD_projectfiles/Figures/age_crossbar.tiff")
+if (file.exists(File)) stop(File, " already exists")
+dir.create(dirname(File), showWarnings = FALSE)
+
+tiff(File, units="in", width=5, height=7, res=300)
+
+scaleFUN <- function(x) sprintf("%.1f", x)
+
+
+#test <- All_min %>% group_by(bay) %>% summarize(n=length(final_age), mean_age=mean(final_age), UCI = mean_age + (sd(final_age)/sqrt(n)*1.96) , LCI = mean_age - (sd(final_age)/sqrt(n)*1.96))
+#ggplot(test, aes(bay, mean_age)) + geom_crossbar(aes(ymin=LCI, ymax=UCI))
+
+grid.arrange(ggplot(All_min %>% group_by(bay) %>% summarize(n=length(final_age), mean_age=mean(final_age), UCI = mean_age + (sd(final_age)/sqrt(n)*1.96) , LCI = mean_age - (sd(final_age)/sqrt(n)*1.96)), aes(bay, mean_age)) +
+  stat_summary(fun.data=MinMeanSEM196Max, geom="crossbar", alpha=0.5) + #, colour="black") + 
+  geom_crossbar(aes(ymin=LCI, ymax=UCI))+
+  scale_y_continuous(limits=c(0,4), breaks=seq(0,5,0.5), labels=scaleFUN)+
+  #facet_grid(sex ~., labeller=labeller(sex=labels)) +
+  xlab("Estuary")+
+  ylab("Age (yrs)")+
+  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(), 									
+        panel.background=element_rect(fill='white', colour='black'),
+        axis.title.y = element_text(colour="black", size=18), # changing font of y axis title
+        axis.title.x = element_blank(),
+        axis.text.x=element_text(colour="black", size=12), #changing  colour and font of x axis text
+        axis.text.y=element_text(colour="black", size=12),
+        strip.text.y = element_text(size=16)) + 
+  annotate("text", label= "a", x= 1, y = 2.8, size = 4) + 
+annotate("text", label= "a", x= 3, y = 2.85, size = 4) +
+  annotate("text", label= "a", x= 4, y = 2.79, size = 4) +
+  annotate("text", label= "a", x= 6, y = 2.75, size = 4) +
+  annotate("text", label= "b", x= 2, y = 2.22, size = 4) +
+  annotate("text", label= "b", x= 5, y = 2.08, size = 4),
+ggplot(All_min %>% group_by(bay,sex) %>% summarize(n=length(final_age), mean_age=mean(final_age), UCI = mean_age + (sd(final_age)/sqrt(n)*1.96) , LCI = mean_age - (sd(final_age)/sqrt(n)*1.96)), aes(bay, mean_age, fill=sex)) +
+  geom_crossbar(aes(ymin=LCI, ymax=UCI), alpha=0.5)+
+  scale_y_continuous(limits=c(0,4), breaks=seq(0,5,0.5), labels=scaleFUN)+
+  #facet_grid(sex ~., labeller=labeller(sex=labels)) +
+  xlab("Estuary")+
+  ylab("Age (yrs)")+
+  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(), 									
+        panel.background=element_rect(fill='white', colour='black'),
+        axis.title.y = element_text(colour="black", size=18), # changing font of y axis title
+        axis.title.x = element_text(colour="black", size=18),
+        axis.text.x=element_text(colour="black", size=12), #changing  colour and font of x axis text
+        axis.text.y=element_text(colour="black", size=12),
+        strip.text.y = element_text(size=16),
+        legend.position= c(0.92,0.3), 
+        legend.background= element_rect(color="black", linetype="solid"))  , nrow=2)
+
+#changing colour and font of y axis
+dev.off()
+
+#plot.title=element_text(size=14), # changing size of plot title)
+
+
+
+File <- ("U:/PhD_projectfiles/Figures/FIM_length_crossbar.tiff")
+#if (file.exists(File)) stop(File, " already exists")
+dir.create(dirname(File), showWarnings = FALSE)
+
+tiff(File, units="in", width=5, height=7, res=300)
+
+MinMedianSEM196Max <- function(x) {
+  v <- c(median(x) - (sd(x)/sqrt(length(x))*1.96), median(x), median(x) + (sd(x)/sqrt(length(x))*1.96))
+  names(v) <- c("ymin", "y", "ymax")
+  v
+}
+
+#All_MF %>% group_by(bay, sex) %>% summarize(n=length(tl), mean_tl=mean(tl), UCI = mean_tl + (sd(tl)/sqrt(n)*1.96) , LCI = mean_tl - (sd(tl)/sqrt(n)*1.96))
+#ggplot(test, aes(bay, mean_tl)) + geom_crossbar(aes(ymin=LCI, ymax=UCI))
+
+
+scaleFUN <- function(x) sprintf("%.1f", x)
+ grid.arrange(ggplot(All_min %>% group_by(bay) %>% summarize(n=length(tl), mean_tl=mean(tl), UCI = mean_tl + (sd(tl)/sqrt(n)*1.96) , LCI = mean_tl - (sd(tl)/sqrt(n)*1.96)), aes(bay, mean_tl)) +
+  geom_crossbar(aes(ymin=LCI, ymax=UCI))+
+  #scale_y_continuous(breaks=seq(10,80,1.5), labels=scaleFUN)+
+    scale_y_continuous(limits=c(30,45), breaks=seq(30,45,2), labels=seq(30,45,2))+
+  #facet_grid(sex ~., labeller=labeller(sex=labels)) +
+  xlab("Estuary")+
+  ylab("Total length (cm) ")+
+  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(), 									
+        panel.background=element_rect(fill='white', colour='black'),
+        axis.title.y = element_text(colour="black", size=18), # changing font of y axis title
+        axis.title.x = element_blank(),
+        axis.text.x=element_text(colour="black", size=12), #changing  colour and font of x axis text
+        axis.text.y=element_text(colour="black", size=12),
+        strip.text.y = element_text(size=16))+
+   annotate("text", label = "c", x=1, y= 41.05) +
+   annotate("text", label = "d", x=2, y= 38.78) +
+   annotate("text", label = "d", x=3, y= 39.08) +
+   annotate("text", label = "d", x=4, y= 39.3) +
+   annotate("text", label = "e", x=5, y= 35.19) +
+   annotate("text", label = "d", x=6, y= 39.08),
+ ggplot(All_min %>% group_by(bay, sex) %>% summarize(n=length(tl), mean_tl=mean(tl), UCI = mean_tl + (sd(tl)/sqrt(n)*1.96) , LCI = mean_tl - (sd(tl)/sqrt(n)*1.96)), aes(bay, mean_tl, fill=sex)) +
+   stat_summary(fun.data=MinMeanSEM196Max, geom="crossbar", alpha=0.5) + #, colour="black") + 
+   geom_crossbar(aes(ymin=LCI, ymax=UCI))+
+   scale_y_continuous(limits=c(30,45), breaks=seq(30,45,2), labels=seq(30,45,2))+
+   #facet_grid(sex ~., labeller=labeller(sex=labels)) +
+   xlab("Estuary")+
+   ylab("Total length (cm) ")+
+   theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(), 									
+         panel.background=element_rect(fill='white', colour='black'),
+         axis.title.y = element_text(colour="black", size=18), # changing font of y axis title
+         axis.title.x = element_text(colour="black", size=18),
+         axis.text.x=element_text(colour="black", size=12), #changing  colour and font of x axis text
+         axis.text.y=element_text(colour="black", size=12),
+         strip.text.y = element_text(size=16),
+        legend.position= c(0.92,0.85), 
+        legend.background= element_rect(color="black", linetype="solid")), nrow=2)
+  
+ #changing colour and font of y axis
+
+#plot.title=element_text(size=14), # changing size of plot title)
+dev.off()
+
+# DISSERTATION PRESENTATION PLOTS ####
+ggplot(All_min %>% group_by(bay) %>% summarize(n=length(tl), mean_tl=mean(tl), UCI = mean_tl + (sd(tl)/sqrt(n)*1.96) , LCI = mean_tl - (sd(tl)/sqrt(n)*1.96)), aes(bay, mean_tl)) +
+  geom_crossbar(aes(ymin=LCI, ymax=UCI, color=bay))+
+  scale_x_discrete(breaks=c("W1_AP", "W2_CK", "W3_TB", "W4_CH", "E1_JX", "E2_IR"), labels=c("AP", "CK", "TB", "CH", "JX", "IR"))+
+  #scale_y_continuous(breaks=seq(10,80,1.5), labels=scaleFUN)+
+  scale_y_continuous(limits=c(30,45), breaks=seq(30,45,2), labels=seq(30,45,2))+
+  #facet_grid(sex ~., labeller=labeller(sex=labels)) +
+  xlab("Area")+
+  ylab("Total length (cm) ")+
+  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(), 									
+        panel.background=element_rect(fill='white', colour='black'),
+        axis.title.y = element_text(colour="black", size=18), # changing font of y axis title
+        axis.title.x = element_blank(),
+        axis.text.x=element_text(colour="black", size=12), #changing  colour and font of x axis text
+        axis.text.y=element_text(colour="black", size=12),
+        strip.text.y = element_text(size=16),
+        legend.position="none")
+
+
+ggplot(All_min %>% group_by(bay) %>% summarize(n=length(final_age), mean_age=mean(final_age), UCI = mean_age + (sd(final_age)/sqrt(n)*1.96) , LCI = mean_age - (sd(final_age)/sqrt(n)*1.96)), aes(bay, mean_age)) +
+  stat_summary(fun.data=MinMeanSEM196Max, geom="crossbar", alpha=0.5) + #, colour="black") + 
+  geom_crossbar(aes(ymin=LCI, ymax=UCI, color=bay))+
+  scale_x_discrete(breaks=c("W1_AP", "W2_CK", "W3_TB", "W4_CH", "E1_JX", "E2_IR"), labels=c("AP", "CK", "TB", "CH", "JX", "IR"))+
+  scale_y_continuous(limits=c(0,4), breaks=seq(0,5,0.5), labels=scaleFUN)+
+  #facet_grid(sex ~., labeller=labeller(sex=labels)) +
+  xlab("Area")+
+  ylab("Age (yrs)")+
+  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(), 									
+        panel.background=element_rect(fill='white', colour='black'),
+        axis.title.y = element_text(colour="black", size=18), # changing font of y axis title
+        axis.title.x = element_blank(),
+        legend.position="none",
+        axis.text.x=element_text(colour="black", size=12), #changing  colour and font of x axis text
+        axis.text.y=element_text(colour="black", size=12),
+        strip.text.y = element_text(size=16)) 
+
+# PRODUCE SMOOTHED ALKS #####
+#from multinomial modeling exercise which can be used to do Likelihood ratio testing. 
+#MODELED AGE LENGTH KEYS (aka SMOOTHED ALK)
+#-fixes two common issues with Age Length keys detailed on page 92 Ogle. 
+#multinomial logistic regression model -Gerritsen et al. 2006. The response variable has more than two levels
+
+#TB
+tb <- multinom(final_age~lcat2, data=Agelength_TB, maxit=500)
+lens<- seq(0,80, 1)
+alksmo.tb <- predict(tb, data.frame(lcat2=lens), type="probs")
+row.names(alksmo.tb) <- lens
+round(alksmo.tb, 3)
+
+#CK
+ck <- multinom(final_age~lcat2, data=Agelength_CK, maxit=500)
+lens<- seq(0,80, 1)
+alksmo.ck <- predict(ck, data.frame(lcat2=lens), type="probs")
+row.names(alksmo.ck) <- lens
+round(alksmo.ck, 3)
+
+#CH
+ch <- multinom(final_age~lcat2, data=Agelength_CH, maxit=500)
+lens<- seq(0,80, 1)
+alksmo.ch <- predict(ch, data.frame(lcat2=lens), type="probs")
+row.names(alksmo.ch) <- lens
+round(alksmo.ch, 3)
+
+#AP
+ap <- multinom(final_age~lcat2, data=Agelength_AP, maxit=500)
+lens<- seq(0,80, 1)
+alksmo.ap <- predict(ap, data.frame(lcat2=lens), type="probs")
+row.names(alksmo.ap) <- lens
+round(alksmo.ap, 3)
+
+#JX
+jx <- multinom(final_age~lcat2, data=Agelength_JX, maxit=500)
+lens<- seq(0,80, 1)
+alksmo.jx <- predict(jx, data.frame(lcat2=lens), type="probs")
+row.names(alksmo.jx) <- lens
+round(alksmo.jx, 3)
+
+#IR
+ir <- multinom(final_age~lcat2, data=Agelength_IR, maxit=500)
+lens<- seq(0,80, 1)
+alksmo.ir <- predict(ir, data.frame(lcat2=lens), type="probs")
+row.names(alksmo.ir) <- lens
+round(alksmo.ir, 3)
+
+
+
+
+#Plot length frequency by age, observed ALK, and modeled ALK #####
+# Multiple options below. 
+
+
+#Length frequency by age
+histStack(lcat2~final_age, data=Agelength_TB, col=gray.colors(9, start=0, end=1), breaks=seq(0,80,1), xlim=c(0,80), ylim=c(0,700), xlab="Total Length (cm)", legend.pos="topright", xaxt="n") #remove col argument if we want it in rainbow format
+axis(1, at=seq(0, 80, by=4))
+
+
+histStack(lcat2~final_age, data=Agelength_CK, col=gray.colors(8, start=0, end=1), breaks=seq(0,80,1), ylim=c(0,80), xlab="Total Length (cm)", legend.pos="topright", xaxt="n") #remove col argument if we want it in rainbow format
+axis(1, at=seq(0, 80, by=4))
+
+histStack(lcat2~final_age, data=Agelength_CH, col=gray.colors(9, start=0, end=1), breaks=seq(0,80,1), ylim=c(0,250), xlab="Total Length (cm)", legend.pos="topright", xaxt="n") #remove col argument if we want it in rainbow format
+axis(1, at=seq(0, 80, by=4))
+
+histStack(lcat2~final_age, data=Agelength_AP, col=gray.colors(10, start=0, end=1), breaks=seq(0,80,1), ylim=c(0,350), xlab="Total Length (cm)", legend.pos="topright", xaxt="n") #remove col argument if we want it in rainbow format
+axis(1, at=seq(0, 80, by=4))
+
+histStack(lcat2~final_age, data=Agelength_IR, col=gray.colors(9, start=0, end=1), breaks=seq(0,80,1), ylim=c(0,500), xlab="Total Length (cm)", legend.pos="topright", xaxt="n") #remove col argument if we want it in rainbow format
+axis(1, at=seq(0, 80, by=4))
+
+histStack(lcat2~final_age, data=Agelength_JX, col=gray.colors(8, start=0, end=1), breaks=seq(0,80,1), ylim=c(0,100), xlab="Total Length (cm)", legend.pos="topright", xaxt="n") #remove col argument if we want it in rainbow format
+axis(1, at=seq(0, 80, by=4))
+
+####Observed ALK
+alkPlot(alk_TB, type="barplot", xlab="Total Length (cm)", showLegend=T, pal="gray") #could remove legend and just reference in figure description
+
+alkPlot(alk_CH, type="barplot", xlab="Total Length (cm)", showLegend=T, pal="gray")     
+
+alkPlot(alk_CK, type="barplot", xlab="Total Length (cm)", showLegend=T, pal="gray")   
+
+alkPlot(alk_AP, type="barplot", xlab="Total Length (cm)", showLegend=T, pal="gray")
+
+alkPlot(alk_IR, type="barplot", xlab="Total Length (cm)", showLegend=T, pal="gray")
+
+alkPlot(alk_JX, type="barplot", xlab="Total Length (cm)", showLegend=T, pal="gray")
+
+ #Other options for plotting
+     #obsTB <- alkPlot(alk_TB, type="area", pal="gray", showLegend=TRUE)
+     #obsTB <- alkPlot(alk_TB, type="lines", showLegend=TRUE)
+     #obsTB <- alkPlot(alk_TB, type="splines", showLegend=TRUE, span=0.1)
+
+
+####Smoothed ALK####
+smoTB <- alkPlot(alksmo.tb, type="barplot", xlab="Total Length (cm)", pal="rainbow", showLegend=TRUE)
+
+smoCK <- alkPlot(alksmo.ck, type="barplot", xlab="Total Length (cm)", pal="rainbow", showLegend=TRUE)
+
+smoCH <- alkPlot(alksmo.ch, type="barplot", xlab="Total Length (cm)", pal="rainbow", showLegend=TRUE)
+
+smoAP <- alkPlot(alksmo.ap, type="barplot", xlab="Total Length (cm)", pal="rainbow", showLegend=TRUE)
+
+smoIR <- alkPlot(alksmo.ir, type="barplot", xlab="Total Length (cm)", pal="rainbow", showLegend=TRUE)
+
+smoJX <- alkPlot(alksmo.jx, type="barplot", xlab="Total Length (cm)", pal="rainbow", showLegend=TRUE)
+
+
+#AMONG GROUP STATISTICAL COMPARISONS #####
+#page 102 in Ogle
+
+Agelength_ALL<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH" | bay=="IR" |bay=="AP" | bay=="JX"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_ALL, maxit=500) #simple model
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_ALL, maxit=500) #more complex model
+
+#likelihood ratio test is computed with anova
+test <- anova(mod1, mod2)
+# 1       lcat2    219195   66506.76                      
+# 2 lcat2 * bay    219105   65007.89 1 vs 2    90 1498.865
+# Pr(Chi)
+
+#Drop Bays to test hypothesis of bay influence
+      #Null Hypothesis- there is no significant difference in alk between groups
+
+  #removing IR
+Agelength_minIR<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH" | bay=="AP" | bay=="JX"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_minIR, maxit=500) #simple model
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_minIR, maxit=500) #more complex model
+
+anova(mod1, mod2)
+  #still significantly different
+
+  #now remove JX also
+Agelength_minIRJX<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH" | bay=="AP"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_minIRJX, maxit=500) #simple model
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_minIRJX, maxit=500) #more complex model
+
+anova(mod1, mod2)
+  #still significantly different
+
+  #now remove AP also
+Agelength_minIRJXAP<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_minIRJXAP, maxit=500) #simple model
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_minIRJXAP, maxit=500) #more complex model
+
+anova(mod1, mod2)
+
+#now remove CH also
+Agelength_minIRJXAPCH<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_minIRJXAPCH, maxit=500) #simple model
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_minIRJXAPCH, maxit=500) #more complex model
+
+anova(mod1, mod2)
+  #still significantly different
+
+#Bay vs Bay comparison
+      #Null Hypothesis- there is no significant difference in alk between groups
+
+#TB vs CK 
+Agelength_TBCK<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" |  bay== "CK" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_TBCK, maxit=500) #simple model
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_TBCK, maxit=500) #more complex model
+
+anova(mod1, mod2)
+# The p value for testing the effect of the group in explaining the distribution of lengths within each age is obtained by computing a chi-square test-statistic
+#Null Hypothesis- thre is no significant difference in alk between groups
+# the likelihood ratio statistic is -2*LL (final value output) of model 1 MINUS
+# -2*LL of model 2
+
+#TB vs CH
+Agelength_TBCH<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" |  bay== "CH" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_TBCH, maxit=500) #simple model
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_TBCH, maxit=500) #more complex model
+
+anova(mod1, mod2)
+
+#TB vs AP
+Agelength_TBAP<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" |  bay== "AP" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_TBAP, maxit=500) #simple model
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_TBAP, maxit=500) #more complex model
+
+anova(mod1, mod2)
+#An alternative way to do a likelihood ratio test of nested models. 
+library(lmtest)
+#t <- lrtest(mod1, mod2)
+
+#TB vs JX
+Agelength_TBJX<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" |  bay== "JX" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_TBJX, maxit=500) #simple model
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_TBJX, maxit=500) #more complex model
+
+anova(mod1, mod2)
+
+
+#TB vs IR
+Agelength_TBIR<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" |  bay== "IR" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_TBIR, maxit=500) #simple model
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_TBIR, maxit=500) #more complex model
+
+anova(mod1, mod2)
+
+#CK vs CH
+
+Agelength_CKCH<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "CK" |  bay== "CH" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_CKCH, maxit=500) #simple model
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_CKCH, maxit=500) #more complex model
+
+anova(mod1, mod2)
+
+#CK Vs AP
+Agelength_CKAP<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "CK" |  bay== "AP" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_CKAP, maxit=500) #simple model
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_CKAP, maxit=500) #more complex model
+
+anova(mod1, mod2)
+
+#CK Vs JX
+Agelength_CKJX<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "CK" |  bay== "JX" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_CKJX, maxit=500) #simple model
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_CKJX, maxit=500) #more complex model
+
+anova(mod1, mod2)
+
+#CK Vs IR
+Agelength_CKIR<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "CK" |  bay== "IR" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_CKIR, maxit=500) #simple model
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_CKIR, maxit=500) #more complex model
+
+anova(mod1, mod2)
+
+
+#CH Vs AP
+Agelength_CKAP<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "CH" |  bay== "AP" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_CKAP, maxit=500) #simple model
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_CKAP, maxit=500) #more complex model
+
+anova(mod1, mod2)
+
+#CH Vs JX
+Agelength_CKJX<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "CH" |  bay== "JX" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_CKJX, maxit=500) #simple model
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_CKJX, maxit=500) #more complex model
+
+anova(mod1, mod2)
+
+
+#CH Vs IR
+Agelength_CKIR<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "CH" |  bay== "IR" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_CKIR, maxit=500) #simple model
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_CKIR, maxit=500) #more complex model
+
+anova(mod1, mod2)
+
+#AP Vs JX
+Agelength_APJX<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "AP" |  bay== "JX" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_APJX, maxit=500) #simple model
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_APJX, maxit=500) #more complex model
+
+anova(mod1, mod2)
+
+
+#AP Vs IR
+Agelength_APIR<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "AP" |  bay== "IR" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_APIR, maxit=500) #simple model
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_APIR, maxit=500) #more complex model
+
+anova(mod1, mod2)
+
+#JX Vs IR
+Agelength_JXIR<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "JX" |  bay== "IR" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_JXIR, maxit=500) #simple model
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_JXIR, maxit=500) #more complex model
+
+anova(mod1, mod2)
+
+#11. DETERMINE AGE PROPORTION OF ADULTS #####
+#of all FIM subset... select sl > = 200 mm which is what was chosen to determine reproductively mature adults
+# "Distribution of ages described by either the proportion of fish at age (Pi) or the number of fish at each age (Ni)" Ogle 96
+"These calculcations are more easily performed by first computing the Nj values and then dividing each of these by N to compute the Pi values"
+
+
+TB_adult <- subset(Agelength_TB, sl>= 20)
+AP_adult <- subset(Agelength_AP, sl>=20)
+CK_adult <- subset(Agelength_CK, sl>=20)
+CH_adult <- subset(Agelength_CH, sl>=20)
+JX_adult <- subset(Agelength_JX, sl>=20)
+IR_adult <- subset(Agelength_IR, sl>=20)
+
+age.n_TB <- xtabs(~final_age, data=TB_adult)
+age.n_AP <- xtabs(~final_age, data=AP_adult)
+age.n_CK <- xtabs(~final_age, data=CK_adult)
+age.n_CH <- xtabs(~final_age, data=CH_adult)
+age.n_JX <- xtabs(~final_age, data=JX_adult)
+age.n_IR <- xtabs(~final_age, data=IR_adult)
+
+#think I can use prop.table to give the proportion of fish at each age 
+
+prop_TB <- as.data.frame(round(prop.table(age.n_TB),3))
+prop_AP <- as.data.frame(round(prop.table(age.n_AP),3))
+prop_CK <- as.data.frame(round(prop.table(age.n_CK),3))
+prop_CH <- as.data.frame(round(prop.table(age.n_CH),3))
+prop_JX <- as.data.frame(round(prop.table(age.n_JX),3))
+prop_IR <- as.data.frame(round(prop.table(age.n_IR),3))
+
+#Export proportions at adult age for the FIM catch to use in the Delta_Method script
+#For personal computer
+write.csv(prop_TB, "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/PropAtAge_TBadult_FIMdata.csv")
+write.csv(prop_AP, "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/PropAtAge_APadult_FIMdata.csv")
+write.csv(prop_CK, "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/PropAtAge_CKadult_FIMdata.csv")
+write.csv(prop_CH, "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/PropAtAge_CHadult_FIMdata.csv")
+write.csv(prop_JX, "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/PropAtAge_JXadult_FIMdata.csv")
+write.csv(prop_IR, "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/PropAtAge_IRadult_FIMdata.csv")
+
+
+#For work computer
+write.csv(prop_TB, "U:/PhD_projectfiles/Exported_R_Datafiles/PropAtAge_TBadult_FIMdata.csv")
+write.csv(prop_AP, "U:/PhD_projectfiles/Exported_R_Datafiles/PropAtAge_APadult_FIMdata.csv")
+write.csv(prop_CK, "U:/PhD_projectfiles/Exported_R_Datafiles/PropAtAge_CKadult_FIMdata.csv")
+write.csv(prop_CH, "U:/PhD_projectfiles/Exported_R_Datafiles/PropAtAge_CHadult_FIMdata.csv")
+write.csv(prop_JX, "U:/PhD_projectfiles/Exported_R_Datafiles/PropAtAge_JXadult_FIMdata.csv")
+write.csv(prop_IR, "U:/PhD_projectfiles/Exported_R_Datafiles/PropAtAge_IRadult_FIMdata.csv")
+
+#12. DETERMINE WEIGHT AT AGE SCHEDULE OF ADULTS ######
+
+Weight_at_Age_AP_ad <- Agelength_AP %>% group_by(final_age) %>% summarize(n=length(wt_total), mean_wt=mean(wt_total, na.rm=TRUE), sd=sd(wt_total, na.rm=TRUE), se=se(wt_total, na.rm=TRUE))
+Weight_at_Age_CK_ad <- Agelength_CK %>% group_by(final_age) %>% summarize(n=length(wt_total), mean_wt=mean(wt_total, na.rm=TRUE), sd=sd(wt_total, na.rm=TRUE), se=se(wt_total, na.rm=TRUE))
+Weight_at_Age_TB_ad <- Agelength_TB %>% group_by(final_age) %>% summarize(n=length(wt_total), mean_wt=mean(wt_total, na.rm=TRUE), sd=sd(wt_total, na.rm=TRUE), se=se(wt_total, na.rm=TRUE))
+Weight_at_Age_CH_ad <- Agelength_CH %>% group_by(final_age) %>% summarize(n=length(wt_total), mean_wt=mean(wt_total, na.rm=TRUE), sd=sd(wt_total, na.rm=TRUE), se=se(wt_total, na.rm=TRUE))
+Weight_at_Age_JX_ad <- Agelength_JX %>% group_by(final_age) %>% summarize(n=length(wt_total), mean_wt=mean(wt_total, na.rm=TRUE), sd=sd(wt_total, na.rm=TRUE), se=se(wt_total, na.rm=TRUE))
+Weight_at_Age_IR_ad <- Agelength_IR %>% group_by(final_age) %>% summarize(n=length(wt_total), mean_wt=mean(wt_total, na.rm=TRUE), sd=sd(wt_total, na.rm=TRUE), se=se(wt_total, na.rm=TRUE))
+
+#Export weight at adult age for the FIM catch to use in the Delta_Method script
+#For personal computer
+write.csv(Weight_at_Age_AP_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/Weight_at_Age_APadult_FIMdata.csv")
+write.csv(Weight_at_Age_CK_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/Weight_at_Age_CKadult_FIMdata.csv")
+write.csv(Weight_at_Age_TB_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/Weight_at_Age_TBadult_FIMdata.csv")
+write.csv(Weight_at_Age_CH_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/Weight_at_Age_CHadult_FIMdata.csv")
+write.csv(Weight_at_Age_JX_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/Weight_at_Age_JXadult_FIMdata.csv")
+write.csv(Weight_at_Age_IR_ad, "~/Desktop/PhD project/Projects/Seatrout/Data/Exported R Dataframes/Weight_at_Age_IRadult_FIMdata.csv")
+
+
+#For work computer
+write.csv(Weight_at_Age_AP_ad, "U:/PhD_projectfiles/Exported_R_Datafiles/Weight_at_Age_AP_ad_FIMdata.csv")
+write.csv(Weight_at_Age_CK_ad, "U:/PhD_projectfiles/Exported_R_Datafiles/Weight_at_Age_CK_ad_FIMdata.csv")
+write.csv(Weight_at_Age_TB_ad, "U:/PhD_projectfiles/Exported_R_Datafiles/Weight_at_Age_TB_ad_FIMdata.csv")
+write.csv(Weight_at_Age_CH_ad, "U:/PhD_projectfiles/Exported_R_Datafiles/Weight_at_Age_CH_ad_FIMdata.csv")
+write.csv(Weight_at_Age_JX_ad, "U:/PhD_projectfiles/Exported_R_Datafiles/Weight_at_Age_JX_ad_FIMdata.csv")
+write.csv(Weight_at_Age_IR_ad, "U:/PhD_projectfiles/Exported_R_Datafiles/Weight_at_Age_IR_ad_FIMdata.csv")
+
+
 ```
 
 
