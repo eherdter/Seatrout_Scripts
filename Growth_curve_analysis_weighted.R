@@ -1,6 +1,7 @@
 # ABOUT ####
 # 10/13/2016 This script imports ALK with Bay.xlsx
 # Main Objectives of this script: 
+#Weighted analysis.
 # 1. Imports otolith data. 
 # 2. Determines VBGF parameters for each bay and bootstrapped 95% confidence intervals for each.
 # 3. Plots the comparative growth curves
