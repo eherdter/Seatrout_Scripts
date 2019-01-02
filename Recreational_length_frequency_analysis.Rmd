@@ -1,0 +1,450 @@
+---
+title: "R Notebook: Recreational_length_frequency_analysis"
+output:
+  github_document: 
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE)
+
+```
+### _Main Objectives of this script_ 
+ 1. Imports mrfss and mrip length data.
+ 4. One way ANOVA to determine whether there is a significant difference in total length among estuaries
+ 2. Plots of ECDF
+ 3. Statistical comparison of bay-bay length frequencies. 
+     - K-S test
+     - Chi-Square Test
+
+
+### _Start Here_ 
+Load packages.
+```{r warning=FALSE, message=FALSE}
+library(FSA)
+library(magrittr)
+library(dplyr)
+library(plotrix)
+library(haven)
+library(Matching)
+library(dplyr)
+library(ggplot2)
+library(scales)
+```
+
+### _1. Load data and do some wrangling_
+subset each estuary using the Country of Encounter codes
+ From the definitions defined by FWRI
+FIPS county codes
+
+
+load data
+select the counties that most closely align with the bays in question
+ convert fork length to tl using the equation TLmm = 1.00467 * FL + 0.04850 from the SAS mrfss leng_freq
+ chose data from 2000 on because of major regulatory changes 
+```{r}
+#setwd("~/Desktop/PhD project/Projects/Seatrout/Data")
+setwd("U:/PhD_projectfiles/Raw_Data/Age_Length_Data")
+mrfss <- read_sas("mrfss_lens_8115.sas7bdat")
+mrip <- read_sas("mrip_lens_20042015.sas7bdat")
+
+```
+
+```{r}
+setwd("U:/PhD_projectfiles/Raw_Data/Age_Length_Data")
+mrfss_AP <- subset(read_sas("mrfss_lens_8115.sas7bdat"), CNTY %in% c(5,33,37,45,65,77,91,113,123,129,131,133) & YEAR>=2000 & YEAR <= 2003) %>% mutate(tl = (1.00467*flmm+0.04850)/10) %>% filter(!is.na(tl)) %>% mutate(bay=rep("AP",2234)) 
+  mrfss_AP <- droplevels(subset(mrfss_AP, select=c(tl, bay)))
+```
+Now load other areas based on FIPS county designations
+```{r include=FALSE}
+setwd("U:/PhD_projectfiles/Raw_Data/Age_Length_Data")
+mrfss_TB <- subset(read_sas("mrfss_lens_8115.sas7bdat"), CNTY %in% c(53,101,57,103,81) & YEAR>=2000 & YEAR<= 2003) %>% mutate(tl = (1.00467*flmm+0.04850)/10) %>% filter(!is.na(tl)) %>% mutate(bay=rep("TB",1741))
+  mrfss_TB <- droplevels(subset(mrfss_TB, select=c(tl, bay)))
+mrfss_CH <- subset(read_sas("mrfss_lens_8115.sas7bdat"), CNTY %in% c(27,115,7,15,71,21,87,51) & YEAR>=2000 & YEAR<= 2003) %>% mutate(tl = (1.00467*flmm+0.04850)/10) %>% filter(!is.na(tl))%>% mutate(bay=rep("CH",1085))
+  mrfss_CH <- droplevels(subset(mrfss_CH, select=c(tl, bay)))
+mrfss_CK <- subset(read_sas("mrfss_lens_8115.sas7bdat"), CNTY %in% c(75,29,17,1) & YEAR>=2000 & YEAR<= 2003) %>% mutate(tl = (1.00467*flmm+0.04850)/10) %>% filter(!is.na(tl))%>% mutate(bay=rep("CK",1225))
+  mrfss_CK <- droplevels(subset(mrfss_CK, select=c(tl, bay)))
+mrfss_JX <- subset(read_sas("mrfss_lens_8115.sas7bdat"), CNTY %in% c(19,31,35,89,107,109) & YEAR>=2000 & YEAR<= 2003) %>% mutate(tl = (1.00467*flmm+0.04850)/10) %>% filter(!is.na(tl))%>% mutate(bay=rep("JX",291))
+  mrfss_JX <- droplevels(subset(mrfss_JX, select=c(tl, bay)))
+mrfss_IR <- subset(read_sas("mrfss_lens_8115.sas7bdat"), CNTY %in% c(9,11,25,61,85,99,111,127) & YEAR>=2000 & YEAR <=2003) %>% mutate(tl = (1.00467*flmm+0.04850)/10) %>% filter(!is.na(tl))%>% mutate(bay=rep("IR",812))
+  mrfss_IR <- droplevels(subset(mrfss_IR, select=c(tl, bay)))
+```
+Load the Mrip data as above. 
+
+```{r include=FALSE}
+setwd("U:/PhD_projectfiles/Raw_Data/Age_Length_Data")
+mrip_AP <- subset(read_sas("mrip_lens_20042015.sas7bdat"), CNTY %in% c(5,33,37,45,65,77,91,113,123,129,131,133)) %>% mutate(tl = (1.00467*LNGTH+0.04850)/10) %>% filter(!is.na(tl)) %>% mutate(bay=rep("AP",9265))
+  mrip_AP <- droplevels(subset(mrip_AP, select=c(tl, bay)))
+```
+Now the other areas
+
+```{r include=FALSE}
+setwd("U:/PhD_projectfiles/Raw_Data/Age_Length_Data")
+mrip_TB <- subset(read_sas("mrip_lens_20042015.sas7bdat"), CNTY %in% c(53,101,57,103,81)) %>% mutate(tl = (1.00467*LNGTH+0.04850)/10) %>% filter(!is.na(tl)) %>% mutate(bay=rep("TB",8220))
+  mrip_TB <- droplevels(subset(mrip_TB, select=c(tl, bay)))
+mrip_CH <- subset(read_sas("mrip_lens_20042015.sas7bdat"), CNTY %in% c(27,115,7,15,71,21,87,51)) %>% mutate(tl = (1.00467*LNGTH+0.04850)/10) %>% filter(!is.na(tl))%>% mutate(bay=rep("CH",4832))
+  mrip_CH <- droplevels(subset(mrip_CH, select=c(tl, bay)))
+mrip_CK <- subset(read_sas("mrip_lens_20042015.sas7bdat"), CNTY %in% c(75,29,17,1)) %>% mutate(tl = (1.00467*LNGTH+0.04850)/10) %>% filter(!is.na(tl))%>% mutate(bay=rep("CK",5613))
+  mrip_CK <- droplevels(subset(mrip_CK, select=c(tl, bay)))
+mrip_JX <- subset(read_sas("mrip_lens_20042015.sas7bdat"), CNTY %in% c(19,31,35,89,107,109)) %>% mutate(tl = (1.00467*LNGTH+0.04850)/10) %>% filter(!is.na(tl))%>% mutate(bay=rep("JX",1510))
+  mrip_JX <- droplevels(subset(mrip_JX, select=c(tl, bay)))
+mrip_IR <- subset(read_sas("mrip_lens_20042015.sas7bdat"), CNTY %in% c(9,11,25,61,85,99,111,127)) %>% mutate(tl = (1.00467*LNGTH+0.04850)/10) %>% filter(!is.na(tl))%>% mutate(bay=rep("IR",2595))
+  mrip_IR <- droplevels(subset(mrip_IR, select=c(tl, bay)))
+```
+
+
+combine data 
+```{r}
+AP <- rbind(mrfss_AP, mrip_AP)
+TB <- rbind(mrfss_TB, mrip_TB)
+CK <- rbind(mrfss_CK, mrip_CK)
+CH <- rbind(mrfss_CH, mrip_CH)
+JX <- rbind(mrfss_JX, mrip_JX)
+IR <- rbind(mrfss_IR, mrip_IR)
+
+All= rbind(AP, TB, CK, CH, JX, IR)
+All$bay <- as.factor(All$bay)
+All <- na.omit(All)
+All$bay <- factor(All$bay, levels=c("AP", "CK", "TB", "CH", "JX", "IR"))
+
+All_sum <- summarise(group_by(All, bay), N = length(tl), mean_tl = mean(tl), min_tl=min(tl), max_tl=max(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(tl))))
+Rec_sum <- All_sum
+
+N = nrow(AP) +nrow(TB) +nrow(CK) +nrow(CH) +nrow(JX) +nrow(IR)
+```
+
+### _2. Plot ecdf (empirical cumulative distribution function) - used for K-S test_
+
+MRFSS
+```{r echo=FALSE}
+clr<- c("black", "gray50", "red", "blue", "green", "pink")
+plot(ecdf(mrfss_TB$tl), xlab="Total Length (cm)", do.points=FALSE, verticals=TRUE, main="", col.01line=NULL)
+plot(ecdf(mrfss_AP$tl), add=TRUE, do.points=FALSE, verticals=TRUE, col=clr[2], col.01line=NULL)
+plot(ecdf(mrfss_CK$tl), add=TRUE, do.points=FALSE, verticals=TRUE, col=clr[3], col.01line=NULL)
+plot(ecdf(mrfss_CH$tl), add=TRUE, do.points=FALSE, verticals=TRUE, col=clr[4], col.01line=NULL)
+plot(ecdf(mrfss_IR$tl), add=TRUE, do.points=FALSE, verticals=TRUE, col=clr[5], col.01line=NULL)
+plot(ecdf(mrfss_JX$tl), add=TRUE, do.points=FALSE, verticals=TRUE, col=clr[6], col.01line=NULL)
+```
+MRIP
+```{r echo=FALSE}
+clr<- c("black", "gray50", "red", "blue", "green", "pink")
+plot(ecdf(mrip_TB$tl), xlab="Total Length (cm)", do.points=FALSE, verticals=TRUE, main="", col.01line=NULL)
+plot(ecdf(mrip_AP$tl), add=TRUE, do.points=FALSE, verticals=TRUE, col=clr[2], col.01line=NULL)
+plot(ecdf(mrip_CK$tl), add=TRUE, do.points=FALSE, verticals=TRUE, col=clr[3], col.01line=NULL)
+plot(ecdf(mrip_CH$tl), add=TRUE, do.points=FALSE, verticals=TRUE, col=clr[4], col.01line=NULL)
+plot(ecdf(mrip_IR$tl), add=TRUE, do.points=FALSE, verticals=TRUE, col=clr[5], col.01line=NULL)
+plot(ecdf(mrip_JX$tl), add=TRUE, do.points=FALSE, verticals=TRUE, col=clr[6], col.01line=NULL)
+```
+ALL
+```{r echo=FALSE}
+clr<- c("black", "gray50", "red", "blue", "green", "pink")
+plot(ecdf(TB$tl), xlab="Total Length (cm)", do.points=FALSE, verticals=TRUE, main="", col.01line=NULL)
+plot(ecdf(AP$tl), add=TRUE, do.points=FALSE, verticals=TRUE, col=clr[2], col.01line=NULL)
+plot(ecdf(CK$tl), add=TRUE, do.points=FALSE, verticals=TRUE, col=clr[3], col.01line=NULL)
+plot(ecdf(CH$tl), add=TRUE, do.points=FALSE, verticals=TRUE, col=clr[4], col.01line=NULL)
+plot(ecdf(IR$tl), add=TRUE, do.points=FALSE, verticals=TRUE, col=clr[5], col.01line=NULL)
+plot(ecdf(JX$tl), add=TRUE, do.points=FALSE, verticals=TRUE, col=clr[6], col.01line=NULL)
+```
+test <- ecdf(TB$tl)
+                                                               
+### _3.Statistical comparisons to test length distributions_
+####First with K-S Test 
+
+used to determine whether ECDF are the same between two groups and can detect differences in location, dispersion and shape of the ditrubtions
+bootstrapped version of the K-S test that is insensitive to ties with noncontinuous data is implemented in ks.boot
+```{r}
+ks<- c(ks.boot(mrfss_TB$tl, mrfss_CK$tl, nboots=1000)$p.value, ks.boot(mrfss_TB$tl, mrfss_CH$tl, nboots=5000)$p.value)
+c <- ks.boot(mrfss_TB$tl, mrfss_TB$tl)
+#if comparing more than two groups then each pair must be compared separately and the p value from each comparison must
+# be adjusted for an increasing experimentwise error rate due to multiple comparisons. 
+```
+MRFSS
+```{r}
+ks_ALL_mrfss <-c(ks.boot(mrfss_TB$tl, mrfss_CK$tl, nboots=1000)$ks.boot.pvalue, 
+  ks.boot(mrfss_TB$tl, mrfss_CH$tl, nboots=1000)$ks.boot.pvalue,
+  ks.boot(mrfss_TB$tl, mrfss_AP$tl, nboots=1000)$ks.boot.pvalue,
+  ks.boot(mrfss_TB$tl, mrfss_JX$tl, nboots=1000)$ks.boot.pvalue,
+  ks.boot(mrfss_TB$tl, mrfss_IR$tl, nboots=1000)$ks.boot.pvalue,
+  ks.boot(mrfss_CK$tl, mrfss_CH$tl, nboots=1000)$ks.boot.pvalue,
+  ks.boot(mrfss_CK$tl, mrfss_AP$tl, nboots=1000)$ks.boot.pvalue,
+  ks.boot(mrfss_CK$tl, mrfss_JX$tl, nboots=1000)$ks.boot.pvalue,
+  ks.boot(mrfss_CK$tl, mrfss_IR$tl, nboots=1000)$ks.boot.pvalue,
+  ks.boot(mrfss_CH$tl, mrfss_AP$tl, nboots=1000)$ks.boot.pvalue,
+  ks.boot(mrfss_CH$tl, mrfss_JX$tl, nboots=1000)$ks.boot.pvalue,
+  ks.boot(mrfss_CH$tl, mrfss_IR$tl, nboots=1000)$ks.boot.pvalue,
+  ks.boot(mrfss_AP$tl, mrfss_JX$tl, nboots=1000)$ks.boot.pvalue,
+  ks.boot(mrfss_AP$tl, mrfss_IR$tl, nboots=1000)$ks.boot.pvalue,
+  ks.boot(mrfss_JX$tl, mrfss_IR$tl, nboots=1000)$ks.boot.pvalue)
+
+p.adjust(ks_ALL_mrfss) 
+```
+MRIP
+```{r}
+ks_ALL_mrip <-c(ks.boot(mrip_TB$tl, mrip_CK$tl, nboots=1000)$ks.boot.pvalue, 
+                 ks.boot(mrip_TB$tl, mrip_CH$tl, nboots=1000)$ks.boot.pvalue,
+                 ks.boot(mrip_TB$tl, mrip_AP$tl, nboots=1000)$ks.boot.pvalue,
+                 ks.boot(mrip_TB$tl, mrip_JX$tl, nboots=1000)$ks.boot.pvalue,
+                 ks.boot(mrip_TB$tl, mrip_IR$tl, nboots=1000)$ks.boot.pvalue,
+                 ks.boot(mrip_CK$tl, mrip_CH$tl, nboots=1000)$ks.boot.pvalue,
+                 ks.boot(mrip_CK$tl, mrip_AP$tl, nboots=1000)$ks.boot.pvalue,
+                 ks.boot(mrip_CK$tl, mrip_JX$tl, nboots=1000)$ks.boot.pvalue,
+                 ks.boot(mrip_CK$tl, mrip_IR$tl, nboots=1000)$ks.boot.pvalue,
+                 ks.boot(mrip_CH$tl, mrip_AP$tl, nboots=1000)$ks.boot.pvalue,
+                 ks.boot(mrip_CH$tl, mrip_JX$tl, nboots=1000)$ks.boot.pvalue,
+                 ks.boot(mrip_CH$tl, mrip_IR$tl, nboots=1000)$ks.boot.pvalue,
+                 ks.boot(mrip_AP$tl, mrip_JX$tl, nboots=1000)$ks.boot.pvalue,
+                 ks.boot(mrip_AP$tl, mrip_IR$tl, nboots=1000)$ks.boot.pvalue,
+                 ks.boot(mrip_JX$tl, mrip_IR$tl, nboots=1000)$ks.boot.pvalue)
+
+p.adjust(ks_ALL_mrip)
+```
+ALL
+```{r}
+ks_ALL <-c(ks.boot(TB$tl, CK$tl, nboots=1000)$ks.boot.pvalue, 
+                ks.boot(TB$tl, CH$tl, nboots=1000)$ks.boot.pvalue,
+                ks.boot(TB$tl, AP$tl, nboots=1000)$ks.boot.pvalue,
+                ks.boot(TB$tl, JX$tl, nboots=1000)$ks.boot.pvalue,
+                ks.boot(TB$tl, IR$tl, nboots=1000)$ks.boot.pvalue,
+                ks.boot(CK$tl, CH$tl, nboots=1000)$ks.boot.pvalue,
+                ks.boot(CK$tl, AP$tl, nboots=1000)$ks.boot.pvalue,
+                ks.boot(CK$tl, JX$tl, nboots=1000)$ks.boot.pvalue,
+                ks.boot(CK$tl, IR$tl, nboots=1000)$ks.boot.pvalue,
+                ks.boot(CH$tl, AP$tl, nboots=1000)$ks.boot.pvalue,
+                ks.boot(CH$tl, JX$tl, nboots=1000)$ks.boot.pvalue,
+                ks.boot(CH$tl, IR$tl, nboots=1000)$ks.boot.pvalue,
+                ks.boot(AP$tl, JX$tl, nboots=1000)$ks.boot.pvalue,
+                ks.boot(AP$tl, IR$tl, nboots=1000)$ks.boot.pvalue,
+                ks.boot(JX$tl, IR$tl, nboots=1000)$ks.boot.pvalue)
+
+p.adjust(ks_ALL)
+```
+
+
+#### Chi-Square Test
+ used to test for differences in length frequencies among different groups (among, times, locations or gears)chi square will generally fail where the contingency table contains zeroes or very small frequencies so best to make the length categories to ensure appropriate sample size # exclude some low and high values so that I can make more appropriate length intervals 
+
+length frequencies of the recreational catch will have changed by year based upon regulatory changes so that
+ it is invalid to do yearly comparisons of length frequencies because they were affected by slot limit changes
+just compare by bays so combine the data and then make length frequencies
+ current is 38 cm to 50 cm  (slot of 15-20)
+ started in 2000 but specified above already
+
+MRFSS
+```{r}
+mrfss_all <- subset(rbind(mrfss_AP, mrfss_TB, mrfss_CH, mrfss_CK, mrfss_JX, mrfss_IR), tl>=30 & tl<= 65) %>% mutate(lcat5=lencat(tl, w=5)) 
+mrfss_all$bay <- as.factor(mrfss_all$bay)
+
+(mrfss_lf <- xtabs(~bay+lcat5, data=mrfss_all))
+```
+
+multiple comparisons are conducted by isolating pairs of groups, accumulating p-values for each pair and then adjusting the p values for multiple comparisons
+```{r warning=FALSE}
+ps_mrfss<- c(chisq.test(mrfss_lf[1:2,])$p.value,
+chisq.test(mrfss_lf[1:3,])$p.value,
+chisq.test(mrfss_lf[1:4,])$p.value,
+chisq.test(mrfss_lf[1:5,])$p.value,
+chisq.test(mrfss_lf[1:6,])$p.value,
+chisq.test(mrfss_lf[2:3,])$p.value,
+chisq.test(mrfss_lf[2:4,])$p.value,
+chisq.test(mrfss_lf[2:5,])$p.value,
+chisq.test(mrfss_lf[2:6,])$p.value,
+chisq.test(mrfss_lf[3:4,])$p.value,
+chisq.test(mrfss_lf[3:5,])$p.value,
+chisq.test(mrfss_lf[3:6,])$p.value,
+chisq.test(mrfss_lf[4:5,])$p.value,
+chisq.test(mrfss_lf[4:6,])$p.value,
+chisq.test(mrfss_lf[5:6,])$p.value)
+
+p.adjust(ps_mrfss)
+```
+MRIP
+```{r}
+mrip_all <- subset(rbind(mrip_AP, mrip_TB, mrip_CH, mrip_CK, mrip_JX, mrip_IR), tl>=30 & tl<= 65) %>% mutate(lcat5=lencat(tl, w=5)) 
+mrip_all$bay <- as.factor(mrip_all$bay)
+
+(mrip_lf <- xtabs(~bay+lcat5, data=mrip_all))
+
+#multiple comparisons are conducted by isolating pairs of groups, accumulating p-values for each pair and then adjusting the p values for multiple comparisons
+ps_mrip<- c(chisq.test(mrip_lf[1:2,])$p.value,
+       chisq.test(mrip_lf[1:3,])$p.value,
+       chisq.test(mrip_lf[1:4,])$p.value,
+       chisq.test(mrip_lf[1:5,])$p.value,
+       chisq.test(mrip_lf[1:6,])$p.value,
+       chisq.test(mrip_lf[2:3,])$p.value,
+       chisq.test(mrip_lf[2:4,])$p.value,
+       chisq.test(mrip_lf[2:5,])$p.value,
+       chisq.test(mrip_lf[2:6,])$p.value,
+       chisq.test(mrip_lf[3:4,])$p.value,
+       chisq.test(mrip_lf[3:5,])$p.value,
+       chisq.test(mrip_lf[3:6,])$p.value,
+       chisq.test(mrip_lf[4:5,])$p.value,
+       chisq.test(mrip_lf[4:6,])$p.value,
+       chisq.test(mrip_lf[5:6,])$p.value)
+
+p.adjust(ps_mrip)
+```
+
+
+ALL
+```{r}
+ALL <- subset(rbind(AP, TB, CH, CK, JX, IR), tl>=30 & tl<= 65) %>% mutate(lcat5=lencat(tl, w=5)) 
+ALL$bay <- as.factor(ALL$bay)
+
+(ALL_lf <- xtabs(~bay+lcat5, data=ALL))
+
+#multiple comparisons are conducted by isolating pairs of groups, accumulating p-values for each pair and then adjusting the p values for multiplecomparisons
+
+ps_ALL<- c(chisq.test(ALL_lf[1:2,])$p.value, 
+            chisq.test(ALL_lf[1:3,])$p.value, 
+            chisq.test(ALL_lf[1:4,])$p.value, 
+            chisq.test(ALL_lf[1:5,])$p.value, 
+            chisq.test(ALL_lf[1:6,])$p.value, 
+            chisq.test(ALL_lf[2:3,])$p.value, 
+            chisq.test(ALL_lf[2:4,])$p.value, 
+            chisq.test(ALL_lf[2:5,])$p.value, 
+            chisq.test(ALL_lf[2:6,])$p.value, 
+            chisq.test(ALL_lf[3:4,])$p.value, 
+            chisq.test(ALL_lf[3:5,])$p.value, 
+            chisq.test(ALL_lf[3:6,])$p.value, 
+            chisq.test(ALL_lf[4:5,])$p.value, 
+            chisq.test(ALL_lf[4:6,])$p.value, 
+            chisq.test(ALL_lf[5:6,])$p.value) 
+
+p.adjust(ps_ALL)
+```
+####ANOVA to test for differences in mean tl between bays
+
+```{r}
+aov <- aov(tl ~ bay, data= ALL)
+summary(aov)
+plot(aov)
+# Tukey test
+TukeyHSD(aov)
+```
+```{r include=FALSE}
+#MULTIPLOT LENGTH HISTOGRAMS #####
+length_AP <- ggplot(AP, aes(x=tl))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.15), breaks=seq(0,.15, .03))+  ## plotting in percent frequency
+  scale_x_continuous(name="Length (cm)", limits=c(30,65), breaks=seq(30,65,5))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24), #changing  colour of x axisaxis.text.y=element_text(colour="black"), #changing colour of y acis
+        axis.text.y=element_text(colour="black", size=24), #changing colour of y acis
+        axis.title.x=element_text(size=24),
+        axis.title.y=element_text(size=24),
+        plot.title=element_text(size=14))+
+  annotate("text", x=60, y= .13, label="AP", size=10)
+
+length_CK <- ggplot(CK, aes(x=tl))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.15), breaks=seq(0,.15, .03))+  ## plotting in percent frequency
+  scale_x_continuous(name="Length (cm)", limits=c(30,65), breaks=seq(30,65,5))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24), #changing  colour of x axisaxis.text.y=element_text(colour="black"), #changing colour of y acis
+        axis.text.y=element_text(colour="black", size=24), #changing colour of y acis
+        axis.title.x=element_text(size=24),
+        axis.title.y=element_text(size=24),
+        plot.title=element_text(size=14))+
+  annotate("text", x=60, y= .13, label="CK", size=10)
+
+length_TB <- ggplot(TB, aes(x=tl))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.15), breaks=seq(0,.15, .03))+  ## plotting in percent frequency
+  scale_x_continuous(name="Length (cm)", limits=c(30,65), breaks=seq(30,65,5))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24), #changing  colour of x axisaxis.text.y=element_text(colour="black"), #changing colour of y acis
+        axis.text.y=element_text(colour="black", size=24), #changing colour of y acis
+        axis.title.x=element_text(size=24),
+        axis.title.y=element_text(size=24),
+        plot.title=element_text(size=14))+
+  annotate("text", x=60, y= .13, label="TB", size=10)
+
+length_CH <- ggplot(CH, aes(x=tl))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.15), breaks=seq(0,.15, .03))+  ## plotting in percent frequency
+  scale_x_continuous(name="Length (cm)", limits=c(30,65), breaks=seq(30,65,5))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24), #changing  colour of x axisaxis.text.y=element_text(colour="black"), #changing colour of y acis
+        axis.text.y=element_text(colour="black", size=24), #changing colour of y acis
+        axis.title.x=element_text(size=24),
+        axis.title.y=element_text(size=24),
+        plot.title=element_text(size=14))+
+  annotate("text", x=60, y= .13, label="CH", size=10)
+
+length_JX <- ggplot(JX, aes(x=tl))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,.15), breaks=seq(0,.15, .03))+  ## plotting in percent frequency
+  scale_x_continuous(name="Length (cm)", limits=c(30,65), breaks=seq(30,65,5))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24), #changing  colour of x axisaxis.text.y=element_text(colour="black"), #changing colour of y acis
+        axis.text.y=element_text(colour="black", size=24), #changing colour of y acis
+        axis.title.x=element_text(size=24),
+        axis.title.y=element_text(size=24),
+        plot.title=element_text(size=14))+
+  annotate("text", x=60, y= .13, label="JX", size=10)
+
+length_IR <- ggplot(IR, aes(x=tl))+ 
+  geom_histogram(aes(y=(..count..)/sum(..count..)), binwidth=1, boundary=-0.5, fill="white", color="black")+    # plotting in percent frequency
+  scale_y_continuous(labels=percent_format(), name="Frequency (%)", limits=c(0,0.15), breaks=seq(0,0.15, .03))+  ## plotting in percent frequency
+  scale_x_continuous(name="Length (cm)", limits=c(30,65), breaks=seq(30,65,5))+
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), 
+        panel.background=element_rect(colour="black",fill="white"), 
+        axis.text.x=element_text(colour="black", size=24), #changing  colour of x axisaxis.text.y=element_text(colour="black"), #changing colour of y acis
+        axis.text.y=element_text(colour="black", size=24), #changing colour of y acis
+        axis.title.x=element_text(size=24),
+        axis.title.y=element_text(size=24),
+        plot.title=element_text(size=14))+
+  annotate("text", x=60, y= .13, label="IR", size=10)
+```
+### _4.Visualize with CROSSBAR PLOT for mean and standard error_
+
+```{r include=FALSE}
+All$bay <- as.factor(All$bay)
+All$bay <- ordered(All$bay, levels=c("AP", "CK", "TB", "CH", "JX", "IR"))
+levels(All$bay) <-  c("W1_AP", "W2_CK", "W3_TB", "W4_CH", "E1_JX", "E2_IR")
+```
+function for 95% CI
+```{r}
+MinMeanSEM196Max <- function(x) {
+  v <- c(mean(x) - (sd(x)/sqrt(length(x))*1.96), mean(x), mean(x) + (sd(x)/sqrt(length(x))*1.96))
+  names(v) <- c("ymin", "y", "ymax")
+  v
+}
+```
+
+Make plot
+```{r}
+File <- ("U:/PhD_projectfiles/Figures/rec_length_crossbar.tiff")
+#if (file.exists(File)) stop(File, " already exists")
+dir.create(dirname(File), showWarnings = FALSE)
+
+tiff(File, units="in", width=5, height=5, res=300)
+#scaleFUN <- function(x) sprintf("%.1f", x)
+ ggplot(All, aes(bay, tl)) +
+  stat_summary(fun.data=MinMeanSEM196Max, geom="crossbar", colour="black") + 
+  scale_y_continuous(limits=c(40,48), breaks=seq(40,48, by=1), labels=seq(40,48, by=1))+
+  xlab("Estuary")+
+  ylab("Total length (cm) ")+
+  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(), 									
+        panel.background=element_rect(fill='white', colour='black'),
+        axis.title.y = element_text(colour="black", size=18), # changing font of y axis title
+        axis.title.x = element_text(colour="black", size=18),
+        axis.text.x=element_text(colour="black", size=12), #changing  colour and font of x axis text
+        axis.text.y=element_text(colour="black", size=12)) + 
+   annotate("text", label="f", x = 1, y= 42.65) +
+   annotate("text", label="f", x = 2, y= 42.55) +
+   annotate("text", label="f", x = 5, y= 42.8) +
+   annotate("text", label="g", x = 3, y= 43.55) +
+   annotate("text", label="h", x = 4, y= 43.3) +
+   annotate("text", label="i", x = 6, y= 45.4)
+   #changing colour and font of y axis
+
+#plot.title=element_text(size=14), # changing size of plot title)
+
+dev.off()
+```
