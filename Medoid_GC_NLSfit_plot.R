@@ -230,20 +230,35 @@ anova(m1, m2)
 t$y_short <- lapply(t$y, round, 2)
 t$X <- as.character(t$X)
 
-t_mut <- t %>% mutate(label=paste(X, y_short))
+t <- t %>% separate(X, into =c("x1", "x2"), sep="_")
+t[t == "AP"] <- "W1_AP"
+t[t == "CK"] <- "W2_CK"
+t[t == "TB"] <- "W3_TB"
+t[t == "CH"] <- "W4_CH"
+t[t == "JX"] <- "E1_JX"
+t[t == "IR"] <- "E2_IR"
+
+t_mut <- t %>% mutate(label=paste(x1, "v.", x2, y_short))
+trace(utils:::unpackPkgZip, edit=TRUE)
+require("ggrepel")
+
 
 File <- ("U:/PhD_projectfiles/Figures/correlation_distance.tiff")
 if (file.exists(File)) stop(File, " already exists")
 dir.create(dirname(File), showWarnings = FALSE)
 
-tiff(File, units="in", width=8, height=8, res=300)
+tiff(File, units="in", width=8, height=6, res=300)
 
 ggplot(data=t_mut, aes(x=x, y=y, label = label))+geom_point()+ 
   geom_smooth(method="nls",formula=y ~exp(-(x/v)), method.args=list(start=c(v=150)), aes(weight=N), se=FALSE, color="black", size=1)+                                           
   ylab("Correlation") +
-  xlab(" Great Circle Distance (km)")+ 
+  xlab(" Great circle distance (km)")+ 
   geom_vline(xintercept = 128.46, linetype="dotted", size=1.5, color="red")+
-  geom_text(aes(label= label), vjust=1.5, hjust=0.5)+
+  #geom_text(aes(label= label), vjust=1.5, hjust=0.5, size=2, check_overlap=T)+
+  #geom_text_repel(aes(label=label), size=4)+
+  geom_label_repel(aes(label=label))+
+  #geom_label( check_overlap=T)+
+  #geom_label(size=2.5, hjust = 1.1)+
   scale_x_continuous(limits=c(75,500))+
   #scale_y_continuous(limits=c(-0.3, 0.5, 0.1))+
   theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(),  
