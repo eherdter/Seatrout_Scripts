@@ -1,6 +1,10 @@
 ---
 title: "R Notebook for Age Length Key Analysis"
-output: rmarkdown::github_document
+output:
+  rmarkdown::github_document: default
+  html_document: default
+  github_document:
+    toc: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -9,7 +13,7 @@ knitr::opts_chunk$set(echo=TRUE)
 ```
 
 
-### __Main Objectives of this script__ 
+### _Main Objectives of this script_
  1. Imports otolith data. Summarizes data, mean age, mean length, sd and se and total sample number.   
  2. Makes bay-specific observed ALK, calculates some summary statistics.  
  3. Makes bay specific smoothed (modeled) ALK with multinomial modeling methods in Ogle (87-).
@@ -23,7 +27,7 @@ knitr::opts_chunk$set(echo=TRUE)
 11.Calculates proportional age distribution for ADULTS to be used in Delta_Method script (different from #6)
 12. Calculates weight at age for ADULTS to be used in Delta_Method script
 
-### _Start Here_ ####
+### _Start Here_ 
 Load packages and set my working directory.
 ```{r warning=FALSE, message=FALSE}
 library(FSA)
@@ -38,7 +42,7 @@ library(dplyr)
 library(gridExtra)
 ```
 
-#### 1. LOAD DATA & DO SOME WRANGLING ####
+### 1. Load data and do some wrangling
  1. load the csv file
 2. subset by which bay I want
 3. subset the FIM program 
@@ -110,7 +114,7 @@ Agelength_JX = mutate(Agelength_JX, year = strftime(DateNew, format="%Y")) %>% d
 Agelength_JX$year = as.factor(Agelength_JX$year) 
 
 ```
-#### 2. Basic data summarization#### 
+### 2. Basic data summarization
 ```{r}
 #total sample number of FIM data
 All= rbind(Agelength_AP, Agelength_CK, Agelength_TB, Agelength_CH, Agelength_JX, Agelength_IR) #omits na
@@ -140,7 +144,7 @@ Combined_sum
 
 Summarize each to get sex ratios etc. 
 
-``` {r}
+```{r}
 #an example with Tampa Bay data
 TB_sum <- summarise(Agelength_TB %>% filter(sex %in% c("M", "F")),mean_age=mean(final_age), median_age=median(final_age),sd_age= sd(final_age), se_age=sd_age/sqrt(length(final_age)), mean_tl = mean(tl), median_tl = median(tl), min_tl=min(tl), max_tl=max(tl), sd_tl= sd(tl), se_tl= sd_tl/(sqrt(length(final_age))), prop_F=nrow(subset(Agelength_TB, sex=="F"))/length(final_age),prop_M=nrow(subset(Agelength_TB, sex=="M"))/length(final_age), N_F=nrow(subset(Agelength_TB, sex=="F")), N_M=nrow(subset(Agelength_TB, sex=="M")), totN =N_F+N_M)
 ```
@@ -176,8 +180,8 @@ AL_sum <- AL_all %>% group_by(bay) %>% summarise(mean_age=mean(final_age), media
 
 ```
 
-#### TWO WAY ANOVAS ###
-To test for differences in age and length by bay and sex. 
+### 3. Statistical analyses
+Two way Anovas: To test for differences in age and length by bay and sex. 
 
 ```{r}
 All_MF <- droplevels(subset(All, sex %in% c("M", "F")))
@@ -210,7 +214,7 @@ summary(aov(tl  ~  sex, data= AL_IR))
 ```
 
 
-###CHI SQ TEST To test differencs in age distribution between bays #####
+#### Chi sqaured tests: To test differencs in age distribution between bays 
 non-parameteric like anova is below so it doesnt assume normality of the age distribution  
 can do a test of variance to determine whether can use anova  
 anova assumes homogenous variances  
@@ -281,7 +285,7 @@ pdf <- as.data.frame(p.adjust(ps_age))
 #all significantly different excpet for TB to AP and CH and IR
 ```
 
-###CHI SQ TEST To test differencs in length distribution between bays
+#### Chi squared tests: to test for diferences in length distribution among areas
 test for equal variances
 ```{r warning=FALSE}
 var.test(Agelength_TB$tl, Agelength_AP$tl)
@@ -344,8 +348,8 @@ plength <- as.data.frame(p.adjust(ps_length))
 
 ```
 
-### MAKE ALKS ####
-Make table with observed total numbers at length by age 
+### 4. Make age-length keys (ALKs) 
+Make table with observed total numbers at length by age to be used for statistical analysis
 ```{r}
 (rawfreq_TB <- xtabs(~lcat2+final_age, data=Agelength_TB)) 
 #rawfreq_TB_test_df <- as.data.frame(as.matrix(xtabs(~lcat2+final_age, data=TB_test)))
@@ -355,26 +359,27 @@ rowSums(rawfreq_TB) #number age obs per length
 ```
 Now do for other estuaries
 ```{r echo=FALSE}
-(rawfreq_AP <- xtabs(~lcat2+final_age, data=Agelength_AP)) 
-rowSums(rawfreq_AP)
-colSums(rawfreq_AP)
-(rawfreq_CK <- xtabs(~lcat2+final_age, data=Agelength_CK)) 
-rowSums(rawfreq_CK)
-colSums(rawfreq_CK)
-(rawfreq_CH <- xtabs(~lcat2+final_age, data=Agelength_CH)) 
-rowSums(rawfreq_CH)
-colSums(rawfreq_CH)
-(rawfreq_IR <- xtabs(~lcat2+final_age, data=Agelength_IR)) 
-rowSums(rawfreq_IR)
-colSums(rawfreq_IR)
-(rawfreq_JX <- xtabs(~lcat2+final_age, data=Agelength_JX))
-rowSums(rawfreq_JX)
-colSums(rawfreq_JX)
+rawfreq_AP <- xtabs(~lcat2+final_age, data=Agelength_AP)
+#rowSums(rawfreq_AP)
+#colSums(rawfreq_AP)
+rawfreq_CK <- xtabs(~lcat2+final_age, data=Agelength_CK) 
+#rowSums(rawfreq_CK)
+#colSums(rawfreq_CK)
+rawfreq_CH <- xtabs(~lcat2+final_age, data=Agelength_CH) 
+#rowSums(rawfreq_CH)
+#colSums(rawfreq_CH)
+rawfreq_IR <- xtabs(~lcat2+final_age, data=Agelength_IR) 
+#rowSums(rawfreq_IR)
+#colSums(rawfreq_IR)
+rawfreq_JX <- xtabs(~lcat2+final_age, data=Agelength_JX)
+#rowSums(rawfreq_JX)
+#colSums(rawfreq_JX)
 
 ```
 
-### MAKE OBSERVED ALK FROM ABOVE TABLES #####
+#### Make observed ALKs from tables produced above
 
+The method to do so: 
 The conditional proportions that form the ALK are calculated by dividing ecah cell of the frequency table by the sum of the corresponding row. 
 These row proportions are constructed by submitting the xtabs() object to prop.table() and including margin=1 to indicate that the proportions are computed by row (page 92). 
 
@@ -421,7 +426,7 @@ names(alk_IR) <- c(1,2,3,4,5,6,7,8,9)
 round(alk_IR,3)
 ```
 
-### Apply Proportional Age Distribution and Mean Length at Age
+#### Apply Proportional Age Distribution and Mean Length at Age
  1. Proportional age distribution  
  2. Mean length-at-age. (otolith database)
 
@@ -451,7 +456,7 @@ ad_JX <- xtabs(~final_age, data=Agelength_JX)
 round(prop.table(ad_JX), 3)
 ```
 
-#### Mean Length-at-age stats for each
+#### Summarize mean length-at-age for each area
 ```{r}
 TB_sumlen <- Agelength_TB %>% group_by(final_age) %>% summarize(n=validn(tl), mn=mean(tl, na.rm=TRUE),
                                                     sd=sd(tl, na.rm=TRUE), se=se(tl, na.rm=TRUE)) %>%
@@ -481,7 +486,8 @@ JX_sumlen <- Agelength_JX %>% group_by(final_age) %>% summarize(n=validn(tl), mn
 
 ```
 
-### MULTIPLOT AGE HISTOGRAMS
+### 5. Visualize the data  
+#### Make age histograms
 
 ```{r warning=FALSE}
 age_AP <- ggplot(Agelength_AP, aes(x=final_age))+ 
@@ -617,7 +623,7 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 
 #multiplot()
 ```
-### MULTIPLOT LENGTH HISTOGRAMS 
+#### Length histograms. 
 
 ```{r warning =FALSE}
 length_AP <- ggplot(Agelength_AP, aes(x=tl))+ 
@@ -726,7 +732,7 @@ labels <- c(F="Female", M="Male")
 levels(All_min$bay) <- c("W1_AP", "W2_CK", "W3_TB", "W4_CH", "E1_JX", "E2_IR")
 
 File <- ("U:/PhD_projectfiles/Figures/age_crossbar.tiff")
-if (file.exists(File)) stop(File, " already exists")
+#if (file.exists(File)) stop(File, " already exists")
 dir.create(dirname(File), showWarnings = FALSE)
 
 tiff(File, units="in", width=5, height=7, res=300)
@@ -838,8 +844,9 @@ scaleFUN <- function(x) sprintf("%.1f", x)
 
 #plot.title=element_text(size=14), # changing size of plot title)
 dev.off()
-
-# DISSERTATION PRESENTATION PLOTS ####
+```
+```{r echo=FALSE}
+### DISSERTATION PRESENTATION PLOTS ####
 ggplot(All_min %>% group_by(bay) %>% summarize(n=length(tl), mean_tl=mean(tl), UCI = mean_tl + (sd(tl)/sqrt(n)*1.96) , LCI = mean_tl - (sd(tl)/sqrt(n)*1.96)), aes(bay, mean_tl)) +
   geom_crossbar(aes(ymin=LCI, ymax=UCI, color=bay))+
   scale_x_discrete(breaks=c("W1_AP", "W2_CK", "W3_TB", "W4_CH", "E1_JX", "E2_IR"), labels=c("AP", "CK", "TB", "CH", "JX", "IR"))+
@@ -874,7 +881,8 @@ ggplot(All_min %>% group_by(bay) %>% summarize(n=length(final_age), mean_age=mea
         axis.text.x=element_text(colour="black", size=12), #changing  colour and font of x axis text
         axis.text.y=element_text(colour="black", size=12),
         strip.text.y = element_text(size=16)) 
-
+```
+```{r echp=FALSE}
 # PRODUCE SMOOTHED ALKS #####
 #from multinomial modeling exercise which can be used to do Likelihood ratio testing. 
 #MODELED AGE LENGTH KEYS (aka SMOOTHED ALK)
@@ -923,9 +931,9 @@ alksmo.ir <- predict(ir, data.frame(lcat2=lens), type="probs")
 row.names(alksmo.ir) <- lens
 round(alksmo.ir, 3)
 
+```
 
-
-
+```{r echo=FALSE, eval=FALSE}
 #Plot length frequency by age, observed ALK, and modeled ALK #####
 # Multiple options below. 
 
@@ -981,11 +989,13 @@ smoAP <- alkPlot(alksmo.ap, type="barplot", xlab="Total Length (cm)", pal="rainb
 smoIR <- alkPlot(alksmo.ir, type="barplot", xlab="Total Length (cm)", pal="rainbow", showLegend=TRUE)
 
 smoJX <- alkPlot(alksmo.jx, type="barplot", xlab="Total Length (cm)", pal="rainbow", showLegend=TRUE)
+```
 
 
-#AMONG GROUP STATISTICAL COMPARISONS #####
-#page 102 in Ogle
-
+### 6. Among group statistical comparisons of ALKs
+#### Following methods on page 102 in Ogle, Fisheries Analysis in R
+```{r}
+setwd("U:/PhD_projectfiles/Raw_Data/Age_Length_Data")
 Agelength_ALL<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH" | bay=="IR" |bay=="AP" | bay=="JX"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_ALL, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_ALL, maxit=500) #more complex model
@@ -1029,11 +1039,13 @@ mod2 <- multinom(final_age~lcat2*bay,data=Agelength_minIRJXAPCH, maxit=500) #mor
 
 anova(mod1, mod2)
   #still significantly different
+```
+#### Bay vs Bay comparison
+Null Hypothesis- there is no significant difference in alk between groups
 
-#Bay vs Bay comparison
-      #Null Hypothesis- there is no significant difference in alk between groups
-
+```{r}
 #TB vs CK 
+setwd("U:/PhD_projectfiles/Raw_Data/Age_Length_Data")
 Agelength_TBCK<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" |  bay== "CK" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_TBCK, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_TBCK, maxit=500) #more complex model
@@ -1075,9 +1087,12 @@ mod1 <- multinom(final_age~lcat2, data=Agelength_TBIR, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_TBIR, maxit=500) #more complex model
 
 anova(mod1, mod2)
+```
+Now do other comparisons
 
+```{r echo=FALSE}
 #CK vs CH
-
+setwd("U:/PhD_projectfiles/Raw_Data/Age_Length_Data")
 Agelength_CKCH<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "CK" |  bay== "CH" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
 mod1 <- multinom(final_age~lcat2, data=Agelength_CKCH, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_CKCH, maxit=500) #more complex model
@@ -1149,7 +1164,10 @@ mod1 <- multinom(final_age~lcat2, data=Agelength_JXIR, maxit=500) #simple model
 mod2 <- multinom(final_age~lcat2*bay,data=Agelength_JXIR, maxit=500) #more complex model
 
 anova(mod1, mod2)
+```
 
+
+```{r echo=FALSE, eval=FALSE}
 #11. DETERMINE AGE PROPORTION OF ADULTS #####
 #of all FIM subset... select sl > = 200 mm which is what was chosen to determine reproductively mature adults
 # "Distribution of ages described by either the proportion of fish at age (Pi) or the number of fish at each age (Ni)" Ogle 96
@@ -1223,7 +1241,6 @@ write.csv(Weight_at_Age_TB_ad, "U:/PhD_projectfiles/Exported_R_Datafiles/Weight_
 write.csv(Weight_at_Age_CH_ad, "U:/PhD_projectfiles/Exported_R_Datafiles/Weight_at_Age_CH_ad_FIMdata.csv")
 write.csv(Weight_at_Age_JX_ad, "U:/PhD_projectfiles/Exported_R_Datafiles/Weight_at_Age_JX_ad_FIMdata.csv")
 write.csv(Weight_at_Age_IR_ad, "U:/PhD_projectfiles/Exported_R_Datafiles/Weight_at_Age_IR_ad_FIMdata.csv")
-
 
 ```
 

@@ -1,7 +1,7 @@
 R Notebook for Age Length Key Analysis
 ================
 
-### **Main Objectives of this script**
+### *Main Objectives of this script*
 
 1.  Imports otolith data. Summarizes data, mean age, mean length, sd and se and total sample number.
 2.  Makes bay-specific observed ALK, calculates some summary statistics.
@@ -32,7 +32,7 @@ library(dplyr)
 library(gridExtra)
 ```
 
-#### 1. LOAD DATA & DO SOME WRANGLING
+### 1. Load data and do some wrangling
 
 1.  load the csv file
 2.  subset by which bay I want
@@ -64,7 +64,7 @@ Agelength_TB$year = as.factor(Agelength_TB$year)
 
 Now do the same thing for other estuaries. R code will not be displayed because it was fairly similar.
 
-#### 2. Basic data summarization
+### 2. Basic data summarization
 
 ``` r
 #total sample number of FIM data
@@ -118,9 +118,9 @@ All_sum <- rbind(AP_sum, CK_sum, TB_sum, CH_sum, JX_sum, IR_sum)
 rownames(All_sum) <- c("AP", "CK", "TB", "CH", "JX", "IR")
 ```
 
-#### TWO WAY ANOVAS
+### 3. Statistical analyses
 
-To test for differences in age and length by bay and sex.
+Two way Anovas: To test for differences in age and length by bay and sex.
 
 ``` r
 All_MF <- droplevels(subset(All, sex %in% c("M", "F")))
@@ -329,8 +329,7 @@ summary(aov(tl  ~  sex, data= AL_IR))
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-CHI SQ TEST To test differencs in age distribution between bays
-===============================================================
+#### Chi sqaured tests: To test differencs in age distribution between bays
 
 non-parameteric like anova is below so it doesnt assume normality of the age distribution
 can do a test of variance to determine whether can use anova
@@ -769,7 +768,7 @@ pdf <- as.data.frame(p.adjust(ps_age))
 #all significantly different excpet for TB to AP and CH and IR
 ```
 
-### CHI SQ TEST To test differencs in length distribution between bays
+#### Chi squared tests: to test for diferences in length distribution among areas
 
 test for equal variances
 
@@ -1200,9 +1199,9 @@ chisq.test(len_freq[5:6,])$p.value)
 plength <- as.data.frame(p.adjust(ps_length))
 ```
 
-### MAKE ALKS
+### 4. Make age-length keys (ALKs)
 
-Make table with observed total numbers at length by age
+Make table with observed total numbers at length by age to be used for statistical analysis
 
 ``` r
 (rawfreq_TB <- xtabs(~lcat2+final_age, data=Agelength_TB)) 
@@ -1259,200 +1258,9 @@ rowSums(rawfreq_TB) #number age obs per length
 
 Now do for other estuaries
 
-    ##      final_age
-    ## lcat2  1  2  3  4  5  6  7  8  9 10
-    ##    14  3  0  0  0  0  0  0  0  0  0
-    ##    16  4  0  0  0  0  0  0  0  0  0
-    ##    18  1  0  0  0  0  0  0  0  0  0
-    ##    20  4  0  0  0  0  0  0  0  0  0
-    ##    22  3  0  0  0  0  0  0  0  0  0
-    ##    24 10  0  0  0  0  0  0  0  0  0
-    ##    26 12  0  0  1  0  0  0  0  0  0
-    ##    28 41 10  2  1  0  0  0  0  0  0
-    ##    30 47 24  4  0  0  0  0  0  0  0
-    ##    32 44 41 10  3  1  0  0  0  0  0
-    ##    34 30 53 26  5  0  1  0  0  0  0
-    ##    36 38 68 31  9  2  0  0  0  0  0
-    ##    38 22 70 28  8  3  0  0  0  0  0
-    ##    40  5 69 31 18  7  1  0  0  1  0
-    ##    42  3 53 36 15  7  0  0  0  0  0
-    ##    44  1 30 28 15  1  0  0  0  0  0
-    ##    46  0 13 20 15  4  3  0  0  0  0
-    ##    48  0  9 19 17  3  0  0  0  0  0
-    ##    50  0  5 14 14  7  2  1  0  0  0
-    ##    52  0  0  9 11  5  0  2  0  0  0
-    ##    54  0  0 10 15  8  5  0  0  0  0
-    ##    56  0  1  3  8  5  1  0  0  0  0
-    ##    58  0  0  0  5  2  4  1  2  0  0
-    ##    60  0  0  0  4  5  3  3  0  0  0
-    ##    62  0  0  0  3  1  1  0  0  0  0
-    ##    64  0  0  0  2  1  1  4  0  0  0
-    ##    66  0  0  0  0  0  0  1  0  0  0
-    ##    70  0  0  0  0  0  0  1  0  0  1
+#### Make observed ALKs from tables produced above
 
-    ##  14  16  18  20  22  24  26  28  30  32  34  36  38  40  42  44  46  48 
-    ##   3   4   1   4   3  10  13  54  75  99 115 148 131 132 114  75  55  48 
-    ##  50  52  54  56  58  60  62  64  66  70 
-    ##  43  27  38  18  14  15   5   8   1   2
-
-    ##   1   2   3   4   5   6   7   8   9  10 
-    ## 268 446 271 169  62  22  13   2   1   1
-
-    ##      final_age
-    ## lcat2  1  2  3  4  5  6  7
-    ##    16  4  0  0  0  0  0  0
-    ##    18  4  0  0  0  0  0  0
-    ##    20  7  2  0  0  0  0  0
-    ##    22 12  0  0  0  0  0  0
-    ##    24 14  1  0  0  0  0  0
-    ##    26 11  1  0  0  0  0  0
-    ##    28 31  6  0  0  0  0  0
-    ##    30 55 17  1  0  0  0  0
-    ##    32 56 23  5  0  0  0  0
-    ##    34 51 31 12  0  0  0  0
-    ##    36 51 53 15  2  1  0  0
-    ##    38 28 42 20  5  0  0  0
-    ##    40 14 37 18  6  0  0  0
-    ##    42  7 24 16 11  1  0  0
-    ##    44  2 10 22  9  1  0  0
-    ##    46  0  6 18  5  3  0  1
-    ##    48  0  6 12  9  4  0  0
-    ##    50  0  4  9  5  2  1  1
-    ##    52  0  0  2  8  5  0  0
-    ##    54  0  1  3  2  1  0  0
-    ##    56  0  0  0  3  1  0  0
-    ##    58  0  0  0  2  1  1  0
-    ##    60  0  0  1  3  2  0  0
-    ##    62  0  0  0  1  1  0  0
-    ##    64  0  0  0  0  0  1  0
-
-    ##  16  18  20  22  24  26  28  30  32  34  36  38  40  42  44  46  48  50 
-    ##   4   4   9  12  15  12  37  73  84  94 122  95  75  59  44  33  31  22 
-    ##  52  54  56  58  60  62  64 
-    ##  15   7   4   4   6   2   1
-
-    ##   1   2   3   4   5   6   7 
-    ## 347 264 154  71  23   3   2
-
-    ##      final_age
-    ## lcat2  1  2  3  4  5  6  7
-    ##    20  0  1  0  0  0  0  0
-    ##    22  5  0  0  0  0  0  0
-    ##    24 14  1  0  0  0  0  0
-    ##    26 29  3  0  0  0  0  0
-    ##    28 36 23  5  0  0  0  0
-    ##    30 40 40 14  5  0  0  0
-    ##    32 45 32 33  6  1  1  0
-    ##    34 37 55 37 13  2  0  1
-    ##    36 43 65 52 17  2  0  0
-    ##    38  9 42 40 25  5  0  0
-    ##    40  5 34 30 18  5  0  0
-    ##    42  3 23 24 10  5  0  1
-    ##    44  1  7 27 23  7  1  0
-    ##    46  0 10 13 14  3  3  1
-    ##    48  1  5 13 16  6  2  0
-    ##    50  0  3  9 10  3  2  0
-    ##    52  0  1  3  7  3  3  0
-    ##    54  0  0  1  2  7  1  0
-    ##    56  0  0  1  5  3  1  0
-    ##    58  0  0  0  3  3  0  1
-    ##    60  0  0  0  2  2  1  0
-    ##    62  0  0  0  0  1  0  0
-    ##    64  0  0  0  0  0  1  0
-
-    ##  20  22  24  26  28  30  32  34  36  38  40  42  44  46  48  50  52  54 
-    ##   1   5  15  32  64  99 118 145 179 121  92  66  66  44  43  27  17  11 
-    ##  56  58  60  62  64 
-    ##  10   7   5   1   1
-
-    ##   1   2   3   4   5   6   7 
-    ## 268 345 302 176  58  16   4
-
-    ##      final_age
-    ## lcat2   1   2   3   4   5   6   7   8   9
-    ##    10   2   0   0   0   0   0   0   0   0
-    ##    12   3   0   0   0   0   0   0   0   0
-    ##    14   5   0   0   0   0   0   0   0   0
-    ##    16  14   1   0   0   0   0   0   0   0
-    ##    18  11   2   0   0   0   0   0   0   0
-    ##    20  17   5   1   0   0   0   0   0   0
-    ##    22  45  17   2   0   0   0   0   0   0
-    ##    24 105  26   5   1   0   0   0   0   0
-    ##    26  87  40  20   4   0   0   0   0   0
-    ##    28  74  48  23   3   0   0   1   0   0
-    ##    30  78  69  44   8   1   0   0   0   0
-    ##    32  58  76  55  14   1   0   0   0   0
-    ##    34  39  84  77  21   2   1   0   0   0
-    ##    36  43 110  89  35   4   1   0   0   0
-    ##    38  28  91  90  40   7   1   0   0   0
-    ##    40  16  72  64  39  14   1   2   0   0
-    ##    42  11  39  43  29   7   4   1   0   0
-    ##    44   1  35  49  23  12   1   0   0   0
-    ##    46   2  18  43  26   4   2   0   0   0
-    ##    48   1  18  30  26   7   3   0   0   0
-    ##    50   1  13  24  30   9   5   2   0   1
-    ##    52   0   7  25  21  13   2   3   0   0
-    ##    54   0   0  18  15  10   4   0   0   0
-    ##    56   0   0  14  16  16   3   2   0   0
-    ##    58   0   1   5  21  12   7   1   1   0
-    ##    60   0   0   6  16   7   5   1   0   0
-    ##    62   0   0   1   5   8   2   2   2   0
-    ##    64   1   0   0   5   4   5   0   0   0
-    ##    66   0   1   0   4   4   0   0   1   0
-    ##    68   0   0   0   1   1   2   0   0   0
-    ##    70   0   0   0   2   0   0   0   0   0
-    ##    72   0   0   0   0   0   2   0   0   0
-    ##    74   0   0   0   0   1   2   1   0   0
-
-    ##  10  12  14  16  18  20  22  24  26  28  30  32  34  36  38  40  42  44 
-    ##   2   3   5  15  13  23  64 137 151 149 200 204 224 282 257 208 134 121 
-    ##  46  48  50  52  54  56  58  60  62  64  66  68  70  72  74 
-    ##  95  85  85  71  47  51  48  35  20  15  10   4   2   2   4
-
-    ##   1   2   3   4   5   6   7   8   9 
-    ## 642 773 728 405 144  53  16   4   1
-
-    ##      final_age
-    ## lcat2  1  2  3  4  5  6  7  8
-    ##    14  3  0  0  0  0  0  0  0
-    ##    16  2  0  0  0  0  0  0  0
-    ##    18  7  0  0  0  0  0  0  0
-    ##    20  9  0  0  0  0  0  0  0
-    ##    22  9  1  0  0  0  0  0  0
-    ##    24 13  2  0  0  0  0  0  0
-    ##    26 25  6  0  0  0  0  0  0
-    ##    28 58 40  0  0  0  0  0  0
-    ##    30 74 63  9  1  0  0  0  0
-    ##    32 53 77 12  2  0  0  0  0
-    ##    34 44 68 25  4  1  0  0  0
-    ##    36 19 44 13  2  1  0  0  0
-    ##    38 12 26 17  2  1  0  0  0
-    ##    40  7 11  6  3  1  0  0  0
-    ##    42  2  7 10  6  2  0  0  0
-    ##    44  1  9  6  3  1  1  0  0
-    ##    46  0  3  6  2  0  0  1  0
-    ##    48  0  3  2  3  0  0  0  0
-    ##    50  0  0  2  3  0  1  0  0
-    ##    52  0  0  3  2  2  0  0  0
-    ##    54  0  0  1  2  0  0  0  0
-    ##    56  0  0  0  1  1  1  0  0
-    ##    58  0  0  1  1  1  1  0  0
-    ##    62  0  0  0  0  0  1  0  0
-    ##    64  0  0  0  0  1  0  0  0
-    ##    66  0  0  0  0  0  0  0  1
-    ##    68  0  0  0  0  0  1  0  0
-
-    ##  14  16  18  20  22  24  26  28  30  32  34  36  38  40  42  44  46  48 
-    ##   3   2   7   9  10  15  31  98 147 144 142  79  58  28  27  21  12   8 
-    ##  50  52  54  56  58  62  64  66  68 
-    ##   6   7   3   3   4   1   1   1   1
-
-    ##   1   2   3   4   5   6   7   8 
-    ## 338 360 113  37  12   6   1   1
-
-### MAKE OBSERVED ALK FROM ABOVE TABLES
-
-The conditional proportions that form the ALK are calculated by dividing ecah cell of the frequency table by the sum of the corresponding row. These row proportions are constructed by submitting the xtabs() object to prop.table() and including margin=1 to indicate that the proportions are computed by row (page 92).
+The method to do so: The conditional proportions that form the ALK are calculated by dividing ecah cell of the frequency table by the sum of the corresponding row. These row proportions are constructed by submitting the xtabs() object to prop.table() and including margin=1 to indicate that the proportions are computed by row (page 92).
 
 The alkPlot command used for plotting the observed ALK is unable to extend the x axis to the bounds of c(0,80) because xlim is not working. Therefore, in order to produce a plot with an x axis that can span from 0-80 (like what is happening with the length frequency and the smoothed ALK) I need to add in "observed" proportions for length categories that were not sampled. I could have added them to the original data frame but I was concerned that in the process of proportion calculations the extra entries would affect the proportions or result in proportions that I didn't want. The smoothing process can estimate proportions outside of the range but I wanted to keep the observed plot with just the proportions from the observed data. Therefore, I added in the zero proportion data by writing and editing a csv file which I then read below.
 
@@ -1723,7 +1531,7 @@ Now do the same with all of the others
     ## 78 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
     ## 80 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
 
-### Apply Proportional Age Distribution and Mean Length at Age
+#### Apply Proportional Age Distribution and Mean Length at Age
 
 1.  Proportional age distribution
 2.  Mean length-at-age. (otolith database)
@@ -1761,7 +1569,7 @@ Now do for other estuaries
     ##     1     2     3     4     5     6     7     8 
     ## 0.389 0.415 0.130 0.043 0.014 0.007 0.001 0.001
 
-#### Mean Length-at-age stats for each
+#### Summarize mean length-at-age for each area
 
 ``` r
 TB_sumlen <- Agelength_TB %>% group_by(final_age) %>% summarize(n=validn(tl), mn=mean(tl, na.rm=TRUE),
@@ -1771,7 +1579,9 @@ TB_sumlen <- Agelength_TB %>% group_by(final_age) %>% summarize(n=validn(tl), mn
 
 Now do the rest of the estuaries
 
-### MULTIPLOT AGE HISTOGRAMS
+### 5. Visualize the data
+
+#### Make age histograms
 
 ``` r
 age_AP <- ggplot(Agelength_AP, aes(x=final_age))+ 
@@ -1794,7 +1604,7 @@ age_AP
 
 ![](ALK_analysis_files/figure-markdown_github/unnamed-chunk-25-1.png)![](ALK_analysis_files/figure-markdown_github/unnamed-chunk-25-2.png)![](ALK_analysis_files/figure-markdown_github/unnamed-chunk-25-3.png)![](ALK_analysis_files/figure-markdown_github/unnamed-chunk-25-4.png)![](ALK_analysis_files/figure-markdown_github/unnamed-chunk-25-5.png)
 
-### MULTIPLOT LENGTH HISTOGRAMS
+#### Length histograms.
 
 ``` r
 length_AP <- ggplot(Agelength_AP, aes(x=tl))+ 
@@ -1815,5 +1625,1654 @@ length_AP
 ![](ALK_analysis_files/figure-markdown_github/unnamed-chunk-27-1.png) Now make plots for others.
 
 ![](ALK_analysis_files/figure-markdown_github/unnamed-chunk-28-1.png)![](ALK_analysis_files/figure-markdown_github/unnamed-chunk-28-2.png)![](ALK_analysis_files/figure-markdown_github/unnamed-chunk-28-3.png)![](ALK_analysis_files/figure-markdown_github/unnamed-chunk-28-4.png)![](ALK_analysis_files/figure-markdown_github/unnamed-chunk-28-5.png)
+
+``` r
+#CROSSBAR PLOT for mean and standard error ####
+
+MinMeanSEM196Max <- function(x) {
+  v <- c(mean(x) - (sd(x)/sqrt(length(x))*1.96), mean(x), mean(x) + (sd(x)/sqrt(length(x))*1.96))
+  names(v) <- c("ymin", "y", "ymax")
+  v
+}
+
+
+
+All_min <- subset(All, sex %in% c("F", "M"))
+labels <- c(F="Female", M="Male")
+
+levels(All_min$bay) <- c("W1_AP", "W2_CK", "W3_TB", "W4_CH", "E1_JX", "E2_IR")
+
+File <- ("U:/PhD_projectfiles/Figures/age_crossbar.tiff")
+#if (file.exists(File)) stop(File, " already exists")
+dir.create(dirname(File), showWarnings = FALSE)
+
+tiff(File, units="in", width=5, height=7, res=300)
+
+scaleFUN <- function(x) sprintf("%.1f", x)
+
+
+#test <- All_min %>% group_by(bay) %>% summarize(n=length(final_age), mean_age=mean(final_age), UCI = mean_age + (sd(final_age)/sqrt(n)*1.96) , LCI = mean_age - (sd(final_age)/sqrt(n)*1.96))
+#ggplot(test, aes(bay, mean_age)) + geom_crossbar(aes(ymin=LCI, ymax=UCI))
+
+grid.arrange(ggplot(All_min %>% group_by(bay) %>% summarize(n=length(final_age), mean_age=mean(final_age), UCI = mean_age + (sd(final_age)/sqrt(n)*1.96) , LCI = mean_age - (sd(final_age)/sqrt(n)*1.96)), aes(bay, mean_age)) +
+  stat_summary(fun.data=MinMeanSEM196Max, geom="crossbar", alpha=0.5) + #, colour="black") + 
+  geom_crossbar(aes(ymin=LCI, ymax=UCI))+
+  scale_y_continuous(limits=c(0,4), breaks=seq(0,5,0.5), labels=scaleFUN)+
+  #facet_grid(sex ~., labeller=labeller(sex=labels)) +
+  xlab("Estuary")+
+  ylab("Age (yrs)")+
+  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(),                                     
+        panel.background=element_rect(fill='white', colour='black'),
+        axis.title.y = element_text(colour="black", size=18), # changing font of y axis title
+        axis.title.x = element_blank(),
+        axis.text.x=element_text(colour="black", size=12), #changing  colour and font of x axis text
+        axis.text.y=element_text(colour="black", size=12),
+        strip.text.y = element_text(size=16)) + 
+  annotate("text", label= "a", x= 1, y = 2.8, size = 4) + 
+annotate("text", label= "a", x= 3, y = 2.85, size = 4) +
+  annotate("text", label= "a", x= 4, y = 2.79, size = 4) +
+  annotate("text", label= "a", x= 6, y = 2.75, size = 4) +
+  annotate("text", label= "b", x= 2, y = 2.22, size = 4) +
+  annotate("text", label= "b", x= 5, y = 2.08, size = 4),
+ggplot(All_min %>% group_by(bay,sex) %>% summarize(n=length(final_age), mean_age=mean(final_age), UCI = mean_age + (sd(final_age)/sqrt(n)*1.96) , LCI = mean_age - (sd(final_age)/sqrt(n)*1.96)), aes(bay, mean_age, fill=sex)) +
+  geom_crossbar(aes(ymin=LCI, ymax=UCI), alpha=0.5)+
+  scale_y_continuous(limits=c(0,4), breaks=seq(0,5,0.5), labels=scaleFUN)+
+  #facet_grid(sex ~., labeller=labeller(sex=labels)) +
+  xlab("Estuary")+
+  ylab("Age (yrs)")+
+  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(),                                     
+        panel.background=element_rect(fill='white', colour='black'),
+        axis.title.y = element_text(colour="black", size=18), # changing font of y axis title
+        axis.title.x = element_text(colour="black", size=18),
+        axis.text.x=element_text(colour="black", size=12), #changing  colour and font of x axis text
+        axis.text.y=element_text(colour="black", size=12),
+        strip.text.y = element_text(size=16),
+        legend.position= c(0.92,0.3), 
+        legend.background= element_rect(color="black", linetype="solid"))  , nrow=2)
+```
+
+    ## Warning: Removed 6 rows containing missing values (geom_crossbar).
+
+``` r
+#changing colour and font of y axis
+dev.off()
+```
+
+    ## png 
+    ##   2
+
+``` r
+#plot.title=element_text(size=14), # changing size of plot title)
+
+
+
+File <- ("U:/PhD_projectfiles/Figures/FIM_length_crossbar.tiff")
+#if (file.exists(File)) stop(File, " already exists")
+dir.create(dirname(File), showWarnings = FALSE)
+
+tiff(File, units="in", width=5, height=7, res=300)
+
+MinMedianSEM196Max <- function(x) {
+  v <- c(median(x) - (sd(x)/sqrt(length(x))*1.96), median(x), median(x) + (sd(x)/sqrt(length(x))*1.96))
+  names(v) <- c("ymin", "y", "ymax")
+  v
+}
+
+#All_MF %>% group_by(bay, sex) %>% summarize(n=length(tl), mean_tl=mean(tl), UCI = mean_tl + (sd(tl)/sqrt(n)*1.96) , LCI = mean_tl - (sd(tl)/sqrt(n)*1.96))
+#ggplot(test, aes(bay, mean_tl)) + geom_crossbar(aes(ymin=LCI, ymax=UCI))
+
+
+scaleFUN <- function(x) sprintf("%.1f", x)
+ grid.arrange(ggplot(All_min %>% group_by(bay) %>% summarize(n=length(tl), mean_tl=mean(tl), UCI = mean_tl + (sd(tl)/sqrt(n)*1.96) , LCI = mean_tl - (sd(tl)/sqrt(n)*1.96)), aes(bay, mean_tl)) +
+  geom_crossbar(aes(ymin=LCI, ymax=UCI))+
+  #scale_y_continuous(breaks=seq(10,80,1.5), labels=scaleFUN)+
+    scale_y_continuous(limits=c(30,45), breaks=seq(30,45,2), labels=seq(30,45,2))+
+  #facet_grid(sex ~., labeller=labeller(sex=labels)) +
+  xlab("Estuary")+
+  ylab("Total length (cm) ")+
+  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(),                                     
+        panel.background=element_rect(fill='white', colour='black'),
+        axis.title.y = element_text(colour="black", size=18), # changing font of y axis title
+        axis.title.x = element_blank(),
+        axis.text.x=element_text(colour="black", size=12), #changing  colour and font of x axis text
+        axis.text.y=element_text(colour="black", size=12),
+        strip.text.y = element_text(size=16))+
+   annotate("text", label = "c", x=1, y= 41.05) +
+   annotate("text", label = "d", x=2, y= 38.78) +
+   annotate("text", label = "d", x=3, y= 39.08) +
+   annotate("text", label = "d", x=4, y= 39.3) +
+   annotate("text", label = "e", x=5, y= 35.19) +
+   annotate("text", label = "d", x=6, y= 39.08),
+ ggplot(All_min %>% group_by(bay, sex) %>% summarize(n=length(tl), mean_tl=mean(tl), UCI = mean_tl + (sd(tl)/sqrt(n)*1.96) , LCI = mean_tl - (sd(tl)/sqrt(n)*1.96)), aes(bay, mean_tl, fill=sex)) +
+   stat_summary(fun.data=MinMeanSEM196Max, geom="crossbar", alpha=0.5) + #, colour="black") + 
+   geom_crossbar(aes(ymin=LCI, ymax=UCI))+
+   scale_y_continuous(limits=c(30,45), breaks=seq(30,45,2), labels=seq(30,45,2))+
+   #facet_grid(sex ~., labeller=labeller(sex=labels)) +
+   xlab("Estuary")+
+   ylab("Total length (cm) ")+
+   theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(),                                    
+         panel.background=element_rect(fill='white', colour='black'),
+         axis.title.y = element_text(colour="black", size=18), # changing font of y axis title
+         axis.title.x = element_text(colour="black", size=18),
+         axis.text.x=element_text(colour="black", size=12), #changing  colour and font of x axis text
+         axis.text.y=element_text(colour="black", size=12),
+         strip.text.y = element_text(size=16),
+        legend.position= c(0.92,0.85), 
+        legend.background= element_rect(color="black", linetype="solid")), nrow=2)
+```
+
+    ## Warning: Removed 12 rows containing missing values (geom_crossbar).
+
+``` r
+ #changing colour and font of y axis
+
+#plot.title=element_text(size=14), # changing size of plot title)
+dev.off()
+```
+
+    ## png 
+    ##   2
+
+![](ALK_analysis_files/figure-markdown_github/unnamed-chunk-30-1.png)
+
+    ## Warning: Removed 6 rows containing missing values (geom_crossbar).
+
+![](ALK_analysis_files/figure-markdown_github/unnamed-chunk-30-2.png)
+
+``` r
+# PRODUCE SMOOTHED ALKS #####
+#from multinomial modeling exercise which can be used to do Likelihood ratio testing. 
+#MODELED AGE LENGTH KEYS (aka SMOOTHED ALK)
+#-fixes two common issues with Age Length keys detailed on page 92 Ogle. 
+#multinomial logistic regression model -Gerritsen et al. 2006. The response variable has more than two levels
+
+#TB
+tb <- multinom(final_age~lcat2, data=Agelength_TB, maxit=500)
+```
+
+    ## # weights:  27 (16 variable)
+    ## initial  value 4117.598858 
+    ## iter  10 value 3179.551528
+    ## iter  20 value 2651.350294
+    ## iter  30 value 2644.069020
+    ## iter  40 value 2643.607161
+    ## iter  50 value 2642.723677
+    ## final  value 2642.057178 
+    ## converged
+
+``` r
+lens<- seq(0,80, 1)
+alksmo.tb <- predict(tb, data.frame(lcat2=lens), type="probs")
+row.names(alksmo.tb) <- lens
+round(alksmo.tb, 3)
+```
+
+    ##        1     2     3     4     5     6     7     8     9
+    ## 0  0.998 0.002 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 1  0.997 0.003 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 2  0.997 0.003 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 3  0.996 0.004 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 4  0.995 0.005 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 5  0.994 0.006 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 6  0.992 0.007 0.001 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 7  0.991 0.009 0.001 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 8  0.989 0.010 0.001 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 9  0.986 0.012 0.001 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 10 0.983 0.015 0.002 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 11 0.980 0.018 0.002 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 12 0.976 0.022 0.003 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 13 0.970 0.026 0.003 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 14 0.964 0.031 0.004 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 15 0.956 0.038 0.006 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 16 0.947 0.045 0.008 0.001 0.000 0.000 0.000 0.000 0.000
+    ## 17 0.936 0.054 0.010 0.001 0.000 0.000 0.000 0.000 0.000
+    ## 18 0.922 0.064 0.013 0.001 0.000 0.000 0.000 0.000 0.000
+    ## 19 0.906 0.076 0.016 0.001 0.000 0.000 0.000 0.000 0.000
+    ## 20 0.887 0.090 0.021 0.002 0.000 0.000 0.000 0.000 0.000
+    ## 21 0.864 0.107 0.027 0.003 0.000 0.000 0.000 0.000 0.000
+    ## 22 0.837 0.125 0.034 0.004 0.000 0.000 0.000 0.000 0.000
+    ## 23 0.806 0.145 0.043 0.005 0.000 0.000 0.000 0.000 0.000
+    ## 24 0.770 0.168 0.053 0.007 0.001 0.000 0.000 0.000 0.000
+    ## 25 0.730 0.193 0.066 0.010 0.001 0.000 0.000 0.000 0.000
+    ## 26 0.685 0.219 0.082 0.013 0.001 0.000 0.000 0.000 0.000
+    ## 27 0.636 0.246 0.099 0.018 0.002 0.000 0.000 0.000 0.000
+    ## 28 0.583 0.272 0.119 0.023 0.002 0.001 0.000 0.000 0.000
+    ## 29 0.527 0.298 0.141 0.030 0.004 0.001 0.000 0.000 0.000
+    ## 30 0.470 0.321 0.165 0.038 0.005 0.001 0.000 0.000 0.000
+    ## 31 0.413 0.341 0.190 0.047 0.007 0.002 0.000 0.000 0.000
+    ## 32 0.357 0.357 0.216 0.058 0.009 0.002 0.000 0.000 0.000
+    ## 33 0.304 0.368 0.241 0.071 0.012 0.003 0.000 0.000 0.000
+    ## 34 0.255 0.374 0.265 0.084 0.016 0.004 0.001 0.000 0.000
+    ## 35 0.211 0.374 0.288 0.099 0.021 0.006 0.001 0.000 0.000
+    ## 36 0.172 0.368 0.307 0.115 0.027 0.008 0.001 0.000 0.000
+    ## 37 0.138 0.358 0.324 0.132 0.035 0.010 0.002 0.000 0.000
+    ## 38 0.110 0.344 0.337 0.150 0.043 0.013 0.003 0.001 0.000
+    ## 39 0.086 0.326 0.347 0.167 0.053 0.017 0.004 0.001 0.000
+    ## 40 0.067 0.306 0.352 0.185 0.064 0.021 0.005 0.001 0.000
+    ## 41 0.051 0.283 0.353 0.201 0.078 0.026 0.006 0.001 0.000
+    ## 42 0.039 0.259 0.351 0.217 0.092 0.032 0.008 0.002 0.000
+    ## 43 0.029 0.235 0.344 0.232 0.108 0.039 0.011 0.002 0.000
+    ## 44 0.021 0.210 0.334 0.245 0.126 0.048 0.014 0.003 0.000
+    ## 45 0.016 0.186 0.321 0.255 0.145 0.057 0.017 0.003 0.000
+    ## 46 0.011 0.163 0.304 0.263 0.165 0.067 0.022 0.004 0.000
+    ## 47 0.008 0.141 0.286 0.269 0.186 0.078 0.027 0.005 0.000
+    ## 48 0.006 0.121 0.266 0.272 0.207 0.090 0.033 0.006 0.000
+    ## 49 0.004 0.103 0.244 0.271 0.227 0.103 0.040 0.007 0.000
+    ## 50 0.003 0.086 0.222 0.268 0.248 0.116 0.048 0.009 0.000
+    ## 51 0.002 0.071 0.200 0.262 0.267 0.130 0.057 0.010 0.000
+    ## 52 0.001 0.059 0.178 0.254 0.285 0.144 0.067 0.012 0.000
+    ## 53 0.001 0.048 0.157 0.243 0.301 0.158 0.079 0.014 0.000
+    ## 54 0.001 0.039 0.137 0.231 0.315 0.171 0.091 0.015 0.000
+    ## 55 0.000 0.031 0.119 0.217 0.327 0.184 0.104 0.018 0.001
+    ## 56 0.000 0.024 0.102 0.203 0.336 0.197 0.118 0.020 0.001
+    ## 57 0.000 0.019 0.087 0.188 0.343 0.208 0.132 0.022 0.001
+    ## 58 0.000 0.015 0.073 0.172 0.347 0.218 0.148 0.024 0.002
+    ## 59 0.000 0.012 0.061 0.157 0.349 0.227 0.164 0.026 0.004
+    ## 60 0.000 0.009 0.051 0.142 0.348 0.235 0.180 0.029 0.006
+    ## 61 0.000 0.007 0.042 0.128 0.344 0.242 0.197 0.031 0.009
+    ## 62 0.000 0.005 0.035 0.114 0.338 0.247 0.213 0.033 0.015
+    ## 63 0.000 0.004 0.028 0.101 0.330 0.249 0.229 0.035 0.023
+    ## 64 0.000 0.003 0.023 0.088 0.319 0.250 0.245 0.037 0.035
+    ## 65 0.000 0.002 0.018 0.077 0.305 0.248 0.258 0.039 0.053
+    ## 66 0.000 0.002 0.014 0.066 0.288 0.243 0.268 0.040 0.080
+    ## 67 0.000 0.001 0.011 0.055 0.267 0.233 0.274 0.040 0.117
+    ## 68 0.000 0.001 0.008 0.045 0.242 0.220 0.275 0.040 0.169
+    ## 69 0.000 0.001 0.006 0.036 0.214 0.201 0.267 0.038 0.237
+    ## 70 0.000 0.000 0.004 0.028 0.182 0.178 0.251 0.036 0.320
+    ## 71 0.000 0.000 0.003 0.021 0.149 0.151 0.227 0.032 0.416
+    ## 72 0.000 0.000 0.002 0.015 0.117 0.123 0.197 0.027 0.519
+    ## 73 0.000 0.000 0.001 0.010 0.088 0.096 0.163 0.022 0.619
+    ## 74 0.000 0.000 0.001 0.007 0.064 0.072 0.130 0.018 0.709
+    ## 75 0.000 0.000 0.000 0.004 0.044 0.052 0.100 0.013 0.785
+    ## 76 0.000 0.000 0.000 0.003 0.030 0.037 0.075 0.010 0.846
+    ## 77 0.000 0.000 0.000 0.002 0.020 0.025 0.055 0.007 0.891
+    ## 78 0.000 0.000 0.000 0.001 0.013 0.017 0.040 0.005 0.924
+    ## 79 0.000 0.000 0.000 0.001 0.008 0.011 0.028 0.004 0.948
+    ## 80 0.000 0.000 0.000 0.000 0.005 0.008 0.020 0.003 0.964
+
+``` r
+#CK
+ck <- multinom(final_age~lcat2, data=Agelength_CK, maxit=500)
+```
+
+    ## # weights:  21 (12 variable)
+    ## initial  value 1681.266369 
+    ## iter  10 value 1268.858965
+    ## iter  20 value 891.630042
+    ## iter  30 value 887.154174
+    ## iter  40 value 885.943516
+    ## final  value 885.879974 
+    ## converged
+
+``` r
+lens<- seq(0,80, 1)
+alksmo.ck <- predict(ck, data.frame(lcat2=lens), type="probs")
+row.names(alksmo.ck) <- lens
+round(alksmo.ck, 3)
+```
+
+    ##        1     2     3     4     5     6     7
+    ## 0  1.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 1  0.999 0.001 0.000 0.000 0.000 0.000 0.000
+    ## 2  0.999 0.001 0.000 0.000 0.000 0.000 0.000
+    ## 3  0.999 0.001 0.000 0.000 0.000 0.000 0.000
+    ## 4  0.999 0.001 0.000 0.000 0.000 0.000 0.000
+    ## 5  0.999 0.001 0.000 0.000 0.000 0.000 0.000
+    ## 6  0.998 0.002 0.000 0.000 0.000 0.000 0.000
+    ## 7  0.998 0.002 0.000 0.000 0.000 0.000 0.000
+    ## 8  0.997 0.003 0.000 0.000 0.000 0.000 0.000
+    ## 9  0.997 0.003 0.000 0.000 0.000 0.000 0.000
+    ## 10 0.996 0.004 0.000 0.000 0.000 0.000 0.000
+    ## 11 0.995 0.005 0.000 0.000 0.000 0.000 0.000
+    ## 12 0.994 0.006 0.000 0.000 0.000 0.000 0.000
+    ## 13 0.993 0.007 0.000 0.000 0.000 0.000 0.000
+    ## 14 0.991 0.009 0.000 0.000 0.000 0.000 0.000
+    ## 15 0.989 0.011 0.000 0.000 0.000 0.000 0.000
+    ## 16 0.986 0.014 0.000 0.000 0.000 0.000 0.000
+    ## 17 0.983 0.017 0.000 0.000 0.000 0.000 0.000
+    ## 18 0.979 0.021 0.000 0.000 0.000 0.000 0.000
+    ## 19 0.974 0.026 0.000 0.000 0.000 0.000 0.000
+    ## 20 0.967 0.032 0.001 0.000 0.000 0.000 0.000
+    ## 21 0.960 0.039 0.001 0.000 0.000 0.000 0.000
+    ## 22 0.950 0.048 0.001 0.000 0.000 0.000 0.000
+    ## 23 0.939 0.059 0.002 0.000 0.000 0.000 0.000
+    ## 24 0.925 0.072 0.003 0.000 0.000 0.000 0.000
+    ## 25 0.908 0.088 0.004 0.000 0.000 0.000 0.000
+    ## 26 0.887 0.107 0.006 0.000 0.000 0.000 0.000
+    ## 27 0.863 0.128 0.009 0.000 0.000 0.000 0.000
+    ## 28 0.833 0.154 0.012 0.001 0.000 0.000 0.000
+    ## 29 0.799 0.183 0.017 0.001 0.000 0.000 0.000
+    ## 30 0.759 0.215 0.024 0.001 0.000 0.000 0.000
+    ## 31 0.713 0.250 0.034 0.002 0.000 0.000 0.000
+    ## 32 0.662 0.288 0.046 0.004 0.000 0.000 0.000
+    ## 33 0.605 0.326 0.063 0.006 0.000 0.000 0.000
+    ## 34 0.544 0.364 0.083 0.009 0.001 0.000 0.000
+    ## 35 0.479 0.398 0.108 0.013 0.001 0.000 0.000
+    ## 36 0.414 0.426 0.138 0.020 0.002 0.000 0.000
+    ## 37 0.350 0.446 0.172 0.028 0.003 0.000 0.001
+    ## 38 0.289 0.456 0.209 0.040 0.005 0.000 0.001
+    ## 39 0.233 0.455 0.249 0.054 0.007 0.000 0.001
+    ## 40 0.183 0.443 0.289 0.073 0.011 0.000 0.002
+    ## 41 0.140 0.421 0.326 0.095 0.015 0.000 0.002
+    ## 42 0.105 0.390 0.360 0.121 0.021 0.000 0.003
+    ## 43 0.076 0.353 0.387 0.150 0.029 0.000 0.004
+    ## 44 0.054 0.312 0.407 0.182 0.039 0.001 0.005
+    ## 45 0.038 0.269 0.419 0.217 0.050 0.001 0.006
+    ## 46 0.026 0.228 0.422 0.252 0.064 0.002 0.007
+    ## 47 0.017 0.189 0.416 0.287 0.080 0.003 0.008
+    ## 48 0.011 0.154 0.403 0.321 0.098 0.004 0.009
+    ## 49 0.007 0.123 0.384 0.352 0.118 0.006 0.010
+    ## 50 0.005 0.096 0.359 0.380 0.140 0.008 0.012
+    ## 51 0.003 0.075 0.331 0.404 0.163 0.012 0.013
+    ## 52 0.002 0.057 0.300 0.424 0.187 0.016 0.014
+    ## 53 0.001 0.043 0.269 0.438 0.212 0.022 0.015
+    ## 54 0.001 0.032 0.238 0.447 0.237 0.030 0.015
+    ## 55 0.000 0.023 0.208 0.451 0.262 0.040 0.016
+    ## 56 0.000 0.017 0.179 0.449 0.286 0.052 0.016
+    ## 57 0.000 0.012 0.153 0.442 0.308 0.068 0.017
+    ## 58 0.000 0.009 0.129 0.430 0.329 0.087 0.017
+    ## 59 0.000 0.006 0.107 0.413 0.346 0.111 0.017
+    ## 60 0.000 0.004 0.088 0.392 0.360 0.139 0.016
+    ## 61 0.000 0.003 0.072 0.368 0.370 0.172 0.016
+    ## 62 0.000 0.002 0.057 0.340 0.376 0.210 0.015
+    ## 63 0.000 0.001 0.045 0.311 0.376 0.253 0.014
+    ## 64 0.000 0.001 0.035 0.280 0.371 0.300 0.013
+    ## 65 0.000 0.001 0.027 0.248 0.360 0.352 0.012
+    ## 66 0.000 0.000 0.021 0.217 0.345 0.406 0.011
+    ## 67 0.000 0.000 0.015 0.187 0.326 0.462 0.010
+    ## 68 0.000 0.000 0.011 0.159 0.304 0.518 0.008
+    ## 69 0.000 0.000 0.008 0.133 0.279 0.572 0.007
+    ## 70 0.000 0.000 0.006 0.110 0.253 0.625 0.006
+    ## 71 0.000 0.000 0.004 0.090 0.227 0.674 0.005
+    ## 72 0.000 0.000 0.003 0.073 0.201 0.719 0.004
+    ## 73 0.000 0.000 0.002 0.058 0.176 0.760 0.004
+    ## 74 0.000 0.000 0.001 0.046 0.153 0.796 0.003
+    ## 75 0.000 0.000 0.001 0.036 0.132 0.828 0.002
+    ## 76 0.000 0.000 0.001 0.028 0.113 0.855 0.002
+    ## 77 0.000 0.000 0.000 0.022 0.097 0.879 0.002
+    ## 78 0.000 0.000 0.000 0.017 0.082 0.899 0.001
+    ## 79 0.000 0.000 0.000 0.013 0.070 0.916 0.001
+    ## 80 0.000 0.000 0.000 0.010 0.059 0.930 0.001
+
+``` r
+#CH
+ch <- multinom(final_age~lcat2, data=Agelength_CH, maxit=500)
+```
+
+    ## # weights:  21 (12 variable)
+    ## initial  value 2274.768964 
+    ## iter  10 value 1692.830890
+    ## iter  20 value 1536.690458
+    ## iter  30 value 1536.455863
+    ## final  value 1536.455785 
+    ## converged
+
+``` r
+lens<- seq(0,80, 1)
+alksmo.ch <- predict(ch, data.frame(lcat2=lens), type="probs")
+row.names(alksmo.ch) <- lens
+round(alksmo.ch, 3)
+```
+
+    ##        1     2     3     4     5     6     7
+    ## 0  0.999 0.001 0.000 0.000 0.000 0.000 0.000
+    ## 1  0.998 0.002 0.000 0.000 0.000 0.000 0.000
+    ## 2  0.998 0.002 0.000 0.000 0.000 0.000 0.000
+    ## 3  0.997 0.003 0.000 0.000 0.000 0.000 0.000
+    ## 4  0.997 0.003 0.000 0.000 0.000 0.000 0.000
+    ## 5  0.996 0.004 0.000 0.000 0.000 0.000 0.000
+    ## 6  0.995 0.005 0.000 0.000 0.000 0.000 0.000
+    ## 7  0.994 0.006 0.000 0.000 0.000 0.000 0.000
+    ## 8  0.992 0.007 0.000 0.000 0.000 0.000 0.000
+    ## 9  0.991 0.009 0.001 0.000 0.000 0.000 0.000
+    ## 10 0.988 0.011 0.001 0.000 0.000 0.000 0.000
+    ## 11 0.986 0.013 0.001 0.000 0.000 0.000 0.000
+    ## 12 0.982 0.016 0.001 0.000 0.000 0.000 0.000
+    ## 13 0.978 0.020 0.002 0.000 0.000 0.000 0.000
+    ## 14 0.973 0.024 0.003 0.000 0.000 0.000 0.000
+    ## 15 0.967 0.029 0.003 0.000 0.000 0.000 0.000
+    ## 16 0.960 0.036 0.005 0.000 0.000 0.000 0.000
+    ## 17 0.950 0.043 0.006 0.000 0.000 0.000 0.000
+    ## 18 0.939 0.052 0.008 0.001 0.000 0.000 0.000
+    ## 19 0.925 0.063 0.011 0.001 0.000 0.000 0.000
+    ## 20 0.909 0.076 0.014 0.001 0.000 0.000 0.000
+    ## 21 0.889 0.091 0.019 0.002 0.000 0.000 0.000
+    ## 22 0.865 0.109 0.024 0.002 0.000 0.000 0.000
+    ## 23 0.836 0.129 0.032 0.003 0.000 0.000 0.000
+    ## 24 0.803 0.151 0.041 0.005 0.000 0.000 0.000
+    ## 25 0.765 0.177 0.052 0.007 0.000 0.000 0.000
+    ## 26 0.721 0.204 0.066 0.009 0.001 0.000 0.000
+    ## 27 0.672 0.233 0.082 0.013 0.001 0.000 0.000
+    ## 28 0.618 0.262 0.101 0.017 0.001 0.000 0.000
+    ## 29 0.560 0.292 0.123 0.023 0.002 0.000 0.000
+    ## 30 0.500 0.319 0.147 0.031 0.003 0.000 0.000
+    ## 31 0.439 0.343 0.174 0.040 0.004 0.000 0.001
+    ## 32 0.379 0.363 0.201 0.051 0.005 0.000 0.001
+    ## 33 0.321 0.377 0.229 0.064 0.007 0.001 0.001
+    ## 34 0.268 0.385 0.256 0.079 0.010 0.001 0.001
+    ## 35 0.219 0.386 0.281 0.097 0.013 0.002 0.001
+    ## 36 0.177 0.382 0.305 0.115 0.017 0.002 0.002
+    ## 37 0.140 0.371 0.324 0.136 0.023 0.003 0.002
+    ## 38 0.110 0.356 0.341 0.158 0.029 0.004 0.003
+    ## 39 0.085 0.337 0.353 0.181 0.036 0.005 0.003
+    ## 40 0.065 0.315 0.361 0.204 0.044 0.007 0.004
+    ## 41 0.049 0.290 0.365 0.228 0.054 0.009 0.005
+    ## 42 0.036 0.265 0.364 0.252 0.066 0.012 0.005
+    ## 43 0.027 0.239 0.360 0.275 0.079 0.015 0.006
+    ## 44 0.019 0.213 0.351 0.297 0.093 0.019 0.007
+    ## 45 0.014 0.188 0.340 0.317 0.109 0.024 0.008
+    ## 46 0.010 0.164 0.325 0.336 0.127 0.030 0.009
+    ## 47 0.007 0.142 0.308 0.352 0.145 0.036 0.010
+    ## 48 0.005 0.122 0.289 0.365 0.165 0.044 0.010
+    ## 49 0.003 0.103 0.269 0.375 0.186 0.053 0.011
+    ## 50 0.002 0.087 0.247 0.382 0.207 0.063 0.012
+    ## 51 0.002 0.072 0.226 0.385 0.229 0.074 0.013
+    ## 52 0.001 0.060 0.204 0.385 0.251 0.087 0.013
+    ## 53 0.001 0.049 0.183 0.381 0.272 0.101 0.014
+    ## 54 0.000 0.040 0.163 0.375 0.293 0.116 0.014
+    ## 55 0.000 0.032 0.143 0.365 0.313 0.132 0.014
+    ## 56 0.000 0.026 0.125 0.353 0.332 0.149 0.015
+    ## 57 0.000 0.020 0.109 0.339 0.349 0.168 0.015
+    ## 58 0.000 0.016 0.094 0.324 0.365 0.187 0.015
+    ## 59 0.000 0.012 0.081 0.306 0.378 0.207 0.014
+    ## 60 0.000 0.010 0.069 0.289 0.390 0.228 0.014
+    ## 61 0.000 0.008 0.058 0.270 0.400 0.250 0.014
+    ## 62 0.000 0.006 0.049 0.251 0.408 0.272 0.014
+    ## 63 0.000 0.004 0.041 0.233 0.414 0.295 0.013
+    ## 64 0.000 0.003 0.034 0.214 0.418 0.318 0.013
+    ## 65 0.000 0.003 0.028 0.196 0.420 0.341 0.012
+    ## 66 0.000 0.002 0.023 0.179 0.420 0.364 0.012
+    ## 67 0.000 0.001 0.019 0.163 0.418 0.387 0.011
+    ## 68 0.000 0.001 0.016 0.148 0.415 0.410 0.011
+    ## 69 0.000 0.001 0.013 0.133 0.410 0.433 0.010
+    ## 70 0.000 0.001 0.010 0.120 0.404 0.456 0.009
+    ## 71 0.000 0.000 0.008 0.107 0.397 0.478 0.009
+    ## 72 0.000 0.000 0.007 0.096 0.389 0.500 0.008
+    ## 73 0.000 0.000 0.006 0.086 0.380 0.521 0.008
+    ## 74 0.000 0.000 0.004 0.076 0.370 0.542 0.007
+    ## 75 0.000 0.000 0.004 0.068 0.360 0.562 0.007
+    ## 76 0.000 0.000 0.003 0.060 0.349 0.582 0.006
+    ## 77 0.000 0.000 0.002 0.053 0.337 0.602 0.006
+    ## 78 0.000 0.000 0.002 0.047 0.326 0.620 0.005
+    ## 79 0.000 0.000 0.001 0.041 0.314 0.639 0.005
+    ## 80 0.000 0.000 0.001 0.036 0.302 0.656 0.005
+
+``` r
+#AP
+ap <- multinom(final_age~lcat2, data=Agelength_AP, maxit=500)
+```
+
+    ## # weights:  30 (18 variable)
+    ## initial  value 2889.744292 
+    ## iter  10 value 2124.374392
+    ## iter  20 value 1562.087512
+    ## iter  30 value 1535.380079
+    ## iter  40 value 1533.681531
+    ## iter  50 value 1533.392920
+    ## iter  60 value 1531.638787
+    ## iter  70 value 1530.300375
+    ## final  value 1530.189580 
+    ## converged
+
+``` r
+lens<- seq(0,80, 1)
+alksmo.ap <- predict(ap, data.frame(lcat2=lens), type="probs")
+row.names(alksmo.ap) <- lens
+round(alksmo.ap, 3)
+```
+
+    ##        1     2     3     4     5     6     7     8     9    10
+    ## 0  1.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 1  1.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 2  1.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 3  1.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 4  1.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 5  1.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 6  0.999 0.001 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 7  0.999 0.001 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 8  0.999 0.001 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 9  0.999 0.001 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 10 0.998 0.002 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 11 0.998 0.002 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 12 0.997 0.003 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 13 0.996 0.004 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 14 0.995 0.005 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 15 0.993 0.007 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 16 0.990 0.009 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 17 0.987 0.012 0.001 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 18 0.983 0.016 0.001 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 19 0.978 0.021 0.001 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 20 0.970 0.028 0.002 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 21 0.961 0.036 0.003 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 22 0.948 0.048 0.004 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 23 0.932 0.062 0.005 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 24 0.911 0.080 0.008 0.001 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 25 0.885 0.103 0.011 0.001 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 26 0.851 0.131 0.016 0.001 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 27 0.810 0.165 0.023 0.002 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 28 0.759 0.204 0.032 0.004 0.001 0.000 0.000 0.000 0.000 0.000
+    ## 29 0.700 0.249 0.044 0.005 0.001 0.000 0.000 0.000 0.000 0.000
+    ## 30 0.633 0.298 0.059 0.008 0.001 0.000 0.000 0.000 0.000 0.000
+    ## 31 0.560 0.348 0.078 0.012 0.002 0.000 0.000 0.000 0.001 0.000
+    ## 32 0.482 0.397 0.100 0.017 0.003 0.000 0.000 0.000 0.001 0.000
+    ## 33 0.405 0.442 0.124 0.024 0.004 0.000 0.000 0.000 0.001 0.000
+    ## 34 0.331 0.478 0.151 0.032 0.006 0.000 0.000 0.000 0.001 0.000
+    ## 35 0.264 0.504 0.179 0.043 0.009 0.001 0.000 0.000 0.001 0.000
+    ## 36 0.205 0.518 0.208 0.055 0.012 0.001 0.000 0.000 0.001 0.000
+    ## 37 0.156 0.522 0.235 0.069 0.015 0.001 0.000 0.000 0.001 0.000
+    ## 38 0.116 0.514 0.260 0.086 0.020 0.002 0.000 0.000 0.001 0.000
+    ## 39 0.085 0.498 0.283 0.104 0.025 0.003 0.000 0.000 0.001 0.000
+    ## 40 0.061 0.474 0.303 0.124 0.032 0.004 0.000 0.000 0.001 0.000
+    ## 41 0.043 0.445 0.320 0.146 0.039 0.005 0.000 0.000 0.001 0.000
+    ## 42 0.030 0.411 0.333 0.170 0.048 0.007 0.000 0.000 0.001 0.000
+    ## 43 0.021 0.375 0.341 0.194 0.057 0.009 0.000 0.000 0.001 0.000
+    ## 44 0.014 0.338 0.346 0.220 0.068 0.012 0.001 0.000 0.001 0.000
+    ## 45 0.010 0.301 0.346 0.245 0.079 0.016 0.001 0.000 0.001 0.000
+    ## 46 0.006 0.265 0.343 0.271 0.092 0.020 0.001 0.000 0.001 0.000
+    ## 47 0.004 0.231 0.335 0.296 0.105 0.025 0.002 0.001 0.001 0.000
+    ## 48 0.003 0.199 0.324 0.319 0.119 0.031 0.003 0.001 0.001 0.000
+    ## 49 0.002 0.169 0.310 0.340 0.134 0.039 0.004 0.001 0.001 0.000
+    ## 50 0.001 0.142 0.294 0.359 0.148 0.047 0.006 0.002 0.001 0.000
+    ## 51 0.001 0.118 0.275 0.375 0.162 0.056 0.009 0.003 0.001 0.000
+    ## 52 0.000 0.097 0.255 0.387 0.175 0.067 0.014 0.003 0.000 0.000
+    ## 53 0.000 0.079 0.233 0.396 0.188 0.079 0.020 0.005 0.000 0.000
+    ## 54 0.000 0.064 0.211 0.399 0.199 0.092 0.028 0.006 0.000 0.000
+    ## 55 0.000 0.051 0.189 0.398 0.209 0.105 0.040 0.008 0.000 0.000
+    ## 56 0.000 0.040 0.167 0.392 0.215 0.119 0.055 0.011 0.000 0.000
+    ## 57 0.000 0.031 0.145 0.381 0.220 0.134 0.075 0.013 0.000 0.000
+    ## 58 0.000 0.024 0.125 0.365 0.221 0.147 0.102 0.017 0.000 0.000
+    ## 59 0.000 0.018 0.105 0.343 0.218 0.160 0.135 0.021 0.000 0.000
+    ## 60 0.000 0.013 0.087 0.317 0.211 0.170 0.176 0.026 0.000 0.000
+    ## 61 0.000 0.009 0.071 0.287 0.200 0.177 0.224 0.031 0.000 0.000
+    ## 62 0.000 0.007 0.056 0.254 0.186 0.180 0.280 0.036 0.000 0.000
+    ## 63 0.000 0.005 0.044 0.220 0.169 0.180 0.342 0.041 0.000 0.000
+    ## 64 0.000 0.003 0.033 0.186 0.150 0.175 0.407 0.046 0.000 0.000
+    ## 65 0.000 0.002 0.024 0.154 0.130 0.166 0.473 0.050 0.000 0.001
+    ## 66 0.000 0.001 0.018 0.124 0.110 0.154 0.538 0.053 0.000 0.002
+    ## 67 0.000 0.001 0.012 0.097 0.090 0.139 0.594 0.055 0.000 0.011
+    ## 68 0.000 0.000 0.008 0.072 0.071 0.120 0.626 0.054 0.000 0.048
+    ## 69 0.000 0.000 0.005 0.048 0.049 0.090 0.578 0.047 0.000 0.183
+    ## 70 0.000 0.000 0.002 0.022 0.024 0.048 0.379 0.029 0.000 0.496
+    ## 71 0.000 0.000 0.001 0.006 0.007 0.016 0.150 0.011 0.000 0.810
+    ## 72 0.000 0.000 0.000 0.001 0.001 0.004 0.042 0.003 0.000 0.948
+    ## 73 0.000 0.000 0.000 0.000 0.000 0.001 0.011 0.001 0.000 0.987
+    ## 74 0.000 0.000 0.000 0.000 0.000 0.000 0.003 0.000 0.000 0.997
+    ## 75 0.000 0.000 0.000 0.000 0.000 0.000 0.001 0.000 0.000 0.999
+    ## 76 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 1.000
+    ## 77 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 1.000
+    ## 78 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 1.000
+    ## 79 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 1.000
+    ## 80 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 1.000
+
+``` r
+#JX
+jx <- multinom(final_age~lcat2, data=Agelength_JX, maxit=500)
+```
+
+    ## # weights:  24 (14 variable)
+    ## initial  value 1804.955258 
+    ## iter  10 value 1082.003331
+    ## iter  20 value 885.822787
+    ## iter  30 value 882.894632
+    ## iter  40 value 882.206368
+    ## iter  50 value 881.454964
+    ## final  value 881.315741 
+    ## converged
+
+``` r
+lens<- seq(0,80, 1)
+alksmo.jx <- predict(jx, data.frame(lcat2=lens), type="probs")
+row.names(alksmo.jx) <- lens
+round(alksmo.jx, 3)
+```
+
+    ##        1     2     3     4     5     6     7     8
+    ## 0  0.996 0.004 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 1  0.995 0.005 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 2  0.994 0.006 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 3  0.993 0.007 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 4  0.991 0.009 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 5  0.990 0.010 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 6  0.988 0.012 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 7  0.985 0.014 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 8  0.983 0.017 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 9  0.980 0.020 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 10 0.976 0.024 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 11 0.971 0.029 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 12 0.966 0.034 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 13 0.960 0.040 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 14 0.952 0.047 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 15 0.944 0.056 0.001 0.000 0.000 0.000 0.000 0.000
+    ## 16 0.934 0.066 0.001 0.000 0.000 0.000 0.000 0.000
+    ## 17 0.922 0.077 0.001 0.000 0.000 0.000 0.000 0.000
+    ## 18 0.908 0.090 0.002 0.000 0.000 0.000 0.000 0.000
+    ## 19 0.892 0.105 0.002 0.000 0.000 0.000 0.000 0.000
+    ## 20 0.874 0.123 0.003 0.000 0.000 0.000 0.000 0.000
+    ## 21 0.853 0.143 0.004 0.000 0.000 0.000 0.000 0.000
+    ## 22 0.829 0.165 0.006 0.000 0.000 0.000 0.000 0.000
+    ## 23 0.802 0.190 0.008 0.000 0.000 0.000 0.000 0.000
+    ## 24 0.772 0.217 0.010 0.001 0.000 0.000 0.000 0.000
+    ## 25 0.738 0.247 0.014 0.001 0.000 0.000 0.000 0.000
+    ## 26 0.701 0.279 0.018 0.001 0.000 0.000 0.000 0.000
+    ## 27 0.660 0.313 0.024 0.002 0.000 0.000 0.000 0.000
+    ## 28 0.617 0.348 0.032 0.003 0.000 0.000 0.000 0.000
+    ## 29 0.571 0.383 0.042 0.004 0.001 0.000 0.000 0.000
+    ## 30 0.522 0.417 0.054 0.006 0.001 0.000 0.000 0.000
+    ## 31 0.473 0.449 0.068 0.008 0.001 0.000 0.000 0.000
+    ## 32 0.423 0.478 0.086 0.011 0.002 0.000 0.000 0.000
+    ## 33 0.373 0.502 0.106 0.016 0.003 0.000 0.000 0.000
+    ## 34 0.325 0.520 0.130 0.022 0.004 0.000 0.000 0.000
+    ## 35 0.278 0.530 0.157 0.029 0.005 0.000 0.001 0.000
+    ## 36 0.235 0.532 0.186 0.038 0.008 0.000 0.001 0.000
+    ## 37 0.195 0.526 0.217 0.050 0.011 0.001 0.001 0.000
+    ## 38 0.160 0.511 0.249 0.064 0.014 0.001 0.001 0.000
+    ## 39 0.128 0.489 0.281 0.080 0.019 0.001 0.002 0.000
+    ## 40 0.101 0.459 0.312 0.099 0.025 0.002 0.002 0.000
+    ## 41 0.078 0.424 0.340 0.120 0.032 0.003 0.003 0.000
+    ## 42 0.060 0.384 0.365 0.143 0.040 0.005 0.003 0.000
+    ## 43 0.045 0.343 0.384 0.168 0.050 0.007 0.004 0.000
+    ## 44 0.033 0.300 0.398 0.194 0.060 0.009 0.005 0.000
+    ## 45 0.024 0.259 0.405 0.220 0.072 0.013 0.006 0.000
+    ## 46 0.017 0.220 0.406 0.246 0.085 0.018 0.007 0.000
+    ## 47 0.012 0.184 0.401 0.271 0.099 0.024 0.008 0.000
+    ## 48 0.008 0.152 0.391 0.293 0.114 0.033 0.009 0.000
+    ## 49 0.006 0.123 0.375 0.314 0.128 0.043 0.010 0.000
+    ## 50 0.004 0.099 0.355 0.331 0.143 0.056 0.012 0.000
+    ## 51 0.003 0.078 0.332 0.345 0.157 0.072 0.013 0.000
+    ## 52 0.002 0.061 0.306 0.354 0.171 0.092 0.014 0.000
+    ## 53 0.001 0.047 0.279 0.360 0.183 0.115 0.014 0.001
+    ## 54 0.001 0.036 0.251 0.360 0.194 0.142 0.015 0.001
+    ## 55 0.000 0.027 0.223 0.356 0.203 0.173 0.016 0.002
+    ## 56 0.000 0.020 0.196 0.348 0.209 0.208 0.016 0.003
+    ## 57 0.000 0.015 0.169 0.335 0.213 0.247 0.016 0.005
+    ## 58 0.000 0.011 0.144 0.318 0.213 0.290 0.016 0.008
+    ## 59 0.000 0.007 0.121 0.297 0.211 0.334 0.016 0.014
+    ## 60 0.000 0.005 0.100 0.273 0.205 0.379 0.015 0.023
+    ## 61 0.000 0.004 0.081 0.247 0.195 0.422 0.014 0.037
+    ## 62 0.000 0.002 0.064 0.218 0.182 0.460 0.013 0.059
+    ## 63 0.000 0.002 0.050 0.189 0.166 0.490 0.012 0.091
+    ## 64 0.000 0.001 0.038 0.158 0.148 0.508 0.011 0.137
+    ## 65 0.000 0.001 0.027 0.129 0.127 0.508 0.009 0.199
+    ## 66 0.000 0.000 0.019 0.100 0.104 0.489 0.007 0.279
+    ## 67 0.000 0.000 0.013 0.075 0.082 0.451 0.006 0.373
+    ## 68 0.000 0.000 0.008 0.053 0.062 0.396 0.004 0.476
+    ## 69 0.000 0.000 0.005 0.036 0.044 0.332 0.003 0.579
+    ## 70 0.000 0.000 0.003 0.024 0.031 0.266 0.002 0.675
+    ## 71 0.000 0.000 0.002 0.015 0.020 0.205 0.001 0.757
+    ## 72 0.000 0.000 0.001 0.009 0.013 0.154 0.001 0.823
+    ## 73 0.000 0.000 0.000 0.005 0.008 0.112 0.001 0.873
+    ## 74 0.000 0.000 0.000 0.003 0.005 0.081 0.000 0.911
+    ## 75 0.000 0.000 0.000 0.002 0.003 0.057 0.000 0.938
+    ## 76 0.000 0.000 0.000 0.001 0.002 0.040 0.000 0.957
+    ## 77 0.000 0.000 0.000 0.001 0.001 0.028 0.000 0.970
+    ## 78 0.000 0.000 0.000 0.000 0.001 0.020 0.000 0.979
+    ## 79 0.000 0.000 0.000 0.000 0.000 0.014 0.000 0.986
+    ## 80 0.000 0.000 0.000 0.000 0.000 0.009 0.000 0.990
+
+``` r
+#IR
+ir <- multinom(final_age~lcat2, data=Agelength_IR, maxit=500)
+```
+
+    ## # weights:  27 (16 variable)
+    ## initial  value 6077.523181 
+    ## iter  10 value 4483.767642
+    ## iter  20 value 3636.475492
+    ## iter  30 value 3608.333577
+    ## iter  40 value 3607.375551
+    ## iter  50 value 3607.261048
+    ## final  value 3607.256225 
+    ## converged
+
+``` r
+lens<- seq(0,80, 1)
+alksmo.ir <- predict(ir, data.frame(lcat2=lens), type="probs")
+row.names(alksmo.ir) <- lens
+round(alksmo.ir, 3)
+```
+
+    ##        1     2     3     4     5     6     7     8     9
+    ## 0  0.993 0.007 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 1  0.991 0.008 0.001 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 2  0.990 0.009 0.001 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 3  0.988 0.011 0.001 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 4  0.986 0.013 0.001 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 5  0.983 0.015 0.001 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 6  0.980 0.018 0.002 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 7  0.977 0.021 0.002 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 8  0.973 0.025 0.003 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 9  0.968 0.029 0.003 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 10 0.962 0.034 0.004 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 11 0.955 0.039 0.005 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 12 0.947 0.046 0.007 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 13 0.938 0.054 0.008 0.000 0.000 0.000 0.000 0.000 0.000
+    ## 14 0.927 0.062 0.010 0.001 0.000 0.000 0.000 0.000 0.000
+    ## 15 0.914 0.072 0.013 0.001 0.000 0.000 0.000 0.000 0.000
+    ## 16 0.899 0.084 0.016 0.001 0.000 0.000 0.000 0.000 0.000
+    ## 17 0.881 0.097 0.020 0.002 0.000 0.000 0.000 0.000 0.000
+    ## 18 0.861 0.111 0.025 0.002 0.000 0.000 0.000 0.000 0.000
+    ## 19 0.839 0.128 0.031 0.003 0.000 0.000 0.000 0.000 0.000
+    ## 20 0.813 0.145 0.038 0.004 0.000 0.000 0.000 0.000 0.000
+    ## 21 0.783 0.165 0.046 0.005 0.000 0.000 0.000 0.000 0.000
+    ## 22 0.750 0.186 0.056 0.007 0.000 0.000 0.000 0.000 0.000
+    ## 23 0.714 0.209 0.068 0.008 0.001 0.000 0.000 0.000 0.000
+    ## 24 0.674 0.232 0.082 0.011 0.001 0.000 0.000 0.000 0.000
+    ## 25 0.632 0.256 0.097 0.014 0.001 0.000 0.000 0.000 0.000
+    ## 26 0.586 0.279 0.114 0.018 0.002 0.000 0.000 0.000 0.000
+    ## 27 0.539 0.302 0.133 0.023 0.002 0.000 0.000 0.000 0.000
+    ## 28 0.490 0.324 0.154 0.028 0.003 0.000 0.000 0.000 0.000
+    ## 29 0.441 0.343 0.176 0.035 0.004 0.000 0.000 0.000 0.000
+    ## 30 0.393 0.360 0.199 0.043 0.005 0.001 0.000 0.000 0.000
+    ## 31 0.346 0.373 0.222 0.052 0.006 0.001 0.000 0.000 0.000
+    ## 32 0.301 0.382 0.245 0.062 0.008 0.001 0.001 0.000 0.000
+    ## 33 0.259 0.387 0.268 0.073 0.010 0.001 0.001 0.000 0.000
+    ## 34 0.221 0.389 0.289 0.086 0.012 0.002 0.001 0.000 0.000
+    ## 35 0.186 0.386 0.310 0.099 0.015 0.002 0.001 0.000 0.000
+    ## 36 0.156 0.379 0.328 0.114 0.019 0.003 0.002 0.000 0.000
+    ## 37 0.129 0.369 0.344 0.129 0.023 0.004 0.002 0.000 0.000
+    ## 38 0.105 0.356 0.358 0.146 0.027 0.005 0.002 0.000 0.000
+    ## 39 0.086 0.341 0.369 0.162 0.033 0.006 0.003 0.000 0.000
+    ## 40 0.069 0.324 0.378 0.180 0.039 0.007 0.003 0.000 0.000
+    ## 41 0.055 0.305 0.384 0.198 0.045 0.009 0.004 0.000 0.000
+    ## 42 0.044 0.285 0.386 0.215 0.053 0.011 0.005 0.000 0.000
+    ## 43 0.035 0.265 0.387 0.233 0.061 0.013 0.006 0.000 0.000
+    ## 44 0.027 0.244 0.384 0.251 0.070 0.016 0.007 0.000 0.001
+    ## 45 0.021 0.224 0.379 0.268 0.080 0.019 0.008 0.000 0.001
+    ## 46 0.016 0.203 0.372 0.284 0.090 0.023 0.009 0.000 0.001
+    ## 47 0.013 0.184 0.363 0.300 0.102 0.028 0.010 0.001 0.001
+    ## 48 0.010 0.165 0.351 0.314 0.114 0.033 0.012 0.001 0.001
+    ## 49 0.007 0.148 0.338 0.327 0.126 0.038 0.013 0.001 0.001
+    ## 50 0.005 0.131 0.323 0.339 0.140 0.044 0.015 0.001 0.001
+    ## 51 0.004 0.116 0.307 0.348 0.154 0.051 0.017 0.002 0.001
+    ## 52 0.003 0.101 0.290 0.356 0.168 0.059 0.019 0.002 0.001
+    ## 53 0.002 0.088 0.273 0.362 0.182 0.068 0.021 0.003 0.001
+    ## 54 0.002 0.077 0.255 0.366 0.196 0.077 0.023 0.004 0.001
+    ## 55 0.001 0.066 0.237 0.368 0.211 0.087 0.025 0.005 0.001
+    ## 56 0.001 0.056 0.218 0.367 0.225 0.098 0.027 0.006 0.001
+    ## 57 0.001 0.048 0.201 0.365 0.238 0.110 0.029 0.007 0.002
+    ## 58 0.000 0.041 0.183 0.361 0.251 0.122 0.032 0.009 0.002
+    ## 59 0.000 0.034 0.166 0.354 0.264 0.135 0.034 0.011 0.002
+    ## 60 0.000 0.029 0.150 0.346 0.275 0.148 0.036 0.013 0.002
+    ## 61 0.000 0.024 0.135 0.337 0.286 0.163 0.038 0.016 0.002
+    ## 62 0.000 0.020 0.121 0.326 0.295 0.177 0.040 0.019 0.002
+    ## 63 0.000 0.016 0.108 0.314 0.304 0.192 0.042 0.023 0.002
+    ## 64 0.000 0.014 0.095 0.301 0.311 0.207 0.044 0.027 0.002
+    ## 65 0.000 0.011 0.084 0.287 0.316 0.222 0.045 0.032 0.002
+    ## 66 0.000 0.009 0.074 0.273 0.321 0.238 0.047 0.038 0.002
+    ## 67 0.000 0.007 0.064 0.258 0.324 0.253 0.048 0.044 0.002
+    ## 68 0.000 0.006 0.056 0.242 0.325 0.268 0.049 0.052 0.002
+    ## 69 0.000 0.005 0.048 0.227 0.325 0.282 0.050 0.061 0.002
+    ## 70 0.000 0.004 0.042 0.212 0.324 0.296 0.051 0.070 0.002
+    ## 71 0.000 0.003 0.036 0.196 0.321 0.309 0.051 0.081 0.002
+    ## 72 0.000 0.002 0.031 0.182 0.316 0.322 0.052 0.094 0.002
+    ## 73 0.000 0.002 0.026 0.167 0.311 0.333 0.052 0.107 0.002
+    ## 74 0.000 0.001 0.022 0.153 0.304 0.344 0.051 0.123 0.002
+    ## 75 0.000 0.001 0.019 0.140 0.296 0.353 0.051 0.139 0.002
+    ## 76 0.000 0.001 0.016 0.127 0.287 0.361 0.050 0.157 0.002
+    ## 77 0.000 0.001 0.013 0.114 0.277 0.367 0.050 0.177 0.002
+    ## 78 0.000 0.001 0.011 0.103 0.266 0.371 0.048 0.198 0.001
+    ## 79 0.000 0.000 0.009 0.092 0.254 0.374 0.047 0.221 0.001
+    ## 80 0.000 0.000 0.007 0.082 0.242 0.376 0.046 0.246 0.001
+
+### 6. Among group statistical comparisons of ALKs
+
+#### Following methods on page 102 in Ogle, Fisheries Analysis in R
+
+``` r
+setwd("U:/PhD_projectfiles/Raw_Data/Age_Length_Data")
+Agelength_ALL<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH" | bay=="IR" |bay=="AP" | bay=="JX"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_ALL, maxit=500) #simple model
+```
+
+    ## # weights:  30 (18 variable)
+    ## initial  value 56084.065110 
+    ## iter  10 value 41950.211400
+    ## iter  20 value 34158.898977
+    ## iter  30 value 33260.749638
+    ## iter  40 value 33256.232946
+    ## iter  50 value 33255.735052
+    ## iter  60 value 33253.453685
+    ## final  value 33253.377699 
+    ## converged
+
+``` r
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_ALL, maxit=500) #more complex model
+```
+
+    ## # weights:  130 (108 variable)
+    ## initial  value 56084.065110 
+    ## iter  10 value 45486.491502
+    ## iter  20 value 45321.398698
+    ## iter  30 value 43847.901168
+    ## iter  40 value 42870.978758
+    ## iter  50 value 41526.908578
+    ## iter  60 value 38678.261147
+    ## iter  70 value 33960.919337
+    ## iter  80 value 32856.580790
+    ## iter  90 value 32568.784481
+    ## iter 100 value 32523.901022
+    ## iter 110 value 32513.960755
+    ## iter 120 value 32508.992680
+    ## iter 130 value 32507.129336
+    ## iter 140 value 32506.469287
+    ## iter 150 value 32505.892333
+    ## iter 160 value 32505.232804
+    ## iter 170 value 32504.946254
+    ## iter 180 value 32504.660976
+    ## iter 190 value 32504.389165
+    ## iter 200 value 32504.237449
+    ## iter 210 value 32504.060837
+    ## final  value 32503.945415 
+    ## converged
+
+``` r
+#likelihood ratio test is computed with anova
+test <- anova(mod1, mod2)
+# 1       lcat2    219195   66506.76                      
+# 2 lcat2 * bay    219105   65007.89 1 vs 2    90 1498.865
+# Pr(Chi)
+
+#Drop Bays to test hypothesis of bay influence
+      #Null Hypothesis- there is no significant difference in alk between groups
+
+  #removing IR
+Agelength_minIR<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH" | bay=="AP" | bay=="JX"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_minIR, maxit=500) #simple model
+```
+
+    ## # weights:  30 (18 variable)
+    ## initial  value 35312.444986 
+    ## iter  10 value 27095.885334
+    ## iter  20 value 21399.231748
+    ## iter  30 value 20776.554417
+    ## iter  40 value 20763.035767
+    ## iter  50 value 20762.404076
+    ## iter  60 value 20758.999278
+    ## iter  70 value 20756.909232
+    ## final  value 20756.841062 
+    ## converged
+
+``` r
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_minIR, maxit=500) #more complex model
+```
+
+    ## # weights:  110 (90 variable)
+    ## initial  value 35312.444986 
+    ## iter  10 value 26415.246184
+    ## iter  20 value 26229.642999
+    ## iter  30 value 25250.195264
+    ## iter  40 value 24600.741817
+    ## iter  50 value 23076.462158
+    ## iter  60 value 20530.477666
+    ## iter  70 value 20273.411457
+    ## iter  80 value 20207.929153
+    ## iter  90 value 20187.733561
+    ## iter 100 value 20183.495995
+    ## iter 110 value 20181.290496
+    ## iter 120 value 20180.437309
+    ## iter 130 value 20179.988985
+    ## iter 140 value 20179.466254
+    ## iter 150 value 20179.246567
+    ## iter 160 value 20179.166685
+    ## iter 170 value 20179.025252
+    ## iter 180 value 20178.510968
+    ## final  value 20178.473052 
+    ## converged
+
+``` r
+anova(mod1, mod2)
+```
+
+    ## Likelihood ratio tests of Multinomial Models
+    ## 
+    ## Response: final_age
+    ##         Model Resid. df Resid. Dev   Test    Df LR stat. Pr(Chi)
+    ## 1       lcat2    138006   41513.68                              
+    ## 2 lcat2 * bay    137934   40356.95 1 vs 2    72 1156.736       0
+
+``` r
+  #still significantly different
+
+  #now remove JX also
+Agelength_minIRJX<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH" | bay=="AP"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_minIRJX, maxit=500) #simple model
+```
+
+    ## # weights:  30 (18 variable)
+    ## initial  value 33191.764116 
+    ## iter  10 value 24553.855127
+    ## iter  20 value 20415.434809
+    ## iter  30 value 19766.347966
+    ## iter  40 value 19756.955192
+    ## iter  50 value 19756.687864
+    ## iter  60 value 19752.482144
+    ## iter  70 value 19749.723716
+    ## final  value 19749.611005 
+    ## converged
+
+``` r
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_minIRJX, maxit=500) #more complex model
+```
+
+    ## # weights:  90 (72 variable)
+    ## initial  value 33191.764116 
+    ## iter  10 value 25022.942980
+    ## iter  20 value 24684.380972
+    ## iter  30 value 23351.351245
+    ## iter  40 value 21568.524217
+    ## iter  50 value 19537.938517
+    ## iter  60 value 19317.029322
+    ## iter  70 value 19261.207742
+    ## iter  80 value 19250.193761
+    ## iter  90 value 19247.538010
+    ## iter 100 value 19246.024844
+    ## iter 110 value 19245.109870
+    ## iter 120 value 19244.629904
+    ## iter 130 value 19244.320608
+    ## iter 140 value 19243.966367
+    ## iter 150 value 19243.912570
+    ## iter 160 value 19243.907704
+    ## final  value 19243.905827 
+    ## converged
+
+``` r
+anova(mod1, mod2)
+```
+
+    ## Likelihood ratio tests of Multinomial Models
+    ## 
+    ## Response: final_age
+    ##         Model Resid. df Resid. Dev   Test    Df LR stat. Pr(Chi)
+    ## 1       lcat2    129717   39499.22                              
+    ## 2 lcat2 * bay    129663   38487.81 1 vs 2    54  1011.41       0
+
+``` r
+  #still significantly different
+
+  #now remove AP also
+Agelength_minIRJXAP<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_minIRJXAP, maxit=500) #simple model
+```
+
+    ## # weights:  27 (16 variable)
+    ## initial  value 27889.371560 
+    ## iter  10 value 20518.820140
+    ## iter  20 value 17495.241037
+    ## iter  30 value 17393.359227
+    ## iter  40 value 17389.705327
+    ## iter  50 value 17388.934250
+    ## final  value 17388.808137 
+    ## converged
+
+``` r
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_minIRJXAP, maxit=500) #more complex model
+```
+
+    ## # weights:  63 (48 variable)
+    ## initial  value 27889.371560 
+    ## iter  10 value 22051.362420
+    ## iter  20 value 21319.893275
+    ## iter  30 value 19184.726330
+    ## iter  40 value 17178.697041
+    ## iter  50 value 17097.334137
+    ## iter  60 value 17079.811422
+    ## iter  70 value 17077.941173
+    ## iter  80 value 17077.437156
+    ## iter  90 value 17077.133654
+    ## final  value 17077.048637 
+    ## converged
+
+``` r
+anova(mod1, mod2)
+```
+
+    ## Likelihood ratio tests of Multinomial Models
+    ## 
+    ## Response: final_age
+    ##         Model Resid. df Resid. Dev   Test    Df LR stat. Pr(Chi)
+    ## 1       lcat2    101528   34777.62                              
+    ## 2 lcat2 * bay    101496   34154.10 1 vs 2    32  623.519       0
+
+``` r
+#now remove CH also
+Agelength_minIRJXAPCH<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_minIRJXAPCH, maxit=500) #simple model
+```
+
+    ## # weights:  27 (16 variable)
+    ## initial  value 20497.908082 
+    ## iter  10 value 15475.433445
+    ## iter  20 value 12778.576663
+    ## iter  30 value 12716.098324
+    ## iter  40 value 12710.822071
+    ## iter  50 value 12709.182187
+    ## final  value 12708.953321 
+    ## converged
+
+``` r
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_minIRJXAPCH, maxit=500) #more complex model
+```
+
+    ## # weights:  45 (32 variable)
+    ## initial  value 20497.908082 
+    ## iter  10 value 16204.416213
+    ## iter  20 value 14209.914667
+    ## iter  30 value 12652.966449
+    ## iter  40 value 12478.245362
+    ## iter  50 value 12468.338797
+    ## iter  60 value 12467.089814
+    ## iter  70 value 12466.791386
+    ## iter  80 value 12466.770685
+    ## iter  90 value 12466.573775
+    ## iter 100 value 12466.426836
+    ## iter 110 value 12466.345677
+    ## final  value 12466.338396 
+    ## converged
+
+``` r
+anova(mod1, mod2)
+```
+
+    ## Likelihood ratio tests of Multinomial Models
+    ## 
+    ## Response: final_age
+    ##         Model Resid. df Resid. Dev   Test    Df LR stat. Pr(Chi)
+    ## 1       lcat2     74616   25417.91                              
+    ## 2 lcat2 * bay     74600   24932.68 1 vs 2    16 485.2299       0
+
+``` r
+  #still significantly different
+```
+
+#### Bay vs Bay comparison
+
+Null Hypothesis- there is no significant difference in alk between groups
+
+``` r
+#TB vs CK 
+setwd("U:/PhD_projectfiles/Raw_Data/Age_Length_Data")
+Agelength_TBCK<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" |  bay== "CK" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_TBCK, maxit=500) #simple model
+```
+
+    ## # weights:  27 (16 variable)
+    ## initial  value 20497.908082 
+    ## iter  10 value 15475.433445
+    ## iter  20 value 12778.576663
+    ## iter  30 value 12716.098324
+    ## iter  40 value 12710.822071
+    ## iter  50 value 12709.182187
+    ## final  value 12708.953321 
+    ## converged
+
+``` r
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_TBCK, maxit=500) #more complex model
+```
+
+    ## # weights:  45 (32 variable)
+    ## initial  value 20497.908082 
+    ## iter  10 value 16204.416213
+    ## iter  20 value 14209.914667
+    ## iter  30 value 12652.966449
+    ## iter  40 value 12478.245362
+    ## iter  50 value 12468.338797
+    ## iter  60 value 12467.089814
+    ## iter  70 value 12466.791386
+    ## iter  80 value 12466.770685
+    ## iter  90 value 12466.573775
+    ## iter 100 value 12466.426836
+    ## iter 110 value 12466.345677
+    ## final  value 12466.338396 
+    ## converged
+
+``` r
+anova(mod1, mod2)
+```
+
+    ## Likelihood ratio tests of Multinomial Models
+    ## 
+    ## Response: final_age
+    ##         Model Resid. df Resid. Dev   Test    Df LR stat. Pr(Chi)
+    ## 1       lcat2     74616   25417.91                              
+    ## 2 lcat2 * bay     74600   24932.68 1 vs 2    16 485.2299       0
+
+``` r
+# The p value for testing the effect of the group in explaining the distribution of lengths within each age is obtained by computing a chi-square test-statistic
+#Null Hypothesis- thre is no significant difference in alk between groups
+# the likelihood ratio statistic is -2*LL (final value output) of model 1 MINUS
+# -2*LL of model 2
+
+#TB vs CH
+Agelength_TBCH<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" |  bay== "CH" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_TBCH, maxit=500) #simple model
+```
+
+    ## # weights:  27 (16 variable)
+    ## initial  value 25643.808042 
+    ## iter  10 value 18935.452947
+    ## iter  20 value 16196.384538
+    ## iter  30 value 16096.564055
+    ## iter  40 value 16091.636207
+    ## iter  50 value 16089.586612
+    ## final  value 16089.313447 
+    ## converged
+
+``` r
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_TBCH, maxit=500) #more complex model
+```
+
+    ## # weights:  45 (32 variable)
+    ## initial  value 25643.808042 
+    ## iter  10 value 20206.674424
+    ## iter  20 value 18532.233378
+    ## iter  30 value 16121.116421
+    ## iter  40 value 16001.719216
+    ## iter  50 value 15992.816324
+    ## iter  60 value 15992.314027
+    ## final  value 15992.257437 
+    ## converged
+
+``` r
+anova(mod1, mod2)
+```
+
+    ## Likelihood ratio tests of Multinomial Models
+    ## 
+    ## Response: final_age
+    ##         Model Resid. df Resid. Dev   Test    Df LR stat. Pr(Chi)
+    ## 1       lcat2     93352   32178.63                              
+    ## 2 lcat2 * bay     93336   31984.51 1 vs 2    16  194.112       0
+
+``` r
+#TB vs AP
+Agelength_TBAP<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" |  bay== "AP" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_TBAP, maxit=500) #simple model
+```
+
+    ## # weights:  30 (18 variable)
+    ## initial  value 23092.625898 
+    ## iter  10 value 17339.947837
+    ## iter  20 value 14051.057053
+    ## iter  30 value 13840.047727
+    ## iter  40 value 13832.293172
+    ## iter  50 value 13830.899036
+    ## iter  60 value 13826.697223
+    ## iter  70 value 13824.728241
+    ## final  value 13824.660279 
+    ## converged
+
+``` r
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_TBAP, maxit=500) #more complex model
+```
+
+    ## # weights:  50 (36 variable)
+    ## initial  value 23092.625898 
+    ## iter  10 value 17607.255491
+    ## iter  20 value 16777.384016
+    ## iter  30 value 13969.682881
+    ## iter  40 value 13592.631604
+    ## iter  50 value 13554.250369
+    ## iter  60 value 13550.557147
+    ## iter  70 value 13549.140844
+    ## iter  80 value 13548.902490
+    ## iter  90 value 13548.893221
+    ## final  value 13548.892921 
+    ## converged
+
+``` r
+anova(mod1, mod2)
+```
+
+    ## Likelihood ratio tests of Multinomial Models
+    ## 
+    ## Response: final_age
+    ##         Model Resid. df Resid. Dev   Test    Df LR stat. Pr(Chi)
+    ## 1       lcat2     90243   27649.32                              
+    ## 2 lcat2 * bay     90225   27097.79 1 vs 2    18 551.5347       0
+
+``` r
+#An alternative way to do a likelihood ratio test of nested models. 
+library(lmtest)
+```
+
+    ## Loading required package: zoo
+
+    ## 
+    ## Attaching package: 'zoo'
+
+    ## The following objects are masked from 'package:base':
+    ## 
+    ##     as.Date, as.Date.numeric
+
+``` r
+#t <- lrtest(mod1, mod2)
+
+#TB vs JX
+Agelength_TBJX<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" |  bay== "JX" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_TBJX, maxit=500) #simple model
+```
+
+    ## # weights:  27 (16 variable)
+    ## initial  value 20275.988400 
+    ## iter  10 value 15249.472525
+    ## iter  20 value 12545.938709
+    ## iter  30 value 12445.867752
+    ## iter  40 value 12441.674028
+    ## iter  50 value 12441.294711
+    ## iter  60 value 12438.083458
+    ## final  value 12438.080354 
+    ## converged
+
+``` r
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_TBJX, maxit=500) #more complex model
+```
+
+    ## # weights:  45 (32 variable)
+    ## initial  value 20275.988400 
+    ## iter  10 value 15924.055326
+    ## iter  20 value 14851.634965
+    ## iter  30 value 12399.181471
+    ## iter  40 value 12323.022532
+    ## iter  50 value 12318.013822
+    ## iter  60 value 12317.090259
+    ## iter  70 value 12316.799574
+    ## iter  80 value 12316.787725
+    ## iter  90 value 12316.714853
+    ## iter 100 value 12316.605973
+    ## iter 110 value 12316.576388
+    ## final  value 12316.533813 
+    ## converged
+
+``` r
+anova(mod1, mod2)
+```
+
+    ## Likelihood ratio tests of Multinomial Models
+    ## 
+    ## Response: final_age
+    ##         Model Resid. df Resid. Dev   Test    Df LR stat. Pr(Chi)
+    ## 1       lcat2     73808   24876.16                              
+    ## 2 lcat2 * bay     73792   24633.07 1 vs 2    16 243.0931       0
+
+``` r
+#TB vs IR
+Agelength_TBIR<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" |  bay== "IR" ),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))
+mod1 <- multinom(final_age~lcat2, data=Agelength_TBIR, maxit=500) #simple model
+```
+
+    ## # weights:  27 (16 variable)
+    ## initial  value 38073.507476 
+    ## iter  10 value 29684.587032
+    ## iter  20 value 24057.146262
+    ## iter  30 value 23997.546407
+    ## iter  40 value 23997.127120
+    ## iter  40 value 23997.127101
+    ## final  value 23997.126619 
+    ## converged
+
+``` r
+mod2 <- multinom(final_age~lcat2*bay,data=Agelength_TBIR, maxit=500) #more complex model
+```
+
+    ## # weights:  45 (32 variable)
+    ## initial  value 38073.507476 
+    ## iter  10 value 30423.954561
+    ## iter  20 value 26596.036285
+    ## iter  30 value 23976.250634
+    ## iter  40 value 23718.125660
+    ## iter  50 value 23707.913186
+    ## iter  60 value 23707.133473
+    ## final  value 23707.119637 
+    ## converged
+
+``` r
+anova(mod1, mod2)
+```
+
+    ## Likelihood ratio tests of Multinomial Models
+    ## 
+    ## Response: final_age
+    ##         Model Resid. df Resid. Dev   Test    Df LR stat. Pr(Chi)
+    ## 1       lcat2    138608   47994.25                              
+    ## 2 lcat2 * bay    138592   47414.24 1 vs 2    16  580.014       0
+
+Now do other comparisons
+
+    ## # weights:  27 (16 variable)
+    ## initial  value 9637.026996 
+    ## iter  10 value 7269.435042
+    ## iter  20 value 5846.470021
+    ## iter  30 value 5829.819506
+    ## iter  40 value 5828.516200
+    ## iter  50 value 5828.076004
+    ## iter  60 value 5827.904261
+    ## final  value 5827.903960 
+    ## converged
+
+    ## # weights:  45 (32 variable)
+    ## initial  value 9637.026996 
+    ## iter  10 value 7616.552724
+    ## iter  20 value 6477.684659
+    ## iter  30 value 5756.995301
+    ## iter  40 value 5701.600814
+    ## iter  50 value 5696.577671
+    ## iter  60 value 5695.546901
+    ## final  value 5695.480360 
+    ## converged
+
+    ## Likelihood ratio tests of Multinomial Models
+    ## 
+    ## Response: final_age
+    ##         Model Resid. df Resid. Dev   Test    Df LR stat. Pr(Chi)
+    ## 1       lcat2     35072   11655.81                              
+    ## 2 lcat2 * bay     35056   11390.96 1 vs 2    16 264.8472       0
+
+    ## # weights:  30 (18 variable)
+    ## initial  value 6318.293495 
+    ## iter  10 value 4810.714735
+    ## iter  20 value 3313.652519
+    ## iter  30 value 3279.317455
+    ## iter  40 value 3276.797433
+    ## iter  50 value 3276.447128
+    ## iter  60 value 3275.281382
+    ## iter  70 value 3273.797317
+    ## final  value 3273.417194 
+    ## converged
+
+    ## # weights:  50 (36 variable)
+    ## initial  value 6318.293495 
+    ## iter  10 value 4740.115927
+    ## iter  20 value 4466.206166
+    ## iter  30 value 3305.078789
+    ## iter  40 value 3259.531237
+    ## iter  50 value 3254.312113
+    ## iter  60 value 3252.963150
+    ## iter  70 value 3252.083437
+    ## iter  80 value 3251.680501
+    ## iter  90 value 3251.669247
+    ## iter 100 value 3251.414594
+    ## iter 110 value 3251.127970
+    ## iter 120 value 3250.972365
+    ## iter 130 value 3250.877318
+    ## iter 140 value 3250.307105
+    ## final  value 3249.506274 
+    ## converged
+
+    ## Likelihood ratio tests of Multinomial Models
+    ## 
+    ## Response: final_age
+    ##         Model Resid. df Resid. Dev   Test    Df LR stat.      Pr(Chi)
+    ## 1       lcat2     24678   6546.834                                   
+    ## 2 lcat2 * bay     24660   6499.013 1 vs 2    18 47.82184 0.0001600215
+
+    ## # weights:  24 (14 variable)
+    ## initial  value 4040.354915 
+    ## iter  10 value 2521.679794
+    ## iter  20 value 2068.209822
+    ## iter  30 value 2058.113377
+    ## iter  40 value 2056.803403
+    ## iter  50 value 2054.558688
+    ## final  value 2054.503924 
+    ## converged
+
+    ## # weights:  40 (28 variable)
+    ## initial  value 4040.354915 
+    ## iter  10 value 2956.817856
+    ## iter  20 value 2314.089298
+    ## iter  30 value 2029.055406
+    ## iter  40 value 2021.724540
+    ## iter  50 value 2020.112211
+    ## iter  60 value 2019.864687
+    ## iter  70 value 2019.855004
+    ## iter  80 value 2019.853805
+    ## final  value 2019.853579 
+    ## converged
+
+    ## Likelihood ratio tests of Multinomial Models
+    ## 
+    ## Response: final_age
+    ##         Model Resid. df Resid. Dev   Test    Df LR stat.      Pr(Chi)
+    ## 1       lcat2     13587   4109.008                                   
+    ## 2 lcat2 * bay     13573   4039.707 1 vs 2    14 69.30069 2.582907e-09
+
+    ## # weights:  27 (16 variable)
+    ## initial  value 22066.726430 
+    ## iter  10 value 16557.115721
+    ## iter  20 value 13699.309065
+    ## iter  30 value 13579.396567
+    ## iter  40 value 13577.370901
+    ## iter  50 value 13575.332042
+    ## final  value 13575.006078 
+    ## converged
+
+    ## # weights:  45 (32 variable)
+    ## initial  value 22066.726430 
+    ## iter  10 value 17781.966975
+    ## iter  20 value 15570.529698
+    ## iter  30 value 13589.975707
+    ## iter  40 value 13422.249058
+    ## iter  50 value 13411.613288
+    ## iter  60 value 13410.540997
+    ## iter  70 value 13410.383204
+    ## final  value 13410.380047 
+    ## converged
+
+    ## Likelihood ratio tests of Multinomial Models
+    ## 
+    ## Response: final_age
+    ##         Model Resid. df Resid. Dev   Test    Df LR stat. Pr(Chi)
+    ## 1       lcat2     80328   27150.01                              
+    ## 2 lcat2 * bay     80312   26820.76 1 vs 2    16 329.2521       0
+
+    ## # weights:  30 (18 variable)
+    ## initial  value 11710.947783 
+    ## iter  10 value 9112.927960
+    ## iter  20 value 7005.402896
+    ## iter  30 value 6890.816069
+    ## iter  40 value 6887.542255
+    ## iter  50 value 6886.777199
+    ## iter  60 value 6881.798486
+    ## iter  70 value 6880.195222
+    ## final  value 6879.968638 
+    ## converged
+
+    ## # weights:  50 (36 variable)
+    ## initial  value 11710.947783 
+    ## iter  10 value 8979.384491
+    ## iter  20 value 8330.668476
+    ## iter  30 value 6864.419036
+    ## iter  40 value 6790.249936
+    ## iter  50 value 6782.642068
+    ## iter  60 value 6780.174468
+    ## iter  70 value 6778.523844
+    ## iter  80 value 6778.436816
+    ## iter  90 value 6778.413932
+    ## iter 100 value 6777.797271
+    ## iter 110 value 6777.314832
+    ## iter 120 value 6776.933284
+    ## iter 130 value 6776.480622
+    ## iter 140 value 6776.039345
+    ## final  value 6775.435355 
+    ## converged
+
+    ## Likelihood ratio tests of Multinomial Models
+    ## 
+    ## Response: final_age
+    ##         Model Resid. df Resid. Dev   Test    Df LR stat. Pr(Chi)
+    ## 1       lcat2     45756   13759.94                              
+    ## 2 lcat2 * bay     45738   13550.87 1 vs 2    18 209.0666       0
+
+    ## # weights:  27 (16 variable)
+    ## initial  value 9415.107314 
+    ## iter  10 value 7275.330307
+    ## iter  20 value 5651.966185
+    ## iter  30 value 5611.019058
+    ## iter  40 value 5609.642135
+    ## iter  50 value 5608.861651
+    ## iter  60 value 5608.479605
+    ## final  value 5608.478871 
+    ## converged
+
+    ## # weights:  45 (32 variable)
+    ## initial  value 9415.107314 
+    ## iter  10 value 7912.246437
+    ## iter  20 value 6939.140388
+    ## iter  30 value 5588.473516
+    ## iter  40 value 5550.854074
+    ## iter  50 value 5546.935481
+    ## iter  60 value 5546.207383
+    ## iter  70 value 5545.948338
+    ## iter  80 value 5545.938323
+    ## iter  90 value 5545.817285
+    ## iter 100 value 5545.697639
+    ## iter 110 value 5545.673373
+    ## iter 120 value 5545.662245
+    ## final  value 5545.661357 
+    ## converged
+
+    ## Likelihood ratio tests of Multinomial Models
+    ## 
+    ## Response: final_age
+    ##         Model Resid. df Resid. Dev   Test    Df LR stat. Pr(Chi)
+    ## 1       lcat2     34264   11216.96                              
+    ## 2 lcat2 * bay     34248   11091.32 1 vs 2    16  125.635       0
+
+    ## # weights:  27 (16 variable)
+    ## initial  value 27212.626390 
+    ## iter  10 value 19905.851395
+    ## iter  20 value 17076.348413
+    ## iter  30 value 16967.388449
+    ## iter  40 value 16965.693253
+    ## iter  50 value 16964.970943
+    ## final  value 16964.886303 
+    ## converged
+
+    ## # weights:  45 (32 variable)
+    ## initial  value 27212.626390 
+    ## iter  10 value 22235.486519
+    ## iter  20 value 19743.891689
+    ## iter  30 value 17139.305444
+    ## iter  40 value 16949.200474
+    ## iter  50 value 16936.565119
+    ## iter  60 value 16936.312716
+    ## final  value 16936.255511 
+    ## converged
+
+    ## Likelihood ratio tests of Multinomial Models
+    ## 
+    ## Response: final_age
+    ##         Model Resid. df Resid. Dev   Test    Df LR stat.      Pr(Chi)
+    ## 1       lcat2     99064   33929.77                                   
+    ## 2 lcat2 * bay     99048   33872.51 1 vs 2    16 57.26158 1.503743e-06
+
+    ## # weights:  30 (18 variable)
+    ## initial  value 6085.732401 
+    ## iter  10 value 4180.110848
+    ## iter  20 value 3148.142680
+    ## iter  30 value 3118.336701
+    ## iter  40 value 3116.323882
+    ## iter  50 value 3116.106873
+    ## iter  60 value 3114.668978
+    ## iter  70 value 3113.200495
+    ## iter  80 value 3112.908621
+    ## iter  90 value 3112.864598
+    ## iter 100 value 3112.856115
+    ## iter 100 value 3112.856107
+    ## iter 100 value 3112.856103
+    ## final  value 3112.856103 
+    ## converged
+
+    ## # weights:  50 (36 variable)
+    ## initial  value 6085.732401 
+    ## iter  10 value 4155.386911
+    ## iter  20 value 3904.873933
+    ## iter  30 value 3177.404558
+    ## iter  40 value 3111.116678
+    ## iter  50 value 3104.206912
+    ## iter  60 value 3102.381919
+    ## iter  70 value 3101.596860
+    ## iter  80 value 3101.261931
+    ## iter  90 value 3101.243263
+    ## iter 100 value 3101.058780
+    ## iter 110 value 3101.005379
+    ## iter 120 value 3100.796645
+    ## iter 130 value 3100.532293
+    ## iter 140 value 3099.804740
+    ## final  value 3099.706328 
+    ## converged
+
+    ## Likelihood ratio tests of Multinomial Models
+    ## 
+    ## Response: final_age
+    ##         Model Resid. df Resid. Dev   Test    Df LR stat.    Pr(Chi)
+    ## 1       lcat2     23769   6225.712                                 
+    ## 2 lcat2 * bay     23751   6199.413 1 vs 2    18 26.29955 0.09310343
+
+    ## # weights:  30 (18 variable)
+    ## initial  value 24736.671654 
+    ## iter  10 value 17571.734357
+    ## iter  20 value 14817.094961
+    ## iter  30 value 14625.304351
+    ## iter  40 value 14619.347171
+    ## iter  50 value 14618.615220
+    ## iter  60 value 14615.910040
+    ## final  value 14615.748374 
+    ## converged
+
+    ## # weights:  50 (36 variable)
+    ## initial  value 24736.671654 
+    ## iter  10 value 18945.801193
+    ## iter  20 value 17577.071847
+    ## iter  30 value 14767.334822
+    ## iter  40 value 14520.081841
+    ## iter  50 value 14496.926348
+    ## iter  60 value 14493.742217
+    ## iter  70 value 14492.878853
+    ## iter  80 value 14492.638717
+    ## iter  80 value 14492.638678
+    ## iter  90 value 14492.629798
+    ## iter 100 value 14492.558821
+    ## iter 110 value 14492.336838
+    ## iter 120 value 14491.938543
+    ## iter 130 value 14491.827668
+    ## iter 140 value 14490.568731
+    ## iter 150 value 14490.336792
+    ## final  value 14490.284407 
+    ## converged
+
+    ## Likelihood ratio tests of Multinomial Models
+    ## 
+    ## Response: final_age
+    ##         Model Resid. df Resid. Dev   Test    Df LR stat. Pr(Chi)
+    ## 1       lcat2     96669   29231.50                              
+    ## 2 lcat2 * bay     96651   28980.57 1 vs 2    18 250.9279       0
+
+    ## # weights:  27 (16 variable)
+    ## initial  value 21844.806748 
+    ## iter  10 value 16153.765158
+    ## iter  20 value 13451.515521
+    ## iter  30 value 13338.829783
+    ## iter  40 value 13336.923739
+    ## iter  50 value 13335.940129
+    ## final  value 13335.746023 
+    ## converged
+
+    ## # weights:  45 (32 variable)
+    ## initial  value 21844.806748 
+    ## iter  10 value 17129.454668
+    ## iter  20 value 15417.311221
+    ## iter  30 value 13447.094325
+    ## iter  40 value 13269.032103
+    ## iter  50 value 13262.462992
+    ## iter  60 value 13260.747279
+    ## final  value 13260.641090 
+    ## converged
+
+    ## Likelihood ratio tests of Multinomial Models
+    ## 
+    ## Response: final_age
+    ##         Model Resid. df Resid. Dev   Test    Df LR stat. Pr(Chi)
+    ## 1       lcat2     79520   26671.49                              
+    ## 2 lcat2 * bay     79504   26521.28 1 vs 2    16 150.2099       0
 
 When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
