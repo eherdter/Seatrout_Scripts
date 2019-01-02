@@ -1,0 +1,242 @@
+---
+title: "R Notebook:Medoid_GC_NLSfit_plot.R"
+output:
+  github_document: 
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE)
+
+```
+
+
+### _Main Objectives of this script_ 
+ 1. Determining medoids of each estuary so they can be used as great circle (GC) distance references
+ 2. ESTIMATE SPATIAL DECAY WITH NLS MODEL for both recruitment indices and RESIDUALS
+ 3. Determines lats and longs for adult data as well. 
+ 4. Produces a CSV file with all of the lats and longs
+
+
+### _Start Here_ 
+Load packages.
+
+```{r warning=FALSE, message=FALSE}
+library(haven) #for loading SAS data
+library(cluster) #for finding medoid
+library(geosphere) # for calculating great circle distances between each medoid
+library(ggplot2) #for plotting
+library(nlstools) #for fitting nls models
+library(tidyverse)
+library(ggrepel)
+```
+### _1. Load data and do some wrangling_
+```{r}
+setwd("U:/PhD_projectfiles/Raw_Data/Seatrout_FIM_Data/FIMData")
+ap = subset(read_sas("ap_yoy_cn_c.sas7bdat"), month %in% c(6,7,8,9,10,11))
+apl = read_sas("ap_yoy_cn_l.sas7bdat")
+
+ck = subset(read_sas("ck_yoy_cn_c.sas7bdat"),  month %in% c(5,6,7,8,9,10,11)) 
+ckl = read_sas("ck_yoy_cn_l.sas7bdat")
+
+ch = subset(read_sas("ch_yoy_cn_c.sas7bdat"), month %in% c(4,5,6,7,8,9,10)) 
+chl = read_sas("ch_yoy_cn_l.sas7bdat")
+
+tb = subset(read_sas("tb_yoy_cn_c.sas7bdat"), month %in% c(4,5,6,7,8,9,10)) 
+tbl = read_sas("tb_yoy_cn_l.sas7bdat")
+
+ir = subset(read_sas("ir_yoy_cn_c.sas7bdat"), month %in% c(5,6,7,8,9,10,11)) 
+irl = read_sas("ir_yoy_cn_l.sas7bdat")
+
+jx = subset(read_sas("jx_yoy_cn_c.sas7bdat") , month %in% c(5,6,7,8,9,10,11))
+jxl = read_sas("jx_yoy_cn_l.sas7bdat")
+
+
+ap_all = ap
+tb_all=tb
+ch_all=ch
+ck_all=ck
+ir_all=ir
+jx_all=jx
+```
+
+###_2.Medoid calculation_
+
+```{r}
+AP_LL <- subset(ap_all, select=c("Longitude", "Latitude")) 
+  APMed <- pam(AP_LL,1)$medoids
+
+```
+Now do for remaining areas.
+```{r include=FALSE}
+CH_LL <- subset(ch_all, select=c("Longitude", "Latitude")) 
+  CHMed <- pam(CH_LL,1)$medoids
+
+CK_LL <- subset(ck_all, select=c("Longitude", "Latitude")) 
+  CKMed <- pam(CK_LL,1)$medoids
+
+IR_LL <-subset(ir_all, select=c("Longitude", "Latitude"))
+  IRMed <- pam(IR_LL,1)$medoids
+
+TB_LL <-na.omit(subset(tb_all, select=c("Longitude", "Latitude")))
+  TBMed <- pam(TB_LL,1)$medoids
+
+JX_LL <-subset(jx_all, select=c("Longitude", "Latitude"))
+  JXMed <- pam(JX_LL,1)$medoids
+
+```
+
+### _3.Calculate great circle distance between pairs of areas_
+```{r}
+AP_compars = rbind(distGeo(APMed, CHMed, a=6378137, f=1/298.257223563),
+                        distGeo(APMed, CKMed, a=6378137, f=1/298.257223563),
+                        distGeo(APMed, TBMed, a=6378137, f=1/298.257223563),
+                        distGeo(APMed, IRMed, a=6378137, f=1/298.257223563),
+                        distGeo(APMed, JXMed, a=6378137, f=1/298.257223563))
+```
+Now do for other combinations
+ 
+```{r include=FALSE}
+CH_compars = rbind(distGeo(CHMed, CKMed, a=6378137, f=1/298.257223563),
+                   distGeo(CHMed, TBMed, a=6378137, f=1/298.257223563),
+                   distGeo(CHMed, IRMed, a=6378137, f=1/298.257223563),
+                   distGeo(CHMed, JXMed, a=6378137, f=1/298.257223563))
+
+
+CK_compars = rbind(distGeo(CKMed, TBMed, a=6378137, f=1/298.257223563),
+                   distGeo(CKMed, IRMed, a=6378137, f=1/298.257223563),
+                   distGeo(CKMed, JXMed, a=6378137, f=1/298.257223563))
+
+
+TB_compars = rbind(distGeo(TBMed, IRMed, a=6378137, f=1/298.257223563),
+                    distGeo(TBMed, JXMed, a=6378137, f=1/298.257223563))
+
+IR_compars = distGeo(IRMed, JXMed, a=6378137, f=1/298.257223563)
+
+
+```
+####join distances together 
+make sure they are in the correct order so that they can bind together with the csv imported below. 
+```{r}
+distances <- rbind(AP_compars, CH_compars, CK_compars, IR_compars, TB_compars)
+rownames(distances) <- c("AP_CH", "AP_CK", "AP_TB", "AP_IR", "AP_JX", 
+                         "CH_CK", "CH_TB", "CH_IR", "CH_JX",
+                         "CK_TB", "CK_IR", "CK_JX",
+                         "TB_IR", "TB_JX",
+                         "IR_JX")
+```
+
+###_4.Combine mediods with rho values from spreadsheet_
+```{r}
+rho_P_vector <- read.csv('U:/PhD_projectfiles/Exported_R_Datafiles/rho_P_vector.csv', header=T)
+
+
+#combine rho and distances vectors and then turn distance into kilometers, name x and y for plotting convention below
+t<-cbind(rho_P_vector, distances) %>% mutate(distancesKM=distances/1000) %>% arrange(distancesKM) %>% rename(y=rho, x=distancesKM)
+```
+
+```{r eval=FALSE}
+#export for later use
+write.csv(t,'U:/PhD_projectfiles/Exported_R_Datafiles/rho_vs_distance.csv' )
+```
+
+```{r include=FALSE}
+#r_min = r[-13,]  #testing out what happens if we remove the outlier that is CH-JX
+```
+###_5. Fit non linear square model to estimate spatial decay_
+Two options:  
+1. Fix p0= 1, just exclude it from the equation  
+2. Estimate p0  
+Pyper et al. 2001, Peterman et al. 1998  
+P(d)= p0e(-d/v)- constrain p0 to 1  
+P(d)=p0e(-d/v) - estimate P0  
+v (e-folding scale) where e-folding scale tells distance   
+
+```{r echo = FALSE}
+setwd('U:/PhD_projectfiles/Exported_R_Datafiles')
+t <- read.csv('U:/PhD_projectfiles/Exported_R_Datafiles/rho_vs_distance.csv', header=T)
+```
+
+
+must find acceptable starting values (can play around with these in excel-rho_vs_distance_param_start_estimation.csv)
+```{r}
+p0 = 1
+v = 100
+#p0 constrained to 1, weighted by the total sample number which is shared between each comparison
+m1 = nls(y ~exp(-(x/v)), start=list(v=v), data=t, weights=(N))
+overview(m1)
+#estimated v 136.87(SE 26.66)
+```
+ p0 estimated
+```{r warning=FALSE}
+p0=0.9
+v=125
+m2 = nls(y ~p0*exp(-(x/v)), start=list(p0=p0,v=v), data=t, weights=(N))
+summary(m2)
+yfitted <- predict(m2)
+boot <- nlsBoot(m2, niter=2000) #bootstrapping 
+bootCI <- boot$bootCI #gives confidence intervals and median values for p0 and v (e-folding scale) where e-folding scale tells distance 
+```
+evalute fit with anova and F test. 
+if they are significantly different than F test will indicated significant p value
+```{r}
+anova(m1, m2)
+```
+### _6. Visualize correlation by distance_ 
+
+Plot correlation by distance and add the fitted curve to the plot(here p0 is estimated. see below for explanation)
+http://stackoverflow.com/questions/25030653/fitting-with-ggplot2-geom-smooth-and-nls
+ NOTE: within geom_smooth  it does not recognize variable names; they must be named x and y; weight must be in an aesthetic in ggplot
+
+```{r include=FALSE}
+t$y_short <- lapply(t$y, round, 2)
+t$X <- as.character(t$X)
+
+t <- t %>% separate(X, into =c("x1", "x2"), sep="_")
+t[t == "AP"] <- "W1_AP"
+t[t == "CK"] <- "W2_CK"
+t[t == "TB"] <- "W3_TB"
+t[t == "CH"] <- "W4_CH"
+t[t == "JX"] <- "E1_JX"
+t[t == "IR"] <- "E2_IR"
+
+t_mut <- t %>% mutate(label=paste(x1, "v.", x2, y_short))
+#trace(utils:::unpackPkgZip, edit=TRUE)
+#require("ggrepel")
+```
+
+```{r eval=FALSE, echo=FALSE}
+File <- ("U:/PhD_projectfiles/Figures/correlation_distance.tiff")
+#if (file.exists(File)) stop(File, " already exists")
+dir.create(dirname(File), showWarnings = FALSE)
+
+tiff(File, units="in", width=8, height=6, res=300)
+```
+
+```{r}
+ggplot(data=t_mut, aes(x=x, y=y, label = label))+geom_point()+ 
+  geom_smooth(method="nls",formula=y ~exp(-(x/v)), method.args=list(start=c(v=150)), aes(weight=N), se=FALSE, color="black", size=1)+                                           
+  ylab("Correlation") +
+  xlab(" Great circle distance (km)")+ 
+  geom_vline(xintercept = 128.46, linetype="dotted", size=1.5, color="red")+
+  #geom_text(aes(label= label), vjust=1.5, hjust=0.5, size=2, check_overlap=T)+
+  #geom_text_repel(aes(label=label), size=4)+
+  geom_label_repel(aes(label=label))+
+  #geom_label( check_overlap=T)+
+  #geom_label(size=2.5, hjust = 1.1)+
+  scale_x_continuous(limits=c(75,500))+
+  #scale_y_continuous(limits=c(-0.3, 0.5, 0.1))+
+  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(),  
+        panel.background=element_rect(fill='white', colour='black'),                                                    
+        axis.text.x=element_text(colour="black", size=14), #changing  colour of x axis
+        axis.title.x=element_text(size=16),
+        axis.title.y=element_text(size=16),
+        axis.text.y=element_text(colour="black", size=14), #changing colour of y axis
+        plot.title=element_text(size=14), # changing size of plot title)+
+        legend.text=element_text(size=14))
+```
+
+```{r echo=FALSE}
+dev.off()
+```
+
