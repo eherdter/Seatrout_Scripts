@@ -1,6 +1,15 @@
 R Notebook for Age Length Key Analysis
 ================
 
+-   [*Main Objectives of this script*](#main-objectives-of-this-script)
+-   [*Start Here*](#start-here)
+-   [1. Load data and do some wrangling](#load-data-and-do-some-wrangling)
+-   [2. Basic data summarization](#basic-data-summarization)
+-   [3. Statistical analyses](#statistical-analyses)
+-   [4. Make age-length keys (ALKs)](#make-age-length-keys-alks)
+-   [5. Visualize the data](#visualize-the-data)
+-   [6. Among group statistical comparisons of ALKs](#among-group-statistical-comparisons-of-alks)
+
 ### *Main Objectives of this script*
 
 1.  Imports otolith data. Summarizes data, mean age, mean length, sd and se and total sample number.
@@ -1626,6 +1635,10 @@ length_AP
 
 ![](ALK_analysis_files/figure-markdown_github/unnamed-chunk-28-1.png)![](ALK_analysis_files/figure-markdown_github/unnamed-chunk-28-2.png)![](ALK_analysis_files/figure-markdown_github/unnamed-chunk-28-3.png)![](ALK_analysis_files/figure-markdown_github/unnamed-chunk-28-4.png)![](ALK_analysis_files/figure-markdown_github/unnamed-chunk-28-5.png)
 
+#### Make crossbar plots to show standard error
+
+use a function to adjust the geom\_crossbar call to ggplot
+
 ``` r
 #CROSSBAR PLOT for mean and standard error ####
 
@@ -1689,11 +1702,7 @@ ggplot(All_min %>% group_by(bay,sex) %>% summarize(n=length(final_age), mean_age
         strip.text.y = element_text(size=16),
         legend.position= c(0.92,0.3), 
         legend.background= element_rect(color="black", linetype="solid"))  , nrow=2)
-```
 
-    ## Warning: Removed 6 rows containing missing values (geom_crossbar).
-
-``` r
 #changing colour and font of y axis
 dev.off()
 ```
@@ -1759,11 +1768,7 @@ scaleFUN <- function(x) sprintf("%.1f", x)
          strip.text.y = element_text(size=16),
         legend.position= c(0.92,0.85), 
         legend.background= element_rect(color="black", linetype="solid")), nrow=2)
-```
-
-    ## Warning: Removed 12 rows containing missing values (geom_crossbar).
-
-``` r
+  
  #changing colour and font of y axis
 
 #plot.title=element_text(size=14), # changing size of plot title)
@@ -1779,17 +1784,6 @@ dev.off()
 
 ![](ALK_analysis_files/figure-markdown_github/unnamed-chunk-30-2.png)
 
-``` r
-# PRODUCE SMOOTHED ALKS #####
-#from multinomial modeling exercise which can be used to do Likelihood ratio testing. 
-#MODELED AGE LENGTH KEYS (aka SMOOTHED ALK)
-#-fixes two common issues with Age Length keys detailed on page 92 Ogle. 
-#multinomial logistic regression model -Gerritsen et al. 2006. The response variable has more than two levels
-
-#TB
-tb <- multinom(final_age~lcat2, data=Agelength_TB, maxit=500)
-```
-
     ## # weights:  27 (16 variable)
     ## initial  value 4117.598858 
     ## iter  10 value 3179.551528
@@ -1799,13 +1793,6 @@ tb <- multinom(final_age~lcat2, data=Agelength_TB, maxit=500)
     ## iter  50 value 2642.723677
     ## final  value 2642.057178 
     ## converged
-
-``` r
-lens<- seq(0,80, 1)
-alksmo.tb <- predict(tb, data.frame(lcat2=lens), type="probs")
-row.names(alksmo.tb) <- lens
-round(alksmo.tb, 3)
-```
 
     ##        1     2     3     4     5     6     7     8     9
     ## 0  0.998 0.002 0.000 0.000 0.000 0.000 0.000 0.000 0.000
@@ -1890,11 +1877,6 @@ round(alksmo.tb, 3)
     ## 79 0.000 0.000 0.000 0.001 0.008 0.011 0.028 0.004 0.948
     ## 80 0.000 0.000 0.000 0.000 0.005 0.008 0.020 0.003 0.964
 
-``` r
-#CK
-ck <- multinom(final_age~lcat2, data=Agelength_CK, maxit=500)
-```
-
     ## # weights:  21 (12 variable)
     ## initial  value 1681.266369 
     ## iter  10 value 1268.858965
@@ -1903,13 +1885,6 @@ ck <- multinom(final_age~lcat2, data=Agelength_CK, maxit=500)
     ## iter  40 value 885.943516
     ## final  value 885.879974 
     ## converged
-
-``` r
-lens<- seq(0,80, 1)
-alksmo.ck <- predict(ck, data.frame(lcat2=lens), type="probs")
-row.names(alksmo.ck) <- lens
-round(alksmo.ck, 3)
-```
 
     ##        1     2     3     4     5     6     7
     ## 0  1.000 0.000 0.000 0.000 0.000 0.000 0.000
@@ -1994,11 +1969,6 @@ round(alksmo.ck, 3)
     ## 79 0.000 0.000 0.000 0.013 0.070 0.916 0.001
     ## 80 0.000 0.000 0.000 0.010 0.059 0.930 0.001
 
-``` r
-#CH
-ch <- multinom(final_age~lcat2, data=Agelength_CH, maxit=500)
-```
-
     ## # weights:  21 (12 variable)
     ## initial  value 2274.768964 
     ## iter  10 value 1692.830890
@@ -2006,13 +1976,6 @@ ch <- multinom(final_age~lcat2, data=Agelength_CH, maxit=500)
     ## iter  30 value 1536.455863
     ## final  value 1536.455785 
     ## converged
-
-``` r
-lens<- seq(0,80, 1)
-alksmo.ch <- predict(ch, data.frame(lcat2=lens), type="probs")
-row.names(alksmo.ch) <- lens
-round(alksmo.ch, 3)
-```
 
     ##        1     2     3     4     5     6     7
     ## 0  0.999 0.001 0.000 0.000 0.000 0.000 0.000
@@ -2097,11 +2060,6 @@ round(alksmo.ch, 3)
     ## 79 0.000 0.000 0.001 0.041 0.314 0.639 0.005
     ## 80 0.000 0.000 0.001 0.036 0.302 0.656 0.005
 
-``` r
-#AP
-ap <- multinom(final_age~lcat2, data=Agelength_AP, maxit=500)
-```
-
     ## # weights:  30 (18 variable)
     ## initial  value 2889.744292 
     ## iter  10 value 2124.374392
@@ -2113,13 +2071,6 @@ ap <- multinom(final_age~lcat2, data=Agelength_AP, maxit=500)
     ## iter  70 value 1530.300375
     ## final  value 1530.189580 
     ## converged
-
-``` r
-lens<- seq(0,80, 1)
-alksmo.ap <- predict(ap, data.frame(lcat2=lens), type="probs")
-row.names(alksmo.ap) <- lens
-round(alksmo.ap, 3)
-```
 
     ##        1     2     3     4     5     6     7     8     9    10
     ## 0  1.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
@@ -2204,11 +2155,6 @@ round(alksmo.ap, 3)
     ## 79 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 1.000
     ## 80 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 1.000
 
-``` r
-#JX
-jx <- multinom(final_age~lcat2, data=Agelength_JX, maxit=500)
-```
-
     ## # weights:  24 (14 variable)
     ## initial  value 1804.955258 
     ## iter  10 value 1082.003331
@@ -2218,13 +2164,6 @@ jx <- multinom(final_age~lcat2, data=Agelength_JX, maxit=500)
     ## iter  50 value 881.454964
     ## final  value 881.315741 
     ## converged
-
-``` r
-lens<- seq(0,80, 1)
-alksmo.jx <- predict(jx, data.frame(lcat2=lens), type="probs")
-row.names(alksmo.jx) <- lens
-round(alksmo.jx, 3)
-```
 
     ##        1     2     3     4     5     6     7     8
     ## 0  0.996 0.004 0.000 0.000 0.000 0.000 0.000 0.000
@@ -2309,11 +2248,6 @@ round(alksmo.jx, 3)
     ## 79 0.000 0.000 0.000 0.000 0.000 0.014 0.000 0.986
     ## 80 0.000 0.000 0.000 0.000 0.000 0.009 0.000 0.990
 
-``` r
-#IR
-ir <- multinom(final_age~lcat2, data=Agelength_IR, maxit=500)
-```
-
     ## # weights:  27 (16 variable)
     ## initial  value 6077.523181 
     ## iter  10 value 4483.767642
@@ -2323,13 +2257,6 @@ ir <- multinom(final_age~lcat2, data=Agelength_IR, maxit=500)
     ## iter  50 value 3607.261048
     ## final  value 3607.256225 
     ## converged
-
-``` r
-lens<- seq(0,80, 1)
-alksmo.ir <- predict(ir, data.frame(lcat2=lens), type="probs")
-row.names(alksmo.ir) <- lens
-round(alksmo.ir, 3)
-```
 
     ##        1     2     3     4     5     6     7     8     9
     ## 0  0.993 0.007 0.000 0.000 0.000 0.000 0.000 0.000 0.000

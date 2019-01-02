@@ -1,10 +1,8 @@
 ---
 title: "R Notebook for Age Length Key Analysis"
 output:
-  rmarkdown::github_document: default
-  html_document: default
-  github_document:
-    toc: yes
+  github_document: 
+    toc: true
 ---
 
 ```{r setup, include=FALSE}
@@ -715,7 +713,9 @@ length_IR <- ggplot(Agelength_IR, aes(x=tl))+
 length_IR
 ```
 
-```{r}
+#### Make crossbar plots to show standard error
+use a function to adjust the geom_crossbar call to ggplot
+```{r warning = FALSE}
 #CROSSBAR PLOT for mean and standard error ####
 
 MinMeanSEM196Max <- function(x) {
@@ -845,6 +845,7 @@ scaleFUN <- function(x) sprintf("%.1f", x)
 #plot.title=element_text(size=14), # changing size of plot title)
 dev.off()
 ```
+
 ```{r echo=FALSE}
 ### DISSERTATION PRESENTATION PLOTS ####
 ggplot(All_min %>% group_by(bay) %>% summarize(n=length(tl), mean_tl=mean(tl), UCI = mean_tl + (sd(tl)/sqrt(n)*1.96) , LCI = mean_tl - (sd(tl)/sqrt(n)*1.96)), aes(bay, mean_tl)) +
@@ -882,7 +883,8 @@ ggplot(All_min %>% group_by(bay) %>% summarize(n=length(final_age), mean_age=mea
         axis.text.y=element_text(colour="black", size=12),
         strip.text.y = element_text(size=16)) 
 ```
-```{r echp=FALSE}
+
+```{r echo=FALSE}
 # PRODUCE SMOOTHED ALKS #####
 #from multinomial modeling exercise which can be used to do Likelihood ratio testing. 
 #MODELED AGE LENGTH KEYS (aka SMOOTHED ALK)
