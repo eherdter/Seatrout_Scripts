@@ -40,7 +40,7 @@ library(dplyr)
 library(gridExtra)
 ```
 
-### 1. Load data and do some wrangling
+### _1. Load data and do some wrangling_
  1. load the csv file
 2. subset by which bay I want
 3. subset the FIM program 
@@ -112,7 +112,7 @@ Agelength_JX = mutate(Agelength_JX, year = strftime(DateNew, format="%Y")) %>% d
 Agelength_JX$year = as.factor(Agelength_JX$year) 
 
 ```
-### 2. Basic data summarization
+### _2. Basic data summarization_
 ```{r}
 #total sample number of FIM data
 All= rbind(Agelength_AP, Agelength_CK, Agelength_TB, Agelength_CH, Agelength_JX, Agelength_IR) #omits na
@@ -178,7 +178,7 @@ AL_sum <- AL_all %>% group_by(bay) %>% summarise(mean_age=mean(final_age), media
 
 ```
 
-### 3. Statistical analyses
+### _3. Statistical analyses_
 Two way Anovas: To test for differences in age and length by bay and sex. 
 
 ```{r}
@@ -212,13 +212,7 @@ summary(aov(tl  ~  sex, data= AL_IR))
 ```
 
 
-#### Chi sqaured tests: To test differencs in age distribution between bays 
-non-parameteric like anova is below so it doesnt assume normality of the age distribution  
-can do a test of variance to determine whether can use anova  
-anova assumes homogenous variances  
-test for variances  
-H0= ratio of variances is equal to 1   
-Ha = ratio of variances is not equal to 1  
+#### Chi sqaured tests: To test differencs in age distribution between bays non-parameteric like anova is below so it doesnt assume normality of the age distribution  can do a test of variance to determine whether can use anova  anova assumes homogenous variances  test for variances  H0= ratio of variances is equal to 1  Ha = ratio of variances is not equal to 1  
 
 ```{r warning=FALSE}
 var.test(Agelength_TB$final_age, Agelength_AP$final_age) #equal variances
@@ -283,8 +277,7 @@ pdf <- as.data.frame(p.adjust(ps_age))
 #all significantly different excpet for TB to AP and CH and IR
 ```
 
-#### Chi squared tests: to test for diferences in length distribution among areas
-test for equal variances
+#### Chi squared tests: to test for diferences in length distribution among areas test for equal variances
 ```{r warning=FALSE}
 var.test(Agelength_TB$tl, Agelength_AP$tl)
 var.test(Agelength_TB$tl, Agelength_CK$tl)
@@ -346,8 +339,8 @@ plength <- as.data.frame(p.adjust(ps_length))
 
 ```
 
-### 4. Make age-length keys (ALKs) 
-Make table with observed total numbers at length by age to be used for statistical analysis
+### _4. Make age-length keys (ALKs)_
+#### Make table with observed total numbers at length by age to be used for statistical analysis
 ```{r}
 (rawfreq_TB <- xtabs(~lcat2+final_age, data=Agelength_TB)) 
 #rawfreq_TB_test_df <- as.data.frame(as.matrix(xtabs(~lcat2+final_age, data=TB_test)))
@@ -484,7 +477,7 @@ JX_sumlen <- Agelength_JX %>% group_by(final_age) %>% summarize(n=validn(tl), mn
 
 ```
 
-### 5. Visualize the data  
+### _5. Visualize the data_  
 #### Make age histograms
 
 ```{r warning=FALSE}
@@ -994,8 +987,8 @@ smoJX <- alkPlot(alksmo.jx, type="barplot", xlab="Total Length (cm)", pal="rainb
 ```
 
 
-### 6. Among group statistical comparisons of ALKs
-#### Following methods on page 102 in Ogle, Fisheries Analysis in R
+### _6. Among group statistical comparisons of ALKs_
+ Following methods on page 102 in Ogle, Fisheries Analysis in R
 ```{r}
 setwd("U:/PhD_projectfiles/Raw_Data/Age_Length_Data")
 Agelength_ALL<- droplevels(subset(as.data.frame(read.csv("ALK_Bay_and_Weight.csv", header=T)),tl>20 & final_age >0 & (bay== "TB" | bay== "CK" | bay== "CH" | bay=="IR" |bay=="AP" | bay=="JX"),select=c(SpecimenNumber, bay, tl, final_age)) %>% mutate(tl=tl/10, lcat2 =lencat(tl, w=1))) # as.fact=TRUE))

@@ -3,12 +3,12 @@ R Notebook for Age Length Key Analysis
 
 -   [*Main Objectives of this script*](#main-objectives-of-this-script)
 -   [*Start Here*](#start-here)
--   [1. Load data and do some wrangling](#load-data-and-do-some-wrangling)
--   [2. Basic data summarization](#basic-data-summarization)
--   [3. Statistical analyses](#statistical-analyses)
--   [4. Make age-length keys (ALKs)](#make-age-length-keys-alks)
--   [5. Visualize the data](#visualize-the-data)
--   [6. Among group statistical comparisons of ALKs](#among-group-statistical-comparisons-of-alks)
+-   [*1. Load data and do some wrangling*](#load-data-and-do-some-wrangling)
+-   [*2. Basic data summarization*](#basic-data-summarization)
+-   [*3. Statistical analyses*](#statistical-analyses)
+-   [*4. Make age-length keys (ALKs)*](#make-age-length-keys-alks)
+-   [*5. Visualize the data*](#visualize-the-data)
+-   [*6. Among group statistical comparisons of ALKs*](#among-group-statistical-comparisons-of-alks)
 
 ### *Main Objectives of this script*
 
@@ -41,7 +41,7 @@ library(dplyr)
 library(gridExtra)
 ```
 
-### 1. Load data and do some wrangling
+### *1. Load data and do some wrangling*
 
 1.  load the csv file
 2.  subset by which bay I want
@@ -73,7 +73,7 @@ Agelength_TB$year = as.factor(Agelength_TB$year)
 
 Now do the same thing for other estuaries. R code will not be displayed because it was fairly similar.
 
-### 2. Basic data summarization
+### *2. Basic data summarization*
 
 ``` r
 #total sample number of FIM data
@@ -127,7 +127,7 @@ All_sum <- rbind(AP_sum, CK_sum, TB_sum, CH_sum, JX_sum, IR_sum)
 rownames(All_sum) <- c("AP", "CK", "TB", "CH", "JX", "IR")
 ```
 
-### 3. Statistical analyses
+### *3. Statistical analyses*
 
 Two way Anovas: To test for differences in age and length by bay and sex.
 
@@ -338,14 +338,7 @@ summary(aov(tl  ~  sex, data= AL_IR))
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-#### Chi sqaured tests: To test differencs in age distribution between bays
-
-non-parameteric like anova is below so it doesnt assume normality of the age distribution
-can do a test of variance to determine whether can use anova
-anova assumes homogenous variances
-test for variances
-H0= ratio of variances is equal to 1
-Ha = ratio of variances is not equal to 1
+#### Chi sqaured tests: To test differencs in age distribution between bays non-parameteric like anova is below so it doesnt assume normality of the age distribution can do a test of variance to determine whether can use anova anova assumes homogenous variances test for variances H0= ratio of variances is equal to 1 Ha = ratio of variances is not equal to 1
 
 ``` r
 var.test(Agelength_TB$final_age, Agelength_AP$final_age) #equal variances
@@ -777,9 +770,7 @@ pdf <- as.data.frame(p.adjust(ps_age))
 #all significantly different excpet for TB to AP and CH and IR
 ```
 
-#### Chi squared tests: to test for diferences in length distribution among areas
-
-test for equal variances
+#### Chi squared tests: to test for diferences in length distribution among areas test for equal variances
 
 ``` r
 var.test(Agelength_TB$tl, Agelength_AP$tl)
@@ -1208,9 +1199,9 @@ chisq.test(len_freq[5:6,])$p.value)
 plength <- as.data.frame(p.adjust(ps_length))
 ```
 
-### 4. Make age-length keys (ALKs)
+### *4. Make age-length keys (ALKs)*
 
-Make table with observed total numbers at length by age to be used for statistical analysis
+#### Make table with observed total numbers at length by age to be used for statistical analysis
 
 ``` r
 (rawfreq_TB <- xtabs(~lcat2+final_age, data=Agelength_TB)) 
@@ -1588,7 +1579,7 @@ TB_sumlen <- Agelength_TB %>% group_by(final_age) %>% summarize(n=validn(tl), mn
 
 Now do the rest of the estuaries
 
-### 5. Visualize the data
+### *5. Visualize the data*
 
 #### Make age histograms
 
@@ -2341,9 +2332,9 @@ dev.off()
     ## 79 0.000 0.000 0.009 0.092 0.254 0.374 0.047 0.221 0.001
     ## 80 0.000 0.000 0.007 0.082 0.242 0.376 0.046 0.246 0.001
 
-### 6. Among group statistical comparisons of ALKs
+### *6. Among group statistical comparisons of ALKs*
 
-#### Following methods on page 102 in Ogle, Fisheries Analysis in R
+Following methods on page 102 in Ogle, Fisheries Analysis in R
 
 ``` r
 setwd("U:/PhD_projectfiles/Raw_Data/Age_Length_Data")
