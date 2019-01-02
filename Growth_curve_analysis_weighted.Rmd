@@ -1,5 +1,5 @@
 ---
-title: "R Notebook: Growth_curve_analysis.R"
+title: "R Notebook: Growth_curve_analysis_weighted.R"
 output:
   github_document: 
     toc: true
@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo=TRUE)
 ```
 
 
-### Main Objectives of this script: 
+### _Main Objectives of this script_ 
  1. Imports otolith data. 
  2. Determines VBGF parameters for each bay and bootstrapped 95% confidence intervals for each.
  3. Plots the comparative growth curves
@@ -89,7 +89,7 @@ levels(all_raw$bay) <-  c("W1_AP", "W2_CK", "W3_TB", "W4_CH", "E1_JX", "E2_IR")
 
 
 
-### _1.Statistical Fitting_
+### _2.Statistical Fitting_
 Fit Von B growth curves to each area and estimate parameters of curve.
 
 ```{r include=FALSE}
@@ -478,7 +478,7 @@ x <- seq(0,9, length.out=30) # ages for prediction
 JX_predM <- vbTyp(x, Linf=coef(fitJXM)) #predicted lengths
 
 ```
-### _2.Visualize all predicted fits_
+### _3.Visualize all predicted fits_
 ```{r warning=FALSE}
 # combine all predicted matrices into one
 x <- seq(0,9, length.out=30)
@@ -700,7 +700,7 @@ grid.arrange(
 dev.off()
 ```
 
-# _3.Statistcal comparisons between groups._
+### _4.Statistcal comparisons between groups._
 
 Requires fitting multiple models to determine which parameters between each group is different. For simplicities sake, I will only compare 2 bays at a time. Can refer to ALK_analysis.R for a list of bay to bay comparisons. Refer to page 236 in Ogle for the family of models that must be considered when examining the differences in VBGF among groups. 
 The nested relationships among these models allows use of likelihoo ratio and extra sum of squares tests.
@@ -1193,7 +1193,7 @@ cbind(AIC(fitLKt,fitLK,fitLt,fitKt, fitL, fitK, fitt, fit0), BIC(fitLKt, fitLK, 
 # fitLKt  7 26993.29  7 27037.26
 ```
 
-#_4.Plot comparative curves_
+### _5.Plot comparative curves_
 ```{r warning=FALSE, echo=FALSE}
 
 

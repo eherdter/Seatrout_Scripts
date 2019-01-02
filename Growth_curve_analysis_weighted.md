@@ -1,19 +1,15 @@
-R Notebook: Growth\_curve\_analysis.R
+R Notebook: Growth\_curve\_analysis\_weighted.R
 ================
 
--   [Main Objectives of this script:](#main-objectives-of-this-script)
+-   [*Main Objectives of this script*](#main-objectives-of-this-script)
 -   [*Start Here*](#start-here)
 -   [*1. Load data and do some wrangling*](#load-data-and-do-some-wrangling)
--   [*1.Statistical Fitting*](#statistical-fitting)
--   [*2.Visualize all predicted fits*](#visualize-all-predicted-fits)
--   [*3.Statistcal comparisons between groups.*](#statistcal-comparisons-between-groups.)
-    -   [Define dataframes with bay-bay comparison](#define-dataframes-with-bay-bay-comparison)
-    -   [Define fits to model scenarios- first by sex for each bay](#define-fits-to-model-scenarios--first-by-sex-for-each-bay)
-    -   [Define fits to model scenarios (one bay at a time) \_TBCK here](#define-fits-to-model-scenarios-one-bay-at-a-time-_tbck-here)
-    -   [Now do it all over again with each Bay to bay comparison](#now-do-it-all-over-again-with-each-bay-to-bay-comparison)
-    -   [*4.Plot comparative curves*](#plot-comparative-curves)
+-   [*2.Statistical Fitting*](#statistical-fitting)
+-   [*3.Visualize all predicted fits*](#visualize-all-predicted-fits)
+-   [*4.Statistcal comparisons between groups.*](#statistcal-comparisons-between-groups.)
+-   [*5.Plot comparative curves*](#plot-comparative-curves)
 
-### Main Objectives of this script:
+### *Main Objectives of this script*
 
 1.  Imports otolith data.
 2.  Determines VBGF parameters for each bay and bootstrapped 95% confidence intervals for each.
@@ -72,7 +68,7 @@ all_raw$bay <- ordered(all_raw$bay, levels=c("AP", "CK", "TB", "CH", "JX", "IR")
 levels(all_raw$bay) <-  c("W1_AP", "W2_CK", "W3_TB", "W4_CH", "E1_JX", "E2_IR")
 ```
 
-### *1.Statistical Fitting*
+### *2.Statistical Fitting*
 
 Fit Von B growth curves to each area and estimate parameters of curve.
 
@@ -103,13 +99,19 @@ coef(fitTB)
 
 ``` r
 bootTB <- nlsBoot(fitTB)
+```
+
+    ## Warning in nlsBoot(fitTB): The fit did not converge 1 times during
+    ## bootstrapping
+
+``` r
 confint(bootTB) #, plot=TRUE)
 ```
 
     ##          95% LCI     95% UCI
-    ## Linf 49.95245606 57.60366006
-    ## K     0.49333158  0.92981121
-    ## t0   -0.04162925  0.08439832
+    ## Linf 49.95802831 57.30601637
+    ## K     0.48639585  0.92928069
+    ## t0   -0.04510728  0.08885962
 
 Visualize the model fit - plot the best-fit VBGF with confidence intervals on top of the observed data uses a for loop to cycle through all ages
 
@@ -155,17 +157,17 @@ coef(fitTBM)
 ```
 
     ##        Linf           K          t0 
-    ## 37.76758460  1.57792464  0.08108205
+    ## 37.77952602  1.56648546  0.07535108
 
 ``` r
 bootTBM <- nlsBoot(fitTBM)
 confint(bootTBM) #, plot=TRUE)
 ```
 
-    ##          95% LCI    95% UCI
-    ## Linf 37.30531278 38.2121189
-    ## K     1.45612508  1.7085271
-    ## t0    0.05402221  0.1041866
+    ##          95% LCI     95% UCI
+    ## Linf 37.30978961 38.25533484
+    ## K     1.45037724  1.69589744
+    ## t0    0.04991602  0.09822581
 
 ``` r
 x <- seq(0,9, length.out=30) # ages for prediction
@@ -180,18 +182,18 @@ fitTBF <- nls(tl~vbTyp(final_age, Linf, K, t0=t0), data=TB_F, start=starting, co
 coef(fitTBF)
 ```
 
-    ##       Linf          K         t0 
-    ## 46.1995305  1.0063126 -0.0252647
+    ##        Linf           K          t0 
+    ## 46.33547189  0.98483546 -0.03897035
 
 ``` r
 bootTBF <- nlsBoot(fitTBF)
 confint(bootTBF) #, plot=TRUE)
 ```
 
-    ##          95% LCI    95% UCI
-    ## Linf 45.54784345 46.9789313
-    ## K     0.92543976  1.0885729
-    ## t0   -0.07813536  0.0206083
+    ##          95% LCI     95% UCI
+    ## Linf 45.59987243 47.12301172
+    ## K     0.90611625  1.06855364
+    ## t0   -0.09408713  0.01428825
 
 ``` r
 x <- seq(0,9, length.out=30) # ages for prediction
@@ -200,7 +202,7 @@ TB_predF <- vbTyp(x, Linf=coef(fitTBF)[1],K= coef(fitTBF)[2],t0=t0) #predicted l
 
 Now do for other estuaries.
 
-### *2.Visualize all predicted fits*
+### *3.Visualize all predicted fits*
 
 ``` r
 # combine all predicted matrices into one
@@ -389,7 +391,7 @@ grid.arrange(
 
     ## Warning: position_dodge requires non-overlapping x intervals
 
-    ## Warning: Removed 24 rows containing missing values (geom_point).
+    ## Warning: Removed 18 rows containing missing values (geom_point).
 
 ``` r
 dev.off()
@@ -398,8 +400,7 @@ dev.off()
     ## png 
     ##   2
 
-*3.Statistcal comparisons between groups.*
-==========================================
+### *4.Statistcal comparisons between groups.*
 
 Requires fitting multiple models to determine which parameters between each group is different. For simplicities sake, I will only compare 2 bays at a time. Can refer to ALK\_analysis.R for a list of bay to bay comparisons. Refer to page 236 in Ogle for the family of models that must be considered when examining the differences in VBGF among groups. The nested relationships among these models allows use of likelihoo ratio and extra sum of squares tests.
 
@@ -496,13 +497,13 @@ cbind(AIC(fitLKt,fitLK,fitLt,fitKt, fitL, fitK, fitt, fit0), BIC(fitLKt, fitLK, 
 ```
 
     ##        df      AIC df      BIC
-    ## fitLKt  7 12811.39  7 12850.68
-    ## fitLK   6 12820.18  6 12853.86
-    ## fitLt   6 12840.41  6 12874.09
-    ## fitKt   6 13011.45  6 13045.13
-    ## fitL    5 12840.59  5 12868.65
-    ## fitK    5 13046.45  5 13074.51
-    ## fitt    5 13170.52  5 13198.58
+    ## fitLKt  7 12811.35  7 12850.63
+    ## fitLK   6 12819.97  6 12853.64
+    ## fitLt   6 12840.61  6 12874.29
+    ## fitKt   6 13014.69  6 13048.37
+    ## fitL    5 12841.24  5 12869.30
+    ## fitK    5 13047.08  5 13075.14
+    ## fitt    5 13171.59  5 13199.65
     ## fit0    4 13187.25  4 13209.70
 
 ``` r
@@ -515,8 +516,8 @@ lrt(fit0, com=fitLKt, com.name="All pars differ", sim.name="No pars differ")
     ## Model 1: No pars differ
     ## Model A: All pars differ 
     ## 
-    ##      DfO  logLikO  DfA  logLikA Df   logLik  Chisq Pr(>Chisq)    
-    ## 1vA 2020 -6589.63 2017 -6398.70  3  -190.93 381.86  < 2.2e-16 ***
+    ##      DfO  logLikO  DfA  logLikA Df   logLik Chisq Pr(>Chisq)    
+    ## 1vA 2020 -6589.63 2017 -6398.67  3  -190.95 381.9  < 2.2e-16 ***
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
@@ -528,7 +529,7 @@ extraSS(fit0, com=fitLKt, com.name="All pars diff", sim.names="No pars diff")
     ## Model A: All pars diff 
     ## 
     ##      DfO  RSSO  DfA  RSSA Df    SS      F    Pr(>F)    
-    ## 1vA 2020 79951 2017 66198  3 13753 139.68 < 2.2e-16 ***
+    ## 1vA 2020 79951 2017 66197  3 13754 139.69 < 2.2e-16 ***
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
@@ -548,9 +549,9 @@ lrt(fitLK, fitLt, fitKt, com=fitLKt, com.name="All pars diff", sim.names=c("Linf
     ## Model A: All pars diff 
     ## 
     ##      DfO   logLikO  DfA   logLikA Df    logLik   Chisq Pr(>Chisq)    
-    ## 1vA 2018 -6404.091 2017 -6398.697  1    -5.395  10.789   0.001021 ** 
-    ## 2vA 2018 -6414.206 2017 -6398.697  1   -15.509  31.018  2.556e-08 ***
-    ## 3vA 2018 -6499.726 2017 -6398.697  1  -101.029 202.058  < 2.2e-16 ***
+    ## 1vA 2018 -6403.984 2017 -6398.674  1    -5.310  10.621   0.001118 ** 
+    ## 2vA 2018 -6414.306 2017 -6398.674  1   -15.632  31.264  2.252e-08 ***
+    ## 3vA 2018 -6501.346 2017 -6398.674  1  -102.672 205.343  < 2.2e-16 ***
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
@@ -609,7 +610,7 @@ cbind(AIC(fitLKt,fitLK,fitLt,fitKt, fitL, fitK, fitt, fit0), BIC(fitLKt, fitLK, 
 
 #### Now do it all over again with each Bay to bay comparison
 
-### *4.Plot comparative curves*
+### *5.Plot comparative curves*
 
 ![](Growth_curve_analysis_weighted_files/figure-markdown_github/unnamed-chunk-26-1.png)
 
